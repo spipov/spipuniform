@@ -14,8 +14,10 @@
     "format:fix": "biome format --write .",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "create-admin": "tsx scripts/create-admin.ts",
-    "set-admin-role": "tsx scripts/set-admin-role.ts"
+    "create-admin": "tsx scripts/seed-admin/create-admin.ts",
+    "seed-admin": "tsx scripts/seed-admin/seed-admin.ts",
+    "db:reset": "tsx scripts/seed-admin/reset-and-seed.ts",
+    "db:migrate": "drizzle-kit push"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
