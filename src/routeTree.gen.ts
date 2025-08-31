@@ -11,9 +11,6 @@
 import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -21,14 +18,11 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthSigninRouteImport } from './routes/auth/signin'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
-import { Route as DemoStartServerFuncsRouteImport } from './routes/demo.start.server-funcs'
-import { Route as DemoStartApiRequestRouteImport } from './routes/demo.start.api-request'
 import { Route as DashboardUserManagementUsersRouteImport } from './routes/dashboard/user-management/users'
 import { Route as DashboardUserManagementRolesRouteImport } from './routes/dashboard/user-management/roles'
 import { Route as DashboardUserManagementPermissionsRouteImport } from './routes/dashboard/user-management/permissions'
 import { ServerRoute as ApiUsersServerRouteImport } from './routes/api.users'
 import { ServerRoute as ApiRolesServerRouteImport } from './routes/api.roles'
-import { ServerRoute as ApiDemoNamesServerRouteImport } from './routes/api.demo-names'
 import { ServerRoute as ApiAuthGetSessionServerRouteImport } from './routes/api.auth.get-session'
 import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api.auth.$'
 import { ServerRoute as ApiAuthSignUpEmailServerRouteImport } from './routes/api.auth.sign-up.email'
@@ -36,21 +30,6 @@ import { ServerRoute as ApiAuthSignInEmailServerRouteImport } from './routes/api
 
 const rootServerRouteImport = createServerRootRoute()
 
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -86,16 +65,6 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   path: '/auth/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
-  id: '/demo/start/server-funcs',
-  path: '/demo/start/server-funcs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoStartApiRequestRoute = DemoStartApiRequestRouteImport.update({
-  id: '/demo/start/api-request',
-  path: '/demo/start/api-request',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DashboardUserManagementUsersRoute =
   DashboardUserManagementUsersRouteImport.update({
     id: '/user-management/users',
@@ -122,11 +91,6 @@ const ApiUsersServerRoute = ApiUsersServerRouteImport.update({
 const ApiRolesServerRoute = ApiRolesServerRouteImport.update({
   id: '/api/roles',
   path: '/api/roles',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
-const ApiDemoNamesServerRoute = ApiDemoNamesServerRouteImport.update({
-  id: '/api/demo-names',
-  path: '/api/demo-names',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiAuthGetSessionServerRoute = ApiAuthGetSessionServerRouteImport.update({
@@ -156,9 +120,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/login': typeof LoginRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/signup': typeof SignupRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -166,15 +127,10 @@ export interface FileRoutesByFullPath {
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/login': typeof LoginRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/signup': typeof SignupRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -182,17 +138,12 @@ export interface FileRoutesByTo {
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/login': typeof LoginRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/signup': typeof SignupRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -200,8 +151,6 @@ export interface FileRoutesById {
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -209,9 +158,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
-    | '/login'
-    | '/reset-password'
-    | '/signup'
     | '/auth/reset-password'
     | '/auth/signin'
     | '/auth/signup'
@@ -219,15 +165,10 @@ export interface FileRouteTypes {
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
-    | '/login'
-    | '/reset-password'
-    | '/signup'
     | '/auth/reset-password'
     | '/auth/signin'
     | '/auth/signup'
@@ -235,16 +176,11 @@ export interface FileRouteTypes {
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/dashboard'
-    | '/login'
-    | '/reset-password'
-    | '/signup'
     | '/auth/reset-password'
     | '/auth/signin'
     | '/auth/signup'
@@ -252,25 +188,17 @@ export interface FileRouteTypes {
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   DashboardRoute: typeof DashboardRouteWithChildren
-  LoginRoute: typeof LoginRoute
-  ResetPasswordRoute: typeof ResetPasswordRoute
-  SignupRoute: typeof SignupRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSigninRoute: typeof AuthSigninRoute
   AuthSignupRoute: typeof AuthSignupRoute
-  DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
-  DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute
 }
 export interface FileServerRoutesByFullPath {
-  '/api/demo-names': typeof ApiDemoNamesServerRoute
   '/api/roles': typeof ApiRolesServerRoute
   '/api/users': typeof ApiUsersServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
@@ -279,7 +207,6 @@ export interface FileServerRoutesByFullPath {
   '/api/auth/sign-up/email': typeof ApiAuthSignUpEmailServerRoute
 }
 export interface FileServerRoutesByTo {
-  '/api/demo-names': typeof ApiDemoNamesServerRoute
   '/api/roles': typeof ApiRolesServerRoute
   '/api/users': typeof ApiUsersServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
@@ -289,7 +216,6 @@ export interface FileServerRoutesByTo {
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
-  '/api/demo-names': typeof ApiDemoNamesServerRoute
   '/api/roles': typeof ApiRolesServerRoute
   '/api/users': typeof ApiUsersServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
@@ -300,7 +226,6 @@ export interface FileServerRoutesById {
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
   fullPaths:
-    | '/api/demo-names'
     | '/api/roles'
     | '/api/users'
     | '/api/auth/$'
@@ -309,7 +234,6 @@ export interface FileServerRouteTypes {
     | '/api/auth/sign-up/email'
   fileServerRoutesByTo: FileServerRoutesByTo
   to:
-    | '/api/demo-names'
     | '/api/roles'
     | '/api/users'
     | '/api/auth/$'
@@ -318,7 +242,6 @@ export interface FileServerRouteTypes {
     | '/api/auth/sign-up/email'
   id:
     | '__root__'
-    | '/api/demo-names'
     | '/api/roles'
     | '/api/users'
     | '/api/auth/$'
@@ -328,7 +251,6 @@ export interface FileServerRouteTypes {
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
-  ApiDemoNamesServerRoute: typeof ApiDemoNamesServerRoute
   ApiRolesServerRoute: typeof ApiRolesServerRoute
   ApiUsersServerRoute: typeof ApiUsersServerRoute
   ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
@@ -339,27 +261,6 @@ export interface RootServerRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -409,20 +310,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/start/server-funcs': {
-      id: '/demo/start/server-funcs'
-      path: '/demo/start/server-funcs'
-      fullPath: '/demo/start/server-funcs'
-      preLoaderRoute: typeof DemoStartServerFuncsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/start/api-request': {
-      id: '/demo/start/api-request'
-      path: '/demo/start/api-request'
-      fullPath: '/demo/start/api-request'
-      preLoaderRoute: typeof DemoStartApiRequestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/dashboard/user-management/users': {
       id: '/dashboard/user-management/users'
       path: '/user-management/users'
@@ -460,13 +347,6 @@ declare module '@tanstack/react-start/server' {
       path: '/api/roles'
       fullPath: '/api/roles'
       preLoaderRoute: typeof ApiRolesServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/api/demo-names': {
-      id: '/api/demo-names'
-      path: '/api/demo-names'
-      fullPath: '/api/demo-names'
-      preLoaderRoute: typeof ApiDemoNamesServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/auth/get-session': {
@@ -523,20 +403,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   DashboardRoute: DashboardRouteWithChildren,
-  LoginRoute: LoginRoute,
-  ResetPasswordRoute: ResetPasswordRoute,
-  SignupRoute: SignupRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSigninRoute: AuthSigninRoute,
   AuthSignupRoute: AuthSignupRoute,
-  DemoStartApiRequestRoute: DemoStartApiRequestRoute,
-  DemoStartServerFuncsRoute: DemoStartServerFuncsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
-  ApiDemoNamesServerRoute: ApiDemoNamesServerRoute,
   ApiRolesServerRoute: ApiRolesServerRoute,
   ApiUsersServerRoute: ApiUsersServerRoute,
   ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
