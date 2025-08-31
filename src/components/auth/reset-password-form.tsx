@@ -50,7 +50,7 @@ export function ResetPasswordForm({
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
-  const search = useSearch({ from: "/reset-password" }) as { token?: string };
+  const search = useSearch({ from: "/auth/reset-password" }) as { token?: string };
   const hasToken = !!search.token;
 
   const requestForm = useForm<RequestResetSchema>({
@@ -66,7 +66,7 @@ export function ResetPasswordForm({
     try {
       const result = await authClient.forgetPassword({
         email: data.email,
-        redirectTo: "/reset-password",
+        redirectTo: "/auth/reset-password",
       });
 
       if (result.error) {
@@ -99,7 +99,7 @@ export function ResetPasswordForm({
         toast.error(result.error.message || "Failed to reset password");
       } else {
         toast.success("Password reset successfully! Please sign in.");
-        router.navigate({ to: "/signin" });
+        router.navigate({ to: "/auth/signin" });
       }
     } catch (error) {
       toast.error("An unexpected error occurred");
@@ -213,7 +213,7 @@ export function ResetPasswordForm({
           )}
           <div className="mt-4 text-center text-sm">
             Remember your password?{" "}
-            <a href="/signin" className="underline underline-offset-4">
+            <a href="/auth/signin" className="underline underline-offset-4">
               Sign in
             </a>
           </div>

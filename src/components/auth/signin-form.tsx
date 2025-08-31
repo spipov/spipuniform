@@ -84,7 +84,7 @@ export function SigninForm({
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                   <a
-                    href="/reset-password"
+                    href="/auth/reset-password"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
                     Forgot your password?
@@ -106,7 +106,7 @@ export function SigninForm({
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-              <a href="/signup" className="underline underline-offset-4">
+              <a href="/auth/signup" className="underline underline-offset-4">
                 Sign up
               </a>
             </div>

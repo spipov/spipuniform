@@ -47,7 +47,7 @@ export function RegisterForm({
         toast.error(result.error.message || "Failed to create account");
       } else {
         toast.success("Account created successfully! Please sign in.");
-        router.navigate({ to: "/signin" });
+        router.navigate({ to: "/auth/signin" });
       }
     } catch (error) {
       toast.error("An unexpected error occurred");
@@ -124,7 +124,7 @@ export function RegisterForm({
             </div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <a href="/signin" className="underline underline-offset-4">
+              <a href="/auth/signin" className="underline underline-offset-4">
                 Sign in
               </a>
             </div>

@@ -41,12 +41,12 @@ export default function Header() {
           </>
         ) : (
           <>
-            <Link to="/signin">
+            <Link to="/auth/signin">
               <Button variant="outline" size="sm">
                 Sign In
               </Button>
             </Link>
-            <Link to="/signup">
+            <Link to="/auth/signup">
               <Button size="sm">
                 Sign Up
               </Button>
