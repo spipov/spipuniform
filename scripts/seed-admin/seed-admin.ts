@@ -1,10 +1,10 @@
 /** biome-ignore-all lint/suspicious/noConsole: Console logs in CLI tools are acceptable */
 
-import { signUp } from '@/lib/auth-client';
-import { db } from '@/db';
-import { user } from '@/db/schema/auth';
-import { eq } from 'drizzle-orm';
-import { registerSchema } from '@/schemas/auth';
+import { signUp } from "@/lib/auth-client";
+import { db } from "@/db";
+import { user } from "@/db/schema/auth";
+import { eq } from "drizzle-orm";
+import { registerSchema } from "@/schemas/auth";
 
 /**
  * Automated database seeding script that creates an admin user
@@ -13,30 +13,23 @@ import { registerSchema } from '@/schemas/auth';
 async function seedAdmin() {
   try {
     // Get admin credentials from environment variables
-    const adminEmail = process.env.DEFAULT_ADMIN_EMAIL || 'admin@example.com';
-    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD || 'admin123';
-    const adminName = process.env.DEFAULT_ADMIN_NAME || 'Admin User';
+    const adminEmail = process.env.DEFAULT_ADMIN_EMAIL || "admin@example.com";
+    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD || "admin123";
+    const adminName = process.env.DEFAULT_ADMIN_NAME || "Admin User";
 
-    console.log('🌱 Starting admin user seeding...');
+    console.log("🌱 Starting admin user seeding...");
     console.log(`📧 Admin email: ${adminEmail}`);
 
     // Check if admin user already exists
-    const existingAdmin = await db
-      .select()
-      .from(user)
-      .where(eq(user.email, adminEmail))
-      .limit(1);
+    const existingAdmin = await db.select().from(user).where(eq(user.email, adminEmail)).limit(1);
 
     if (existingAdmin.length > 0) {
-      console.log('ℹ️  Admin user already exists, updating role to admin...');
-      
+      console.log("ℹ️  Admin user already exists, updating role to admin...");
+
       // Update existing user to admin role
-      await db
-        .update(user)
-        .set({ role: 'admin' })
-        .where(eq(user.email, adminEmail));
-      
-      console.log('✅ Existing user updated to admin role successfully!');
+      await db.update(user).set({ role: "admin" }).where(eq(user.email, adminEmail));
+
+      console.log("✅ Existing user updated to admin role successfully!");
       return;
     }
 
@@ -45,14 +38,14 @@ async function seedAdmin() {
       email: adminEmail,
       password: adminPassword,
       name: adminName,
-      confirmPassword: adminPassword
+      confirmPassword: adminPassword,
     };
 
     const parsed = registerSchema.safeParse(adminData);
     if (!parsed.success) {
-      console.error('❌ Validation errors:');
+      console.error("❌ Validation errors:");
       parsed.error.issues.forEach((issue) => {
-        console.error(`- ${issue.path.join('.')}: ${issue.message}`);
+        console.error(`- ${issue.path.join(".")}: ${issue.message}`);
       });
       process.exit(1);
     }
@@ -70,22 +63,18 @@ async function seedAdmin() {
     }
 
     // Set admin role
-    await db
-      .update(user)
-      .set({ role: 'admin' })
-      .where(eq(user.email, adminEmail));
+    await db.update(user).set({ role: "admin" }).where(eq(user.email, adminEmail));
 
-    console.log('✅ Admin user created and role set successfully!');
+    console.log("✅ Admin user created and role set successfully!");
     console.log(`📧 Email: ${adminEmail}`);
     console.log(`👤 Name: ${adminName}`);
-    console.log('🔐 Password: [HIDDEN]');
-    
+    console.log("🔐 Password: [HIDDEN]");
   } catch (error) {
-    console.error('❌ Error during admin seeding:');
+    console.error("❌ Error during admin seeding:");
     if (error instanceof Error) {
       console.error(`   ${error.message}`);
     } else {
-      console.error('   An unexpected error occurred.');
+      console.error("   An unexpected error occurred.");
     }
     process.exit(1);
   }
@@ -94,10 +83,10 @@ async function seedAdmin() {
 // Run the seeding function
 seedAdmin()
   .then(() => {
-    console.log('🎉 Admin seeding completed successfully!');
+    console.log("🎉 Admin seeding completed successfully!");
     process.exit(0);
   })
   .catch((error) => {
-    console.error('💥 Admin seeding failed:', error);
+    console.error("💥 Admin seeding failed:", error);
     process.exit(1);
   });

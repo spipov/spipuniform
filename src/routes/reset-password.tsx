@@ -6,17 +6,15 @@ const resetPasswordSearchSchema = v.object({
   token: v.optional(v.string()),
 });
 
-export const Route = createFileRoute("/reset-password")(
-  {
-    component: ResetPasswordPage,
-    validateSearch: resetPasswordSearchSchema,
-    meta: () => [
-      {
-        title: "Reset Password",
-      },
-    ],
-  }
-);
+export const Route = createFileRoute("/reset-password")({
+  component: ResetPasswordPage,
+  validateSearch: resetPasswordSearchSchema,
+  meta: () => [
+    {
+      title: "Reset Password",
+    },
+  ],
+});
 
 function ResetPasswordPage() {
   return (

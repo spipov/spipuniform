@@ -10,22 +10,22 @@ export interface EmailOptions {
 
 export async function sendEmail(options: EmailOptions): Promise<void> {
   // TODO: Implement actual email sending logic
-  console.log('Email would be sent:', {
+  console.log("Email would be sent:", {
     to: options.to,
     subject: options.subject,
     // Don't log the full content in production
   });
-  
+
   // For development, we'll just log the email
   // In production, replace this with actual email service integration
 }
 
 export async function sendVerificationEmail(email: string, token: string): Promise<void> {
   const verificationUrl = `${process.env.BETTER_AUTH_URL}/verify-email?token=${token}`;
-  
+
   await sendEmail({
     to: email,
-    subject: 'Verify your email address',
+    subject: "Verify your email address",
     html: `
       <h1>Verify your email address</h1>
       <p>Click the link below to verify your email address:</p>
@@ -38,10 +38,10 @@ export async function sendVerificationEmail(email: string, token: string): Promi
 
 export async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
   const resetUrl = `${process.env.BETTER_AUTH_URL}/reset-password?token=${token}`;
-  
+
   await sendEmail({
     to: email,
-    subject: 'Reset your password',
+    subject: "Reset your password",
     html: `
       <h1>Reset your password</h1>
       <p>Click the link below to reset your password:</p>

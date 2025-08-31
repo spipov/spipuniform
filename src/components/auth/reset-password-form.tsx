@@ -7,13 +7,7 @@ import { useRouter, useSearch } from "@tanstack/react-router";
 import * as v from "valibot";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
@@ -22,11 +16,7 @@ import { toast } from "sonner";
 
 // Schema for requesting password reset
 const requestResetSchema = v.object({
-  email: v.pipe(
-    v.string(),
-    v.nonEmpty("Email is required"),
-    v.email("Invalid email format")
-  ),
+  email: v.pipe(v.string(), v.nonEmpty("Email is required"), v.email("Invalid email format")),
 });
 
 // Schema for resetting password with token
@@ -41,10 +31,7 @@ const resetPasswordSchema = v.pipe(
         "Password must contain at least one lowercase letter, one uppercase letter, and one number"
       )
     ),
-    confirmPassword: v.pipe(
-      v.string(),
-      v.nonEmpty("Password confirmation is required")
-    ),
+    confirmPassword: v.pipe(v.string(), v.nonEmpty("Password confirmation is required")),
   }),
   v.forward(
     v.partialCheck(
@@ -59,10 +46,7 @@ const resetPasswordSchema = v.pipe(
 type RequestResetSchema = v.InferInput<typeof requestResetSchema>;
 type ResetPasswordSchema = v.InferInput<typeof resetPasswordSchema>;
 
-export function ResetPasswordForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export function ResetPasswordForm({ className, ...props }: React.ComponentProps<"div">) {
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
@@ -158,11 +142,7 @@ export function ResetPasswordForm({
               <p className="text-sm text-muted-foreground mb-4">
                 Didn't receive the email? Check your spam folder or try again.
               </p>
-              <Button
-                variant="outline"
-                onClick={() => setEmailSent(false)}
-                className="w-full"
-              >
+              <Button variant="outline" onClick={() => setEmailSent(false)} className="w-full">
                 Try again
               </Button>
             </div>
@@ -176,9 +156,7 @@ export function ResetPasswordForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>
-            {hasToken ? "Reset your password" : "Forgot your password?"}
-          </CardTitle>
+          <CardTitle>{hasToken ? "Reset your password" : "Forgot your password?"}</CardTitle>
           <CardDescription>
             {hasToken
               ? "Enter your new password below"
@@ -208,9 +186,11 @@ export function ResetPasswordForm({
                       />
                       {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                         <p className="text-sm text-red-600">
-                          {field.state.meta.errors.map((error: any) => 
-                            typeof error === 'string' ? error : error.message || error
-                          ).join(", ")}
+                          {field.state.meta.errors
+                            .map((error: any) =>
+                              typeof error === "string" ? error : error.message || error
+                            )
+                            .join(", ")}
                         </p>
                       )}
                     </div>
@@ -229,9 +209,11 @@ export function ResetPasswordForm({
                       />
                       {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                         <p className="text-sm text-red-600">
-                          {field.state.meta.errors.map((error: any) => 
-                            typeof error === 'string' ? error : error.message || error
-                          ).join(", ")}
+                          {field.state.meta.errors
+                            .map((error: any) =>
+                              typeof error === "string" ? error : error.message || error
+                            )
+                            .join(", ")}
                         </p>
                       )}
                     </div>
@@ -266,9 +248,11 @@ export function ResetPasswordForm({
                       />
                       {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                         <p className="text-sm text-red-600">
-                          {field.state.meta.errors.map((error: any) => 
-                            typeof error === 'string' ? error : error.message || error
-                          ).join(", ")}
+                          {field.state.meta.errors
+                            .map((error: any) =>
+                              typeof error === "string" ? error : error.message || error
+                            )
+                            .join(", ")}
                         </p>
                       )}
                     </div>

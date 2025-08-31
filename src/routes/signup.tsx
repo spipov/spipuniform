@@ -1,16 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { RegisterForm } from "@/components/auth/register-form";
 
-export const Route = createFileRoute("/signup")(
-  {
-    component: SignupPage,
-    meta: () => [
-      {
-        title: "Sign Up",
-      },
-    ],
-  }
-);
+export const Route = createFileRoute("/signup")({
+  component: SignupPage,
+  meta: () => [
+    {
+      title: "Sign Up",
+    },
+  ],
+});
 
 function SignupPage() {
   return (

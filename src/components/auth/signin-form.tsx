@@ -6,13 +6,7 @@ import { valibotValidator } from "@tanstack/valibot-form-adapter";
 import { useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
@@ -20,13 +14,10 @@ import { signIn } from "@/lib/auth-client";
 import { loginSchema, type LoginSchema } from "@/schemas/auth";
 import { toast } from "sonner";
 
-export function SigninForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export function SigninForm({ className, ...props }: React.ComponentProps<"div">) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  
+
   const onSubmit = async (data: LoginSchema) => {
     setIsLoading(true);
     try {
@@ -67,9 +58,7 @@ export function SigninForm({
       <Card>
         <CardHeader>
           <CardTitle>Sign in to your account</CardTitle>
-          <CardDescription>
-            Enter your email and password to sign in
-          </CardDescription>
+          <CardDescription>Enter your email and password to sign in</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -95,9 +84,11 @@ export function SigninForm({
                     />
                     {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-red-600">
-                        {field.state.meta.errors.map((error: any) => 
-                          typeof error === 'string' ? error : error.message || error
-                        ).join(", ")}
+                        {field.state.meta.errors
+                          .map((error: any) =>
+                            typeof error === "string" ? error : error.message || error
+                          )
+                          .join(", ")}
                       </p>
                     )}
                   </div>
@@ -124,9 +115,11 @@ export function SigninForm({
                     />
                     {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-red-600">
-                        {field.state.meta.errors.map((error: any) => 
-                          typeof error === 'string' ? error : error.message || error
-                        ).join(", ")}
+                        {field.state.meta.errors
+                          .map((error: any) =>
+                            typeof error === "string" ? error : error.message || error
+                          )
+                          .join(", ")}
                       </p>
                     )}
                   </div>

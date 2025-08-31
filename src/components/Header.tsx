@@ -24,18 +24,14 @@ export default function Header() {
           <Link to="/demo/start/api-request">Start - API Request</Link>
         </div>
       </nav>
-      
+
       <div className="flex items-center gap-2">
         {session?.user ? (
           <>
             <span className="text-sm text-gray-600">
               Welcome, {session.user.name || session.user.email}
             </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSignOut}
-            >
+            <Button variant="outline" size="sm" onClick={handleSignOut}>
               Sign Out
             </Button>
           </>
@@ -47,9 +43,7 @@ export default function Header() {
               </Button>
             </Link>
             <Link to="/auth/signup">
-              <Button size="sm">
-                Sign Up
-              </Button>
+              <Button size="sm">Sign Up</Button>
             </Link>
           </>
         )}

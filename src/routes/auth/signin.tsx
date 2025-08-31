@@ -1,16 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SigninForm } from "@/components/auth/signin-form";
 
-export const Route = createFileRoute("/auth/signin")(
-  {
-    component: SigninPage,
-    meta: () => [
-      {
-        title: "Sign In",
-      },
-    ],
-  }
-);
+export const Route = createFileRoute("/auth/signin")({
+  component: SigninPage,
+  meta: () => [
+    {
+      title: "Sign In",
+    },
+  ],
+});
 
 function SigninPage() {
   return (

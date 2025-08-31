@@ -23,7 +23,9 @@ export const session = pgTable("session", {
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   ipAddress: text("ipAddress"),
   userAgent: text("userAgent"),
-  userId: text("userId").notNull().references(() => user.id),
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id),
   impersonatedBy: text("impersonatedBy"),
 });
 
@@ -31,7 +33,9 @@ export const account = pgTable("account", {
   id: text("id").primaryKey(),
   accountId: text("accountId").notNull(),
   providerId: text("providerId").notNull(),
-  userId: text("userId").notNull().references(() => user.id),
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id),
   accessToken: text("accessToken"),
   refreshToken: text("refreshToken"),
   idToken: text("idToken"),

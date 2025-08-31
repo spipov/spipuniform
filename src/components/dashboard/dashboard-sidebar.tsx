@@ -1,19 +1,20 @@
-import * as React from "react"
-import { LayoutDashboard, BarChart3, FileText, Settings } from "lucide-react"
-import { Link } from "@tanstack/react-router"
-import { UserLogoutCard } from "./user-logout-card"
+import type * as React from "react";
+import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { UserLogoutCard } from "./user-logout-card";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const dashboardNavigation = [
   {
@@ -36,7 +37,25 @@ const dashboardNavigation = [
     url: "/dashboard/settings",
     icon: Settings,
   },
-]
+];
+
+const userManagementNavigation = [
+  {
+    title: "Users",
+    url: "/dashboard/user-management/users",
+    icon: Users,
+  },
+  {
+    title: "Roles",
+    url: "/dashboard/user-management/roles",
+    icon: Shield,
+  },
+  {
+    title: "Permissions",
+    url: "/dashboard/user-management/permissions",
+    icon: Key,
+  },
+];
 
 export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -76,6 +95,32 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
             })}
           </SidebarMenu>
         </SidebarGroup>
+        <SidebarGroup className="dashboard-sidebar__user-management-group">
+          <SidebarGroupLabel className="dashboard-sidebar__group-label">
+            User Management
+          </SidebarGroupLabel>
+          <SidebarMenu className="dashboard-sidebar__user-management-menu">
+            {userManagementNavigation.map((item) => {
+              const Icon = item.icon;
+              return (
+                <SidebarMenuItem
+                  key={item.title}
+                  className="dashboard-sidebar__user-management-item"
+                >
+                  <SidebarMenuButton asChild className="dashboard-sidebar__user-management-button">
+                    <Link
+                      to={item.url}
+                      className="dashboard-sidebar__user-management-link font-medium"
+                    >
+                      <Icon className="dashboard-sidebar__user-management-icon size-4" />
+                      <span className="dashboard-sidebar__user-management-text">{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="dashboard-sidebar__footer">
         <SidebarMenu className="dashboard-sidebar__footer-menu">
@@ -86,5 +131,5 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
       </SidebarFooter>
       <SidebarRail className="dashboard-sidebar__rail" />
     </Sidebar>
-  )
+  );
 }

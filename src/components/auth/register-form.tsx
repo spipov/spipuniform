@@ -6,13 +6,7 @@ import { valibotValidator } from "@tanstack/valibot-form-adapter";
 import { useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
@@ -20,13 +14,10 @@ import { signUp } from "@/lib/auth-client";
 import { registerSchema, type RegisterSchema } from "@/schemas/auth";
 import { toast } from "sonner";
 
-export function RegisterForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export function RegisterForm({ className, ...props }: React.ComponentProps<"div">) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  
+
   const onSubmit = async (data: RegisterSchema) => {
     setIsLoading(true);
     try {
@@ -70,9 +61,7 @@ export function RegisterForm({
       <Card>
         <CardHeader>
           <CardTitle>Create an account</CardTitle>
-          <CardDescription>
-            Enter your information to create your account
-          </CardDescription>
+          <CardDescription>Enter your information to create your account</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -98,9 +87,11 @@ export function RegisterForm({
                     />
                     {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-red-600">
-                        {field.state.meta.errors.map((error: any) => 
-                          typeof error === 'string' ? error : error.message || error
-                        ).join(", ")}
+                        {field.state.meta.errors
+                          .map((error: any) =>
+                            typeof error === "string" ? error : error.message || error
+                          )
+                          .join(", ")}
                       </p>
                     )}
                   </div>
@@ -121,9 +112,11 @@ export function RegisterForm({
                     />
                     {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-red-600">
-                        {field.state.meta.errors.map((error: any) => 
-                          typeof error === 'string' ? error : error.message || error
-                        ).join(", ")}
+                        {field.state.meta.errors
+                          .map((error: any) =>
+                            typeof error === "string" ? error : error.message || error
+                          )
+                          .join(", ")}
                       </p>
                     )}
                   </div>
@@ -142,9 +135,11 @@ export function RegisterForm({
                     />
                     {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-red-600">
-                        {field.state.meta.errors.map((error: any) => 
-                          typeof error === 'string' ? error : error.message || error
-                        ).join(", ")}
+                        {field.state.meta.errors
+                          .map((error: any) =>
+                            typeof error === "string" ? error : error.message || error
+                          )
+                          .join(", ")}
                       </p>
                     )}
                   </div>
@@ -163,9 +158,11 @@ export function RegisterForm({
                     />
                     {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-red-600">
-                        {field.state.meta.errors.map((error: any) => 
-                          typeof error === 'string' ? error : error.message || error
-                        ).join(", ")}
+                        {field.state.meta.errors
+                          .map((error: any) =>
+                            typeof error === "string" ? error : error.message || error
+                          )
+                          .join(", ")}
                       </p>
                     )}
                   </div>

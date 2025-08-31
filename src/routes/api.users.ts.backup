@@ -1,0 +1,199 @@
+import { createServerFileRoute } from '@tanstack/react-start/server';
+import { db } from '~/db';
+import { users, roles } from '~/db/schema';
+import { eq, like, and, desc, asc, count, or, isNotNull, isNull } from 'drizzle-orm';
+import { userSearchSchema, createUserSchema, updateUserSchema } from '~/schemas/user-management';
+import { auth } from '~/lib/auth';
+import { scrypt, randomBytes } from 'crypto';
+import { promisify } from 'util';
+
+const scryptAsync = promisify(scrypt);
+import { z } from 'zod';
+
+export const ServerRoute = createServerFileRoute('/api/users').methods({
+  GET: async ({ request }) => {
+
+      try {
+        // Check authentication
+        const session = await auth.api.getSession({ headers: request.headers });
+        if (!session) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        // Parse query parameters
+        const url = new URL(request.url);
+        const searchParams = {
+          search: url.searchParams.get('search') || undefined,
+          role: url.searchParams.get('role') || undefined,
+          banned: url.searchParams.get('banned') ? url.searchParams.get('banned') === 'true' : undefined,
+          page: parseInt(url.searchParams.get('page') || '1'),
+          limit: parseInt(url.searchParams.get('limit') || '10'),
+          sortBy: url.searchParams.get('sortBy') || 'createdAt',
+          sortOrder: url.searchParams.get('sortOrder') || 'desc',
+        };
+
+        const validatedParams = userSearchSchema.parse(searchParams);
+        const { search, role, banned, page, limit, sortBy, sortOrder } = validatedParams;
+
+        // Build where conditions
+        const conditions = [];
+        if (search) {
+          conditions.push(
+            or(
+              like(users.name, `%${search}%`),
+              like(users.email, `%${search}%`)
+            )
+          );
+        }
+        if (role) {
+          conditions.push(eq(users.roleId, role));
+        }
+        if (banned !== undefined) {
+          conditions.push(banned ? isNotNull(users.bannedUntil) : isNull(users.bannedUntil));
+        }
+
+        const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+        // Get total count
+        const [totalResult] = await db
+          .select({ count: count() })
+          .from(users)
+          .where(whereClause);
+
+        // Get users with roles
+        const orderBy = sortOrder === 'asc' ? asc(users[sortBy as keyof typeof users]) : desc(users[sortBy as keyof typeof users]);
+        
+        const usersList = await db
+          .select({
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            color: users.color,
+            roleId: users.roleId,
+            bannedUntil: users.bannedUntil,
+            banReason: users.banReason,
+            createdAt: users.createdAt,
+            updatedAt: users.updatedAt,
+            role: {
+              id: roles.id,
+              name: roles.name,
+              color: roles.color,
+              permissions: roles.permissions,
+            },
+          })
+          .from(users)
+          .leftJoin(roles, eq(users.roleId, roles.id))
+          .where(whereClause)
+          .orderBy(orderBy)
+          .limit(limit)
+          .offset((page - 1) * limit);
+
+        return new Response(JSON.stringify({
+          users: usersList,
+          pagination: {
+            page,
+            limit,
+            total: totalResult.count,
+            pages: Math.ceil(totalResult.count / limit),
+          },
+        }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        return new Response(JSON.stringify({ error: 'Internal server error' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+  },
+
+  POST: async ({ request }) => {
+      try {
+        // Check authentication and permissions
+        const session = await auth.api.getSession({ headers: request.headers });
+        if (!session) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        // Check if user has admin role (simplified permission check)
+        const currentUser = await db
+          .select({
+            roleId: users.roleId,
+            role: {
+              id: roles.id,
+              name: roles.name,
+              permissions: roles.permissions,
+            },
+          })
+          .from(users)
+          .leftJoin(roles, eq(users.roleId, roles.id))
+          .where(eq(users.id, session.user.id))
+          .limit(1);
+
+        if (!currentUser[0] || !currentUser[0].role || currentUser[0].role.name !== 'admin') {
+          return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        const body = await request.json();
+        const validatedData = createUserSchema.parse(body);
+
+        // Check if email already exists
+        const existingUser = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.email, validatedData.email))
+          .limit(1);
+
+        if (existingUser.length > 0) {
+          return new Response(JSON.stringify({ error: 'Email already exists' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        // Hash password using scrypt
+        const salt = randomBytes(16).toString('hex');
+        const derivedKey = await scryptAsync(validatedData.password, salt, 64) as Buffer;
+        const hashedPassword = salt + ':' + derivedKey.toString('hex');
+
+        // Create user
+        const [newUser] = await db
+          .insert(users)
+          .values({
+            name: validatedData.name,
+            email: validatedData.email,
+            passwordHash: hashedPassword,
+            roleId: validatedData.roleId || null,
+            color: validatedData.color || '#3B82F6',
+          })
+          .returning();
+
+        return new Response(JSON.stringify({ user: newUser }), {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return new Response(JSON.stringify({ error: 'Validation error', details: error.errors }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        console.error('Error creating user:', error);
+        return new Response(JSON.stringify({ error: 'Internal server error' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+  }
+});
