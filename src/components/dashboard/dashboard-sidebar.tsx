@@ -1,0 +1,90 @@
+import * as React from "react"
+import { LayoutDashboard, BarChart3, FileText, Settings } from "lucide-react"
+import { Link } from "@tanstack/react-router"
+import { UserLogoutCard } from "./user-logout-card"
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from "@/components/ui/sidebar"
+
+const dashboardNavigation = [
+  {
+    title: "Overview",
+    url: "/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Analytics",
+    url: "/dashboard/analytics",
+    icon: BarChart3,
+  },
+  {
+    title: "Reports",
+    url: "/dashboard/reports",
+    icon: FileText,
+  },
+  {
+    title: "Settings",
+    url: "/dashboard/settings",
+    icon: Settings,
+  },
+]
+
+export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  return (
+    <Sidebar className="dashboard-sidebar" {...props}>
+      <SidebarHeader className="dashboard-sidebar__header">
+        <SidebarMenu className="dashboard-sidebar__header-menu">
+          <SidebarMenuItem className="dashboard-sidebar__header-menu-item">
+            <SidebarMenuButton size="lg" asChild className="dashboard-sidebar__header-button">
+              <Link to="/dashboard" className="dashboard-sidebar__header-link">
+                <div className="dashboard-sidebar__logo bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                  <LayoutDashboard className="dashboard-sidebar__logo-icon size-4" />
+                </div>
+                <div className="dashboard-sidebar__brand flex flex-col gap-0.5 leading-none">
+                  <span className="dashboard-sidebar__brand-title font-medium">Dashboard</span>
+                  <span className="dashboard-sidebar__brand-subtitle text-xs">Admin Panel</span>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent className="dashboard-sidebar__content">
+        <SidebarGroup className="dashboard-sidebar__nav-group">
+          <SidebarMenu className="dashboard-sidebar__nav-menu">
+            {dashboardNavigation.map((item) => {
+              const Icon = item.icon;
+              return (
+                <SidebarMenuItem key={item.title} className="dashboard-sidebar__nav-item">
+                  <SidebarMenuButton asChild className="dashboard-sidebar__nav-button">
+                    <Link to={item.url} className="dashboard-sidebar__nav-link font-medium">
+                      <Icon className="dashboard-sidebar__nav-icon size-4" />
+                      <span className="dashboard-sidebar__nav-text">{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarFooter className="dashboard-sidebar__footer">
+        <SidebarMenu className="dashboard-sidebar__footer-menu">
+          <SidebarMenuItem className="dashboard-sidebar__footer-menu-item">
+            <UserLogoutCard />
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+      <SidebarRail className="dashboard-sidebar__rail" />
+    </Sidebar>
+  )
+}
