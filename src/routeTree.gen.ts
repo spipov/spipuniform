@@ -23,10 +23,7 @@ import { Route as DashboardUserManagementRolesRouteImport } from './routes/dashb
 import { Route as DashboardUserManagementPermissionsRouteImport } from './routes/dashboard/user-management/permissions'
 import { ServerRoute as ApiUsersServerRouteImport } from './routes/api.users'
 import { ServerRoute as ApiRolesServerRouteImport } from './routes/api.roles'
-import { ServerRoute as ApiAuthGetSessionServerRouteImport } from './routes/api.auth.get-session'
 import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api.auth.$'
-import { ServerRoute as ApiAuthSignUpEmailServerRouteImport } from './routes/api.auth.sign-up.email'
-import { ServerRoute as ApiAuthSignInEmailServerRouteImport } from './routes/api.auth.sign-in.email'
 
 const rootServerRouteImport = createServerRootRoute()
 
@@ -93,28 +90,11 @@ const ApiRolesServerRoute = ApiRolesServerRouteImport.update({
   path: '/api/roles',
   getParentRoute: () => rootServerRouteImport,
 } as any)
-const ApiAuthGetSessionServerRoute = ApiAuthGetSessionServerRouteImport.update({
-  id: '/api/auth/get-session',
-  path: '/api/auth/get-session',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
 const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootServerRouteImport,
 } as any)
-const ApiAuthSignUpEmailServerRoute =
-  ApiAuthSignUpEmailServerRouteImport.update({
-    id: '/api/auth/sign-up/email',
-    path: '/api/auth/sign-up/email',
-    getParentRoute: () => rootServerRouteImport,
-  } as any)
-const ApiAuthSignInEmailServerRoute =
-  ApiAuthSignInEmailServerRouteImport.update({
-    id: '/api/auth/sign-in/email',
-    path: '/api/auth/sign-in/email',
-    getParentRoute: () => rootServerRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -202,61 +182,30 @@ export interface FileServerRoutesByFullPath {
   '/api/roles': typeof ApiRolesServerRoute
   '/api/users': typeof ApiUsersServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
-  '/api/auth/get-session': typeof ApiAuthGetSessionServerRoute
-  '/api/auth/sign-in/email': typeof ApiAuthSignInEmailServerRoute
-  '/api/auth/sign-up/email': typeof ApiAuthSignUpEmailServerRoute
 }
 export interface FileServerRoutesByTo {
   '/api/roles': typeof ApiRolesServerRoute
   '/api/users': typeof ApiUsersServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
-  '/api/auth/get-session': typeof ApiAuthGetSessionServerRoute
-  '/api/auth/sign-in/email': typeof ApiAuthSignInEmailServerRoute
-  '/api/auth/sign-up/email': typeof ApiAuthSignUpEmailServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/api/roles': typeof ApiRolesServerRoute
   '/api/users': typeof ApiUsersServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
-  '/api/auth/get-session': typeof ApiAuthGetSessionServerRoute
-  '/api/auth/sign-in/email': typeof ApiAuthSignInEmailServerRoute
-  '/api/auth/sign-up/email': typeof ApiAuthSignUpEmailServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths:
-    | '/api/roles'
-    | '/api/users'
-    | '/api/auth/$'
-    | '/api/auth/get-session'
-    | '/api/auth/sign-in/email'
-    | '/api/auth/sign-up/email'
+  fullPaths: '/api/roles' | '/api/users' | '/api/auth/$'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to:
-    | '/api/roles'
-    | '/api/users'
-    | '/api/auth/$'
-    | '/api/auth/get-session'
-    | '/api/auth/sign-in/email'
-    | '/api/auth/sign-up/email'
-  id:
-    | '__root__'
-    | '/api/roles'
-    | '/api/users'
-    | '/api/auth/$'
-    | '/api/auth/get-session'
-    | '/api/auth/sign-in/email'
-    | '/api/auth/sign-up/email'
+  to: '/api/roles' | '/api/users' | '/api/auth/$'
+  id: '__root__' | '/api/roles' | '/api/users' | '/api/auth/$'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
   ApiRolesServerRoute: typeof ApiRolesServerRoute
   ApiUsersServerRoute: typeof ApiUsersServerRoute
   ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
-  ApiAuthGetSessionServerRoute: typeof ApiAuthGetSessionServerRoute
-  ApiAuthSignInEmailServerRoute: typeof ApiAuthSignInEmailServerRoute
-  ApiAuthSignUpEmailServerRoute: typeof ApiAuthSignUpEmailServerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -349,32 +298,11 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiRolesServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
-    '/api/auth/get-session': {
-      id: '/api/auth/get-session'
-      path: '/api/auth/get-session'
-      fullPath: '/api/auth/get-session'
-      preLoaderRoute: typeof ApiAuthGetSessionServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/api/auth/sign-up/email': {
-      id: '/api/auth/sign-up/email'
-      path: '/api/auth/sign-up/email'
-      fullPath: '/api/auth/sign-up/email'
-      preLoaderRoute: typeof ApiAuthSignUpEmailServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/api/auth/sign-in/email': {
-      id: '/api/auth/sign-in/email'
-      path: '/api/auth/sign-in/email'
-      fullPath: '/api/auth/sign-in/email'
-      preLoaderRoute: typeof ApiAuthSignInEmailServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
   }
@@ -414,9 +342,6 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiRolesServerRoute: ApiRolesServerRoute,
   ApiUsersServerRoute: ApiUsersServerRoute,
   ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
-  ApiAuthGetSessionServerRoute: ApiAuthGetSessionServerRoute,
-  ApiAuthSignInEmailServerRoute: ApiAuthSignInEmailServerRoute,
-  ApiAuthSignUpEmailServerRoute: ApiAuthSignUpEmailServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)

@@ -30,7 +30,7 @@ export function SigninForm({ className, ...props }: React.ComponentProps<"div">)
         toast.error(result.error.message || "Failed to sign in");
       } else {
         toast.success("Successfully signed in!");
-        router.navigate({ to: "/" });
+        router.navigate({ to: "/dashboard" });
       }
     } catch (error) {
       toast.error("An unexpected error occurred");

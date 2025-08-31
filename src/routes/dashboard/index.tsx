@@ -71,32 +71,35 @@ function DashboardOverview() {
         <CardHeader className="dashboard__actions-card-header">
           <CardTitle className="dashboard__actions-card-title">Quick Actions</CardTitle>
           <CardDescription className="dashboard__actions-card-description">
-            Common tasks and shortcuts
+            Common management tasks and shortcuts
           </CardDescription>
         </CardHeader>
         <CardContent className="dashboard__actions-card-content">
           <div className="dashboard__actions-list flex flex-wrap gap-4">
-            <Button asChild className="dashboard__action-button dashboard__action-button--signin">
-              <Link to="/login" className="dashboard__action-link">
-                Sign In
+            <Button
+              asChild
+              className="dashboard__action-button dashboard__action-button--users"
+            >
+              <Link to="/dashboard/user-management/users" className="dashboard__action-link">
+                Manage Users
               </Link>
             </Button>
             <Button
               variant="outline"
               asChild
-              className="dashboard__action-button dashboard__action-button--signup"
+              className="dashboard__action-button dashboard__action-button--roles"
             >
-              <Link to="/signup" className="dashboard__action-link">
-                Sign Up
+              <Link to="/dashboard/user-management/roles" className="dashboard__action-link">
+                Manage Roles
               </Link>
             </Button>
             <Button
               variant="secondary"
               asChild
-              className="dashboard__action-button dashboard__action-button--admin"
+              className="dashboard__action-button dashboard__action-button--permissions"
             >
-              <Link to="/admin" className="dashboard__action-link">
-                Admin Panel
+              <Link to="/dashboard/user-management/permissions" className="dashboard__action-link">
+                Manage Permissions
               </Link>
             </Button>
           </div>

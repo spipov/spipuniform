@@ -147,10 +147,10 @@ export function PermissionsPage() {
     permissions.forEach((perm) => {
       const category =
         perm.key
-          .split(/(?=[A-Z])/)
-          .slice(0, -1)
-          .join(" ")
-          .toLowerCase() || "general";
+          ?.split(/(?=[A-Z])/)
+          ?.slice(0, -1)
+          ?.join(" ")
+          ?.toLowerCase() || "general";
       if (!groups[category]) {
         groups[category] = [];
       }

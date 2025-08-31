@@ -4,10 +4,7 @@ import { user, roles } from "@/db/schema";
 import { eq, like, and, desc, asc, count, or, isNotNull, isNull } from "drizzle-orm";
 import { userSearchSchema, createUserSchema, updateUserSchema } from "@/schemas/user-management";
 import { auth } from "@/lib/auth";
-import { scrypt, randomBytes } from "crypto";
-import { promisify } from "util";
-
-const scryptAsync = promisify(scrypt);
+// Dynamic imports will be used inside functions to avoid SSR issues
 import * as v from "valibot";
 
 export const ServerRoute = createServerFileRoute("/api/users").methods({
@@ -147,8 +144,12 @@ export const ServerRoute = createServerFileRoute("/api/users").methods({
         });
       }
 
-      // Hash password using scrypt
-      const salt = randomBytes(16).toString("hex");
+      // Hash password using scrypt with dynamic imports
+      const crypto = await import("node:crypto");
+      const { promisify } = await import("node:util");
+      const scryptAsync = promisify(crypto.scrypt);
+      
+      const salt = crypto.randomBytes(16).toString("hex");
       const derivedKey = (await scryptAsync(validatedData.password, salt, 64)) as Buffer;
       const hashedPassword = salt + ":" + derivedKey.toString("hex");
 
