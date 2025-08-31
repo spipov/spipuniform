@@ -11,13 +11,47 @@
 import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SigninRouteImport } from './routes/signin'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo.start.server-funcs'
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo.start.api-request'
 import { ServerRoute as ApiDemoNamesServerRouteImport } from './routes/api.demo-names'
+import { ServerRoute as ApiAuthGetSessionServerRouteImport } from './routes/api.auth.get-session'
+import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api.auth.$'
+import { ServerRoute as ApiAuthSignUpEmailServerRouteImport } from './routes/api.auth.sign-up.email'
+import { ServerRoute as ApiAuthSignInEmailServerRouteImport } from './routes/api.auth.sign-in.email'
 
 const rootServerRouteImport = createServerRootRoute()
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SigninRoute = SigninRouteImport.update({
+  id: '/signin',
+  path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -38,60 +72,194 @@ const ApiDemoNamesServerRoute = ApiDemoNamesServerRouteImport.update({
   path: '/api/demo-names',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiAuthGetSessionServerRoute = ApiAuthGetSessionServerRouteImport.update({
+  id: '/api/auth/get-session',
+  path: '/api/auth/get-session',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiAuthSignUpEmailServerRoute =
+  ApiAuthSignUpEmailServerRouteImport.update({
+    id: '/api/auth/sign-up/email',
+    path: '/api/auth/sign-up/email',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiAuthSignInEmailServerRoute =
+  ApiAuthSignInEmailServerRouteImport.update({
+    id: '/api/auth/sign-in/email',
+    path: '/api/auth/sign-in/email',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demo/start/api-request' | '/demo/start/server-funcs'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/reset-password'
+    | '/signin'
+    | '/signup'
+    | '/demo/start/api-request'
+    | '/demo/start/server-funcs'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo/start/api-request' | '/demo/start/server-funcs'
-  id: '__root__' | '/' | '/demo/start/api-request' | '/demo/start/server-funcs'
+  to:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/reset-password'
+    | '/signin'
+    | '/signup'
+    | '/demo/start/api-request'
+    | '/demo/start/server-funcs'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/reset-password'
+    | '/signin'
+    | '/signup'
+    | '/demo/start/api-request'
+    | '/demo/start/server-funcs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  LoginRoute: typeof LoginRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  SigninRoute: typeof SigninRoute
+  SignupRoute: typeof SignupRoute
   DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
   DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute
 }
 export interface FileServerRoutesByFullPath {
   '/api/demo-names': typeof ApiDemoNamesServerRoute
+  '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/auth/get-session': typeof ApiAuthGetSessionServerRoute
+  '/api/auth/sign-in/email': typeof ApiAuthSignInEmailServerRoute
+  '/api/auth/sign-up/email': typeof ApiAuthSignUpEmailServerRoute
 }
 export interface FileServerRoutesByTo {
   '/api/demo-names': typeof ApiDemoNamesServerRoute
+  '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/auth/get-session': typeof ApiAuthGetSessionServerRoute
+  '/api/auth/sign-in/email': typeof ApiAuthSignInEmailServerRoute
+  '/api/auth/sign-up/email': typeof ApiAuthSignUpEmailServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/api/demo-names': typeof ApiDemoNamesServerRoute
+  '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/auth/get-session': typeof ApiAuthGetSessionServerRoute
+  '/api/auth/sign-in/email': typeof ApiAuthSignInEmailServerRoute
+  '/api/auth/sign-up/email': typeof ApiAuthSignUpEmailServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/api/demo-names'
+  fullPaths:
+    | '/api/demo-names'
+    | '/api/auth/$'
+    | '/api/auth/get-session'
+    | '/api/auth/sign-in/email'
+    | '/api/auth/sign-up/email'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/api/demo-names'
-  id: '__root__' | '/api/demo-names'
+  to:
+    | '/api/demo-names'
+    | '/api/auth/$'
+    | '/api/auth/get-session'
+    | '/api/auth/sign-in/email'
+    | '/api/auth/sign-up/email'
+  id:
+    | '__root__'
+    | '/api/demo-names'
+    | '/api/auth/$'
+    | '/api/auth/get-session'
+    | '/api/auth/sign-in/email'
+    | '/api/auth/sign-up/email'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
   ApiDemoNamesServerRoute: typeof ApiDemoNamesServerRoute
+  ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
+  ApiAuthGetSessionServerRoute: typeof ApiAuthGetSessionServerRoute
+  ApiAuthSignInEmailServerRoute: typeof ApiAuthSignInEmailServerRoute
+  ApiAuthSignUpEmailServerRoute: typeof ApiAuthSignUpEmailServerRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signin': {
+      id: '/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof SigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -124,11 +292,44 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiDemoNamesServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/auth/get-session': {
+      id: '/api/auth/get-session'
+      path: '/api/auth/get-session'
+      fullPath: '/api/auth/get-session'
+      preLoaderRoute: typeof ApiAuthGetSessionServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/sign-up/email': {
+      id: '/api/auth/sign-up/email'
+      path: '/api/auth/sign-up/email'
+      fullPath: '/api/auth/sign-up/email'
+      preLoaderRoute: typeof ApiAuthSignUpEmailServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/sign-in/email': {
+      id: '/api/auth/sign-in/email'
+      path: '/api/auth/sign-in/email'
+      fullPath: '/api/auth/sign-in/email'
+      preLoaderRoute: typeof ApiAuthSignInEmailServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  LoginRoute: LoginRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  SigninRoute: SigninRoute,
+  SignupRoute: SignupRoute,
   DemoStartApiRequestRoute: DemoStartApiRequestRoute,
   DemoStartServerFuncsRoute: DemoStartServerFuncsRoute,
 }
@@ -137,6 +338,10 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
   ApiDemoNamesServerRoute: ApiDemoNamesServerRoute,
+  ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
+  ApiAuthGetSessionServerRoute: ApiAuthGetSessionServerRoute,
+  ApiAuthSignInEmailServerRoute: ApiAuthSignInEmailServerRoute,
+  ApiAuthSignUpEmailServerRoute: ApiAuthSignUpEmailServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)

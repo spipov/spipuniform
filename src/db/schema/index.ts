@@ -1,6 +1,9 @@
 import { pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
-// Example users table
+// Better Auth tables
+export * from "./auth";
+
+// Example users table (keeping for reference, but Better Auth uses its own user table)
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
@@ -18,9 +21,3 @@ export const posts = pgTable("posts", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
-
-// Export all tables for easy access
-export const schema = {
-  users,
-  posts,
-};

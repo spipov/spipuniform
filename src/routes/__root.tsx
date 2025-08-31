@@ -1,9 +1,22 @@
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
+import { Toaster } from "sonner";
 import appCss from "../app/styles/app.css?url";
 
 import Header from "../components/Header";
+
+function NotFound() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+      <h1 className="text-4xl font-bold text-gray-900 mb-4">404</h1>
+      <p className="text-lg text-gray-600 mb-6">Page not found</p>
+      <a href="/" className="text-blue-600 hover:text-blue-800 underline">
+        Go back home
+      </a>
+    </div>
+  );
+}
 
 export const Route = createRootRoute({
   head: () => ({
@@ -27,6 +40,7 @@ export const Route = createRootRoute({
     ],
   }),
 
+  notFoundComponent: NotFound,
   shellComponent: RootDocument,
 });
 
@@ -39,17 +53,20 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <Header />
         {children}
-        <TanStackDevtools
-          config={{
-            position: "bottom-left",
-          }}
-          plugins={[
-            {
-              name: "Tanstack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
+        <Toaster richColors position="top-right" />
+        {process.env.NODE_ENV === "development" && (
+          <TanStackDevtools
+            config={{
+              position: "bottom-left",
+            }}
+            plugins={[
+              {
+                name: "Tanstack Router",
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+            ]}
+          />
+        )}
         <Scripts />
       </body>
     </html>

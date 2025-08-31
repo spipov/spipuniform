@@ -1,0 +1,29 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
+import { ResetPasswordForm } from "@/components/auth/reset-password-form";
+
+const resetPasswordSearchSchema = z.object({
+  token: z.string().optional(),
+});
+
+export const Route = createFileRoute("/reset-password")(
+  {
+    component: ResetPasswordPage,
+    validateSearch: resetPasswordSearchSchema,
+    meta: () => [
+      {
+        title: "Reset Password",
+      },
+    ],
+  }
+);
+
+function ResetPasswordPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <ResetPasswordForm />
+      </div>
+    </div>
+  );
+}
