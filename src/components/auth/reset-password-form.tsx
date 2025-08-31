@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "@tanstack/react-form";
+import { valibotValidator } from "@tanstack/valibot-form-adapter";
 import { useRouter, useSearch } from "@tanstack/react-router";
-import { z } from "zod";
+import * as v from "valibot";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,33 +15,49 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
 // Schema for requesting password reset
-const requestResetSchema = z.object({
-  email: z.string().min(1, "Email is required").email("Invalid email format"),
+const requestResetSchema = v.object({
+  email: v.pipe(
+    v.string(),
+    v.nonEmpty("Email is required"),
+    v.email("Invalid email format")
+  ),
 });
 
 // Schema for resetting password with token
-const resetPasswordSchema = z.object({
-  password: z
-    .string()
-    .min(1, "Password is required")
-    .min(8, "Password must be at least 8 characters")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain at least one lowercase letter, one uppercase letter, and one number"
+const resetPasswordSchema = v.pipe(
+  v.object({
+    password: v.pipe(
+      v.string(),
+      v.nonEmpty("Password is required"),
+      v.minLength(8, "Password must be at least 8 characters"),
+      v.regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        "Password must contain at least one lowercase letter, one uppercase letter, and one number"
+      )
     ),
-  confirmPassword: z.string().min(1, "Password confirmation is required"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+    confirmPassword: v.pipe(
+      v.string(),
+      v.nonEmpty("Password confirmation is required")
+    ),
+  }),
+  v.forward(
+    v.partialCheck(
+      [["password"], ["confirmPassword"]],
+      (input) => input.password === input.confirmPassword,
+      "Passwords do not match"
+    ),
+    ["confirmPassword"]
+  )
+);
 
-type RequestResetSchema = z.infer<typeof requestResetSchema>;
-type ResetPasswordSchema = z.infer<typeof resetPasswordSchema>;
+type RequestResetSchema = v.InferInput<typeof requestResetSchema>;
+type ResetPasswordSchema = v.InferInput<typeof resetPasswordSchema>;
 
 export function ResetPasswordForm({
   className,
@@ -53,12 +69,31 @@ export function ResetPasswordForm({
   const search = useSearch({ from: "/auth/reset-password" }) as { token?: string };
   const hasToken = !!search.token;
 
-  const requestForm = useForm<RequestResetSchema>({
-    resolver: zodResolver(requestResetSchema),
+  const requestForm = useForm({
+    defaultValues: {
+      email: "",
+    },
+    onSubmit: async ({ value }) => {
+      await onRequestReset(value);
+    },
+    validatorAdapter: valibotValidator(),
+    validators: {
+      onChange: requestResetSchema,
+    },
   });
 
-  const resetForm = useForm<ResetPasswordSchema>({
-    resolver: zodResolver(resetPasswordSchema),
+  const resetForm = useForm({
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+    onSubmit: async ({ value }) => {
+      await onResetPassword(value);
+    },
+    validatorAdapter: valibotValidator(),
+    validators: {
+      onChange: resetPasswordSchema,
+    },
   });
 
   const onRequestReset = async (data: RequestResetSchema) => {
@@ -152,59 +187,93 @@ export function ResetPasswordForm({
         </CardHeader>
         <CardContent>
           {hasToken ? (
-            <form onSubmit={resetForm.handleSubmit(onResetPassword)}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                resetForm.handleSubmit();
+              }}
+            >
               <div className="flex flex-col gap-6">
-                <div className="grid gap-3">
-                  <Label htmlFor="password">New Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    {...resetForm.register("password")}
-                    disabled={isLoading}
-                  />
-                  {resetForm.formState.errors.password && (
-                    <p className="text-sm text-red-600">
-                      {resetForm.formState.errors.password.message}
-                    </p>
+                <resetForm.Field name="password">
+                  {(field) => (
+                    <div className="grid gap-3">
+                      <Label htmlFor="password">New Password</Label>
+                      <PasswordInput
+                        id="password"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onBlur={field.handleBlur}
+                        disabled={isLoading}
+                      />
+                      {field.state.meta.errors && field.state.meta.errors.length > 0 && (
+                        <p className="text-sm text-red-600">
+                          {field.state.meta.errors.map((error: any) => 
+                            typeof error === 'string' ? error : error.message || error
+                          ).join(", ")}
+                        </p>
+                      )}
+                    </div>
                   )}
-                </div>
-                <div className="grid gap-3">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    {...resetForm.register("confirmPassword")}
-                    disabled={isLoading}
-                  />
-                  {resetForm.formState.errors.confirmPassword && (
-                    <p className="text-sm text-red-600">
-                      {resetForm.formState.errors.confirmPassword.message}
-                    </p>
+                </resetForm.Field>
+                <resetForm.Field name="confirmPassword">
+                  {(field) => (
+                    <div className="grid gap-3">
+                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                      <PasswordInput
+                        id="confirmPassword"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onBlur={field.handleBlur}
+                        disabled={isLoading}
+                      />
+                      {field.state.meta.errors && field.state.meta.errors.length > 0 && (
+                        <p className="text-sm text-red-600">
+                          {field.state.meta.errors.map((error: any) => 
+                            typeof error === 'string' ? error : error.message || error
+                          ).join(", ")}
+                        </p>
+                      )}
+                    </div>
                   )}
-                </div>
+                </resetForm.Field>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Resetting password..." : "Reset password"}
                 </Button>
               </div>
             </form>
           ) : (
-            <form onSubmit={requestForm.handleSubmit(onRequestReset)}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                requestForm.handleSubmit();
+              }}
+            >
               <div className="flex flex-col gap-6">
-                <div className="grid gap-3">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    {...requestForm.register("email")}
-                    disabled={isLoading}
-                  />
-                  {requestForm.formState.errors.email && (
-                    <p className="text-sm text-red-600">
-                      {requestForm.formState.errors.email.message}
-                    </p>
+                <requestForm.Field name="email">
+                  {(field) => (
+                    <div className="grid gap-3">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="m@example.com"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onBlur={field.handleBlur}
+                        disabled={isLoading}
+                      />
+                      {field.state.meta.errors && field.state.meta.errors.length > 0 && (
+                        <p className="text-sm text-red-600">
+                          {field.state.meta.errors.map((error: any) => 
+                            typeof error === 'string' ? error : error.message || error
+                          ).join(", ")}
+                        </p>
+                      )}
+                    </div>
                   )}
-                </div>
+                </requestForm.Field>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Sending reset email..." : "Send reset email"}
                 </Button>

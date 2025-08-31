@@ -1,39 +1,56 @@
-import { z } from 'zod';
+import * as v from 'valibot';
 
 // Registration schema for user validation
-export const registerSchema = z.object({
-  email: z
-    .string()
-    .min(1, 'Email is required')
-    .email('Invalid email format'),
-  name: z
-    .string()
-    .min(1, 'Name is required')
-    .min(2, 'Name must be at least 2 characters')
-    .max(50, 'Name must be less than 50 characters'),
-  password: z
-    .string()
-    .min(1, 'Password is required')
-    .min(8, 'Password must be at least 8 characters')
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      'Password must contain at least one lowercase letter, one uppercase letter, and one number'
+export const registerSchema = v.pipe(
+  v.object({
+    email: v.pipe(
+      v.string(),
+      v.nonEmpty('Email is required'),
+      v.email('Invalid email format')
     ),
-  confirmPassword: z.string().min(1, 'Password confirmation is required'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
+    name: v.pipe(
+      v.string(),
+      v.nonEmpty('Name is required'),
+      v.minLength(2, 'Name must be at least 2 characters'),
+      v.maxLength(50, 'Name must be less than 50 characters')
+    ),
+    password: v.pipe(
+      v.string(),
+      v.nonEmpty('Password is required'),
+      v.minLength(8, 'Password must be at least 8 characters'),
+      v.regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'Password must contain at least one lowercase letter, one uppercase letter, and one number'
+      )
+    ),
+    confirmPassword: v.pipe(
+      v.string(),
+      v.nonEmpty('Password confirmation is required')
+    ),
+  }),
+  v.forward(
+    v.partialCheck(
+      [['password'], ['confirmPassword']],
+      (input) => input.password === input.confirmPassword,
+      'Passwords do not match'
+    ),
+    ['confirmPassword']
+  )
+);
 
-export type RegisterSchema = z.infer<typeof registerSchema>;
+export type RegisterSchema = v.InferInput<typeof registerSchema>;
 
 // Login schema
-export const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, 'Email is required')
-    .email('Invalid email format'),
-  password: z.string().min(1, 'Password is required'),
+export const loginSchema = v.object({
+  email: v.pipe(
+    v.string(),
+    v.nonEmpty('Email is required'),
+    v.email('Invalid email format')
+  ),
+  password: v.pipe(
+    v.string(),
+    v.nonEmpty('Password is required')
+  ),
 });
 
-export type LoginSchema = z.infer<typeof loginSchema>;
+export type LoginSchema = v.InferInput<typeof loginSchema>;

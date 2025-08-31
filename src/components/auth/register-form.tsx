@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "@tanstack/react-form";
+import { valibotValidator } from "@tanstack/valibot-form-adapter";
 import { useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { signUp } from "@/lib/auth-client";
 import { registerSchema, type RegisterSchema } from "@/schemas/auth";
@@ -26,14 +27,6 @@ export function RegisterForm({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterSchema>({
-    resolver: zodResolver(registerSchema),
-  });
-
   const onSubmit = async (data: RegisterSchema) => {
     setIsLoading(true);
     try {
@@ -56,6 +49,22 @@ export function RegisterForm({
     }
   };
 
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    onSubmit: async ({ value }) => {
+      await onSubmit(value);
+    },
+    validatorAdapter: valibotValidator(),
+    validators: {
+      onChange: registerSchema,
+    },
+  });
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -66,58 +75,102 @@ export function RegisterForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+          >
             <div className="flex flex-col gap-6">
-              <div className="grid gap-3">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="John Doe"
-                  {...register("name")}
-                  disabled={isLoading}
-                />
-                {errors.name && (
-                  <p className="text-sm text-red-600">{errors.name.message}</p>
+              <form.Field name="name">
+                {(field) => (
+                  <div className="grid gap-3">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="John Doe"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      disabled={isLoading}
+                    />
+                    {field.state.meta.errors && field.state.meta.errors.length > 0 && (
+                      <p className="text-sm text-red-600">
+                        {field.state.meta.errors.map((error: any) => 
+                          typeof error === 'string' ? error : error.message || error
+                        ).join(", ")}
+                      </p>
+                    )}
+                  </div>
                 )}
-              </div>
-              <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  {...register("email")}
-                  disabled={isLoading}
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-600">{errors.email.message}</p>
+              </form.Field>
+              <form.Field name="email">
+                {(field) => (
+                  <div className="grid gap-3">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="m@example.com"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      disabled={isLoading}
+                    />
+                    {field.state.meta.errors && field.state.meta.errors.length > 0 && (
+                      <p className="text-sm text-red-600">
+                        {field.state.meta.errors.map((error: any) => 
+                          typeof error === 'string' ? error : error.message || error
+                        ).join(", ")}
+                      </p>
+                    )}
+                  </div>
                 )}
-              </div>
-              <div className="grid gap-3">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  {...register("password")}
-                  disabled={isLoading}
-                />
-                {errors.password && (
-                  <p className="text-sm text-red-600">{errors.password.message}</p>
+              </form.Field>
+              <form.Field name="password">
+                {(field) => (
+                  <div className="grid gap-3">
+                    <Label htmlFor="password">Password</Label>
+                    <PasswordInput
+                      id="password"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      disabled={isLoading}
+                    />
+                    {field.state.meta.errors && field.state.meta.errors.length > 0 && (
+                      <p className="text-sm text-red-600">
+                        {field.state.meta.errors.map((error: any) => 
+                          typeof error === 'string' ? error : error.message || error
+                        ).join(", ")}
+                      </p>
+                    )}
+                  </div>
                 )}
-              </div>
-              <div className="grid gap-3">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  {...register("confirmPassword")}
-                  disabled={isLoading}
-                />
-                {errors.confirmPassword && (
-                  <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
+              </form.Field>
+              <form.Field name="confirmPassword">
+                {(field) => (
+                  <div className="grid gap-3">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <PasswordInput
+                      id="confirmPassword"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      disabled={isLoading}
+                    />
+                    {field.state.meta.errors && field.state.meta.errors.length > 0 && (
+                      <p className="text-sm text-red-600">
+                        {field.state.meta.errors.map((error: any) => 
+                          typeof error === 'string' ? error : error.message || error
+                        ).join(", ")}
+                      </p>
+                    )}
+                  </div>
                 )}
-              </div>
+              </form.Field>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Creating account..." : "Create account"}
               </Button>

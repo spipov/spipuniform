@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
+import * as v from "valibot";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 
-const resetPasswordSearchSchema = z.object({
-  token: z.string().optional(),
+const resetPasswordSearchSchema = v.object({
+  token: v.optional(v.string()),
 });
 
 export const Route = createFileRoute("/reset-password")(
