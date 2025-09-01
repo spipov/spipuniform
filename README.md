@@ -1,290 +1,342 @@
-Welcome to your new TanStack app! 
+# SpipBoiler - Better Auth Authentication System
 
-# Getting Started
+A modern full-stack application built with React, TanStack Start, and Better Auth for authentication.
 
-To run this application:
+## 🔐 Authentication System Overview
+
+This project uses [Better Auth](https://www.better-auth.com/) - a comprehensive authentication library that provides:
+
+- **Email/Password Authentication** with secure password hashing (scrypt)
+- **Session Management** with secure HTTP-only cookies
+- **Role-Based Access Control (RBAC)** with admin and user roles
+- **Database Integration** via Drizzle ORM with PostgreSQL
+- **Type Safety** with full TypeScript support
+- **Server-Side Rendering** compatibility
+
+## 🏗️ Architecture
+
+### Authentication Flow
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Client App    │───▶│   Better Auth    │───▶│   PostgreSQL    │
+│  (React/TSX)    │    │   Server API     │    │   Database      │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+        │                        │                        │
+        │                        │                        │
+        ▼                        ▼                        ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ Auth Client     │    │ Session Cookies  │    │ User & Session  │
+│ (better-auth/   │    │ (HTTP-only)      │    │ Tables          │
+│  react)         │    │                  │    │                 │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### Key Components
+
+1. **Server-Side Auth Handler** (`/src/lib/auth.ts`)
+   - Configures Better Auth with Drizzle adapter
+   - Handles all authentication endpoints
+   - Manages session creation and validation
+
+2. **Client-Side Auth Client** (`/src/lib/auth-client.ts`)
+   - React hooks for authentication state
+   - Methods for sign in/up/out operations
+   - Admin client for role management
+
+3. **Database Schema** (`/src/db/schema/auth.ts`)
+   - Better Auth required tables (user, session, account, verification)
+   - Custom role field in user table
+   - Proper indexing and constraints
+
+## 📊 Database Schema
+
+### User Table
+```sql
+CREATE TABLE "user" (
+  "id" text PRIMARY KEY,
+  "name" text NOT NULL,
+  "email" text NOT NULL UNIQUE,
+  "emailVerified" boolean NOT NULL DEFAULT false,
+  "image" text,
+  "role" text DEFAULT 'user',
+  "banned" boolean DEFAULT false,
+  "banReason" text,
+  "banExpires" timestamp,
+  "createdAt" timestamp NOT NULL DEFAULT now(),
+  "updatedAt" timestamp NOT NULL DEFAULT now()
+);
+```
+
+### Session Table
+```sql
+CREATE TABLE "session" (
+  "id" text PRIMARY KEY,
+  "expiresAt" timestamp NOT NULL,
+  "token" text NOT NULL UNIQUE,
+  "createdAt" timestamp NOT NULL DEFAULT now(),
+  "updatedAt" timestamp NOT NULL DEFAULT now(),
+  "ipAddress" text,
+  "userAgent" text,
+  "userId" text NOT NULL REFERENCES "user"("id") ON DELETE CASCADE
+);
+```
+
+### Account Table (OAuth providers)
+```sql
+CREATE TABLE "account" (
+  "id" text PRIMARY KEY,
+  "accountId" text NOT NULL,
+  "providerId" text NOT NULL,
+  "userId" text NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
+  "accessToken" text,
+  "refreshToken" text,
+  "idToken" text,
+  "accessTokenExpiresAt" timestamp,
+  "refreshTokenExpiresAt" timestamp,
+  "scope" text,
+  "password" text,
+  "createdAt" timestamp NOT NULL DEFAULT now(),
+  "updatedAt" timestamp NOT NULL DEFAULT now()
+);
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+ with pnpm
+- PostgreSQL database
+- Environment variables configured
+
+### Environment Setup
 
 ```bash
+# Copy environment template
+cp .env.example .env
+
+# Configure required variables
+DATABASE_URL="postgresql://username:password@localhost:5432/spipboiler"
+BETTER_AUTH_SECRET="your-secret-key-here"
+BETTER_AUTH_URL="http://localhost:3100"
+```
+
+### Database Setup
+
+```bash
+# Install dependencies
 pnpm install
-pnpm start
+
+# Reset database and run migrations
+pnpm db:reset
+
+# Seed admin user
+pnpm seed-admin
 ```
 
-# Building For Production
-
-To build this application for production:
+### Development Server
 
 ```bash
-pnpm build
+# Start development server
+pnpm dev
+
+# Server runs on http://localhost:3100
 ```
 
-## Testing
+## 🔑 Admin User Setup
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+### Default Admin Credentials
 
-```bash
-pnpm test
-```
+After running `pnpm seed-admin`, you can log in with:
 
-## Styling
+- **Email**: `admin@example.com`
+- **Password**: `Admin123`
+- **Role**: `admin`
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+### Seeding Process
 
+The seeding script (`scripts/seed-better-auth.ts`) uses Better Auth's server-side API to:
 
+1. Check for existing admin user
+2. Create new user via Better Auth's sign-up handler (ensures proper password hashing)
+3. Update user role to "admin"
+4. Handle existing users gracefully
 
-
-## Routing
-This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add another a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import { Link } from "@tanstack/react-router";
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-const peopleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/people",
-  loader: async () => {
-    const response = await fetch("https://swapi.dev/api/people");
-    return response.json() as Promise<{
-      results: {
-        name: string;
-      }[];
-    }>;
-  },
-  component: () => {
-    const data = peopleRoute.useLoaderData();
-    return (
-      <ul>
-        {data.results.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    );
-  },
+```typescript
+// Server-side seeding approach
+const mockRequest = new Request(`${baseURL}/api/auth/sign-up/email`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email, password, name })
 });
+
+const response = await auth.handler(mockRequest);
 ```
 
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
+## 🛡️ API Endpoints
 
-### React-Query
+### Authentication Endpoints
 
-React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
+All authentication endpoints are handled by Better Auth at `/api/auth/*`:
 
-First add your dependencies:
+- `POST /api/auth/sign-up/email` - User registration
+- `POST /api/auth/sign-in/email` - User login
+- `POST /api/auth/sign-out` - User logout
+- `GET /api/auth/session` - Get current session
+- `POST /api/auth/reset-password` - Password reset
+
+### Protected Routes
+
+Routes requiring authentication:
+
+- `/dashboard` - User dashboard (authenticated users)
+- `/admin` - Admin panel (admin role required)
+- `/dashboard/user-management` - User management (admin role required)
+
+### Session Validation
+
+```typescript
+// Server-side session validation
+import { auth } from "@/lib/auth";
+
+export const getSession = async (request: Request) => {
+  const session = await auth.api.getSession({ headers: request.headers });
+  return session;
+};
+```
+
+## 🔒 Security Features
+
+### Password Security
+- **Scrypt hashing** - Industry-standard password hashing
+- **Salt generation** - Unique salt per password
+- **Minimum requirements** - 8+ characters, complexity validation
+
+### Session Security
+- **HTTP-only cookies** - Prevents XSS attacks
+- **Secure flag** - HTTPS-only in production
+- **SameSite protection** - CSRF protection
+- **Session expiration** - Configurable timeout
+
+### Role-Based Access Control
+- **Default role**: `user`
+- **Admin roles**: `admin`
+- **Route protection** - Server-side validation
+- **UI conditional rendering** - Based on user role
+
+## 🚨 Critical Authentication Lessons Learned
+
+### Previous Issues & Solutions
+
+Based on the analysis of `Next-step.md`, several critical authentication issues were identified and resolved:
+
+#### 1. Password Hashing Mismatch
+**Problem**: Manual scrypt implementation didn't match Better Auth's internal hashing
+**Solution**: Use Better Auth's server-side API for user creation
+
+#### 2. Client-Side vs Server-Side APIs
+**Problem**: Using client-side auth APIs in Node.js server environment
+**Solution**: Use `auth.handler()` for server-side operations
+
+#### 3. Database Schema Conflicts
+**Problem**: Custom user tables conflicting with Better Auth's expected schema
+**Solution**: Use Better Auth's standard schema with custom fields
+
+#### 4. Session Management Issues
+**Problem**: Manual session handling causing authentication failures
+**Solution**: Let Better Auth handle all session operations
+
+### Authentication Best Practices
+
+1. **Always use Better Auth's APIs** - Don't implement custom auth logic
+2. **Server-side for seeding** - Use `auth.handler()` for server operations
+3. **Client-side for UI** - Use React hooks for frontend auth state
+4. **Validate on both sides** - Server validation + client UX
+5. **Test authentication flow** - Verify login/logout/session persistence
+
+## 🧪 Testing Authentication
+
+### Manual Testing
 
 ```bash
-pnpm add @tanstack/react-query @tanstack/react-query-devtools
+# Test login endpoint
+curl -X POST http://localhost:3100/api/auth/sign-in/email \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"Admin123"}'
+
+# Test session endpoint
+curl -X GET http://localhost:3100/api/auth/session \
+  -H "Cookie: better-auth.session_token=<token>"
 ```
 
-Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
+### Automated Testing
 
-```tsx
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+```typescript
+// Example test for authentication flow
+import { auth } from "@/lib/auth";
 
-// ...
-
-const queryClient = new QueryClient();
-
-// ...
-
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
-
-  root.render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  );
-}
-```
-
-You can also add TanStack Query Devtools to the root route (optional).
-
-```tsx
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <ReactQueryDevtools buttonPosition="top-right" />
-      <TanStackRouterDevtools />
-    </>
-  ),
-});
-```
-
-Now you can use `useQuery` to fetch your data.
-
-```tsx
-import { useQuery } from "@tanstack/react-query";
-
-import "./App.css";
-
-function App() {
-  const { data } = useQuery({
-    queryKey: ["people"],
-    queryFn: () =>
-      fetch("https://swapi.dev/api/people")
-        .then((res) => res.json())
-        .then((data) => data.results as { name: string }[]),
-    initialData: [],
+test("admin user can authenticate", async () => {
+  const mockRequest = new Request("http://localhost:3100/api/auth/sign-in/email", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: "admin@example.com",
+      password: "Admin123"
+    })
   });
 
-  return (
-    <div>
-      <ul>
-        {data.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export default App;
+  const response = await auth.handler(mockRequest);
+  expect(response.status).toBe(200);
+});
 ```
 
-You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
+## 🔧 Troubleshooting
 
-## State Management
+### Common Issues
 
-Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
+#### "401 Unauthorized" Errors
+- Check if user exists in database
+- Verify password is correct
+- Ensure session cookie is being sent
 
-First you need to add TanStack Store as a dependency:
+#### "Column does not exist" Errors
+- Run database migrations: `pnpm db:reset`
+- Check Drizzle schema matches database
+
+#### Session Not Persisting
+- Verify `BETTER_AUTH_SECRET` is set
+- Check cookie settings in browser
+- Ensure HTTPS in production
+
+### Debug Commands
 
 ```bash
-pnpm add @tanstack/store
+# Check database tables
+psql $DATABASE_URL -c "\dt"
+
+# Verify admin user exists
+psql $DATABASE_URL -c "SELECT email, role FROM user WHERE role = 'admin';"
+
+# Check session table
+psql $DATABASE_URL -c "SELECT COUNT(*) FROM session;"
 ```
 
-Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
+## 📚 Additional Resources
 
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store } from "@tanstack/store";
-import "./App.css";
+- [Better Auth Documentation](https://www.better-auth.com/docs)
+- [Drizzle ORM Guide](https://orm.drizzle.team/docs/overview)
+- [TanStack Start Docs](https://tanstack.com/start/latest)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 
-const countStore = new Store(0);
+## 🤝 Contributing
 
-function App() {
-  const count = useStore(countStore);
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-    </div>
-  );
-}
+When working on authentication-related features:
 
-export default App;
-```
+1. **Test thoroughly** - Authentication bugs affect entire application
+2. **Follow Better Auth patterns** - Don't reinvent authentication logic
+3. **Document changes** - Update this README for any auth modifications
+4. **Consider security** - Review all auth-related code changes
 
-One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
+---
 
-Let's check this out by doubling the count using derived state.
-
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store, Derived } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-const doubledStore = new Derived({
-  fn: () => countStore.state * 2,
-  deps: [countStore],
-});
-doubledStore.mount();
-
-function App() {
-  const count = useStore(countStore);
-  const doubledCount = useStore(doubledStore);
-
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-      <div>Doubled - {doubledCount}</div>
-    </div>
-  );
-}
-
-export default App;
-```
-
-We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
-
-Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
-
-You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
+**⚠️ Important**: Before implementing new features (branding, file management, etc.), ensure the authentication system is working correctly. Authentication issues can cascade and cause problems throughout the application, as documented in the `Next-step.md` analysis.
