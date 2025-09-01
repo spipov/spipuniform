@@ -12,6 +12,9 @@ export * from './branding';
 // Email System tables
 export * from './email';
 
+// File System tables
+export * from './file-system';
+
 // Example table (remove if not needed)
 export const posts = pgTable('posts', {
   id: serial('id').primaryKey(),
@@ -40,3 +43,23 @@ export type {
   EmailStatus,
   TemplateType
 } from './email';
+
+// Export types for file system
+export type {
+  StorageSettings,
+  NewStorageSettings,
+  UpdateStorageSettings,
+  FileItem,
+  NewFile,
+  UpdateFile,
+  FilePermission,
+  NewFilePermission,
+  UpdateFilePermission,
+  StorageProvider,
+  FileType,
+  FileWithPermissions,
+  StorageConfig,
+  FileListResponse,
+  UploadResponse,
+  UploadError
+} from './file-system';

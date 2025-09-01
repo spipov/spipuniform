@@ -1,5 +1,5 @@
 import type * as React from "react";
-import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, PieChart } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { UserLogoutCard } from "./user-logout-card";
 import {
@@ -67,6 +67,16 @@ const systemAdminNavigation = [
     title: "Email Management",
     url: "/dashboard/email",
     icon: Mail,
+  },
+  {
+    title: "File Manager",
+    url: "/dashboard/file-manager",
+    icon: FolderOpen,
+  },
+  {
+    title: "Storage Settings",
+    url: "/dashboard/storage-settings",
+    icon: HardDrive,
   },
 ];
 

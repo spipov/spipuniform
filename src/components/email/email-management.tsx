@@ -12,12 +12,15 @@ import { toast } from 'sonner';
 
 interface EmailSetting {
   id: string;
-  name: string;
-  provider: 'smtp' | 'microsoft365' | 'google';
-  host?: string;
-  port?: number;
-  username: string;
-  password?: string;
+  configName: string;
+  provider: 'smtp' | 'microsoft365' | 'google_workspace';
+  smtpHost?: string;
+  smtpPort?: string;
+  smtpUser?: string;
+  smtpPassword?: string;
+  fromName: string;
+  fromEmail: string;
+  replyToEmail?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -27,8 +30,10 @@ interface EmailTemplate {
   id: string;
   name: string;
   subject: string;
-  content: string;
-  variables: string[];
+  htmlContent: string;
+  textContent?: string;
+  type: 'welcome' | 'reset_password' | 'verification' | 'notification' | 'custom';
+  variables?: Record<string, any>;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -70,18 +75,18 @@ export function EmailManagement() {
       ]);
 
       if (settingsRes.ok) {
-        const settings = await settingsRes.json();
-        setEmailSettings(settings);
+        const response = await settingsRes.json();
+        setEmailSettings(response.data || []);
       }
 
       if (templatesRes.ok) {
-        const templates = await templatesRes.json();
-        setEmailTemplates(templates);
+        const response = await templatesRes.json();
+        setEmailTemplates(response.data || []);
       }
 
       if (logsRes.ok) {
-        const logs = await logsRes.json();
-        setEmailLogs(logs);
+        const response = await logsRes.json();
+        setEmailLogs(response.data || []);
       }
     } catch (error) {
       console.error('Failed to load email data:', error);
@@ -108,7 +113,8 @@ export function EmailManagement() {
       });
 
       if (response.ok) {
-        const savedSetting = await response.json();
+        const apiResponse = await response.json();
+        const savedSetting = apiResponse.data;
         if (selectedSetting.id) {
           setEmailSettings(settings => 
             settings.map(s => s.id === savedSetting.id ? savedSetting : s)
@@ -121,7 +127,7 @@ export function EmailManagement() {
         setSelectedSetting(null);
       } else {
         const error = await response.json();
-        toast.error(error.message || 'Failed to save setting');
+        toast.error(error.error || 'Failed to save setting');
       }
     } catch (error) {
       console.error('Failed to save setting:', error);
@@ -147,7 +153,7 @@ export function EmailManagement() {
         toast.success('Email setting activated');
       } else {
         const error = await response.json();
-        toast.error(error.message || 'Failed to activate setting');
+        toast.error(error.error || 'Failed to activate setting');
       }
     } catch (error) {
       console.error('Failed to activate setting:', error);
@@ -166,7 +172,7 @@ export function EmailManagement() {
         toast.success('Email setting deleted');
       } else {
         const error = await response.json();
-        toast.error(error.message || 'Failed to delete setting');
+        toast.error(error.error || 'Failed to delete setting');
       }
     } catch (error) {
       console.error('Failed to delete setting:', error);
@@ -191,7 +197,8 @@ export function EmailManagement() {
       });
 
       if (response.ok) {
-        const savedTemplate = await response.json();
+        const apiResponse = await response.json();
+        const savedTemplate = apiResponse.data;
         if (selectedTemplate.id) {
           setEmailTemplates(templates => 
             templates.map(t => t.id === savedTemplate.id ? savedTemplate : t)
@@ -204,7 +211,7 @@ export function EmailManagement() {
         setSelectedTemplate(null);
       } else {
         const error = await response.json();
-        toast.error(error.message || 'Failed to save template');
+        toast.error(error.error || 'Failed to save template');
       }
     } catch (error) {
       console.error('Failed to save template:', error);
@@ -225,7 +232,7 @@ export function EmailManagement() {
         toast.success('Template deleted');
       } else {
         const error = await response.json();
-        toast.error(error.message || 'Failed to delete template');
+        toast.error(error.error || 'Failed to delete template');
       }
     } catch (error) {
       console.error('Failed to delete template:', error);
@@ -241,9 +248,10 @@ export function EmailManagement() {
   const handleCreateNewSetting = () => {
     setSelectedSetting({
       id: '',
-      name: '',
+      configName: '',
       provider: 'smtp',
-      username: '',
+      fromEmail: '',
+      fromName: '',
       isActive: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -261,8 +269,8 @@ export function EmailManagement() {
       id: '',
       name: '',
       subject: '',
-      content: '',
-      variables: [],
+      htmlContent: '',
+      type: 'custom',
       isActive: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -303,7 +311,7 @@ export function EmailManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {emailSettings.find(s => s.isActive)?.provider.toUpperCase() || 'None'}
+              {emailSettings?.find?.(s => s.isActive)?.provider.toUpperCase() || 'None'}
             </div>
             <p className="text-xs text-muted-foreground">
               Current email provider
@@ -317,7 +325,7 @@ export function EmailManagement() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{emailTemplates.length}</div>
+            <div className="text-2xl font-bold">{emailTemplates?.length || 0}</div>
             <p className="text-xs text-muted-foreground">
               Available templates
             </p>
@@ -331,7 +339,7 @@ export function EmailManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {emailLogs.filter(log => log.status === 'sent').length}
+              {emailLogs?.filter(log => log.status === 'sent').length || 0}
             </div>
             <p className="text-xs text-muted-foreground">
               Successfully delivered
@@ -346,7 +354,7 @@ export function EmailManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {emailLogs.filter(log => log.status === 'failed').length}
+              {emailLogs?.filter(log => log.status === 'failed').length || 0}
             </div>
             <p className="text-xs text-muted-foreground">
               Delivery failures
@@ -373,24 +381,24 @@ export function EmailManagement() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {emailSettings.length === 0 ? (
+            {!emailSettings || emailSettings.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 No email providers configured. Add one to get started.
               </div>
             ) : (
-              emailSettings.map((setting) => (
+              emailSettings?.map((setting) => (
                 <div key={setting.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-medium">{setting.name}</h4>
+                      <h4 className="font-medium">{setting.configName}</h4>
                       {setting.isActive && (
                         <Badge variant="default">Active</Badge>
                       )}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       <p>Provider: {setting.provider.toUpperCase()}</p>
-                      <p>Username: {setting.username}</p>
-                      {setting.host && <p>Host: {setting.host}:{setting.port}</p>}
+                      <p>Email: {setting.fromEmail}</p>
+                      {setting.smtpHost && <p>Host: {setting.smtpHost}:{setting.smtpPort}</p>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -451,12 +459,12 @@ export function EmailManagement() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {emailTemplates.length === 0 ? (
+            {!emailTemplates || emailTemplates.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 No email templates created. Create one to get started.
               </div>
             ) : (
-              emailTemplates.map((template) => (
+              emailTemplates?.map((template) => (
                 <div key={template.id} className="p-4 border rounded-lg">
                   <div className="flex items-start justify-between">
                     <div className="space-y-2 flex-1">
@@ -470,11 +478,11 @@ export function EmailManagement() {
                         Subject: {template.subject}
                       </p>
                       <p className="text-sm text-muted-foreground line-clamp-2">
-                        {template.content}
+                        {template.htmlContent}
                       </p>
-                      {template.variables.length > 0 && (
+                      {template.variables && Object.keys(template.variables).length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {template.variables.map((variable) => (
+                          {Object.keys(template.variables).map((variable) => (
                             <Badge key={variable} variant="outline" className="text-xs">
                               {`{{${variable}}}`}
                             </Badge>
@@ -524,12 +532,12 @@ export function EmailManagement() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {emailLogs.length === 0 ? (
+            {!emailLogs || emailLogs.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 No email logs available.
               </div>
             ) : (
-              emailLogs.map((log) => (
+              emailLogs?.map((log) => (
                 <div key={log.id} className="flex items-center justify-between p-3 border rounded">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -564,8 +572,8 @@ export function EmailManagement() {
                 <Label htmlFor="settingName">Setting Name</Label>
                 <Input
                   id="settingName"
-                  value={selectedSetting.name}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, name: e.target.value})}
+                  value={selectedSetting.configName}
+                  onChange={(e) => setSelectedSetting({...selectedSetting, configName: e.target.value})}
                   placeholder="Primary SMTP"
                 />
               </div>
@@ -573,7 +581,7 @@ export function EmailManagement() {
                 <Label htmlFor="provider">Provider</Label>
                 <Select
                   value={selectedSetting.provider}
-                  onValueChange={(value: 'smtp' | 'microsoft365' | 'google') => 
+                  onValueChange={(value: 'smtp' | 'microsoft365' | 'google_workspace') => 
                     setSelectedSetting({...selectedSetting, provider: value})
                   }
                 >
@@ -583,7 +591,7 @@ export function EmailManagement() {
                   <SelectContent>
                     <SelectItem value="smtp">SMTP</SelectItem>
                     <SelectItem value="microsoft365">Microsoft 365</SelectItem>
-                    <SelectItem value="google">Google Workspace</SelectItem>
+                    <SelectItem value="google_workspace">Google Workspace</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -591,21 +599,42 @@ export function EmailManagement() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="username">Username/Email</Label>
+                <Label htmlFor="fromName">From Name</Label>
                 <Input
-                  id="username"
-                  value={selectedSetting.username}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, username: e.target.value})}
-                  placeholder="noreply@company.com"
+                  id="fromName"
+                  value={selectedSetting.fromName}
+                  onChange={(e) => setSelectedSetting({...selectedSetting, fromName: e.target.value})}
+                  placeholder="Your Company"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="fromEmail">From Email</Label>
                 <Input
-                  id="password"
+                  id="fromEmail"
+                  value={selectedSetting.fromEmail}
+                  onChange={(e) => setSelectedSetting({...selectedSetting, fromEmail: e.target.value})}
+                  placeholder="noreply@company.com"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="replyToEmail">Reply To Email</Label>
+                <Input
+                  id="replyToEmail"
+                  value={selectedSetting.replyToEmail || ''}
+                  onChange={(e) => setSelectedSetting({...selectedSetting, replyToEmail: e.target.value})}
+                  placeholder="support@company.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="smtpPassword">Password</Label>
+                <Input
+                  id="smtpPassword"
                   type="password"
-                  value={selectedSetting.password || ''}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, password: e.target.value})}
+                  value={selectedSetting.smtpPassword || ''}
+                  onChange={(e) => setSelectedSetting({...selectedSetting, smtpPassword: e.target.value})}
                   placeholder="••••••••"
                 />
               </div>
@@ -614,21 +643,21 @@ export function EmailManagement() {
             {selectedSetting.provider === 'smtp' && (
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="host">SMTP Host</Label>
+                  <Label htmlFor="smtpHost">SMTP Host</Label>
                   <Input
-                    id="host"
-                    value={selectedSetting.host || ''}
-                    onChange={(e) => setSelectedSetting({...selectedSetting, host: e.target.value})}
+                    id="smtpHost"
+                    value={selectedSetting.smtpHost || ''}
+                    onChange={(e) => setSelectedSetting({...selectedSetting, smtpHost: e.target.value})}
                     placeholder="smtp.gmail.com"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="port">Port</Label>
+                  <Label htmlFor="smtpPort">Port</Label>
                   <Input
-                    id="port"
+                    id="smtpPort"
                     type="number"
-                    value={selectedSetting.port || ''}
-                    onChange={(e) => setSelectedSetting({...selectedSetting, port: parseInt(e.target.value) || undefined})}
+                    value={selectedSetting.smtpPort || ''}
+                    onChange={(e) => setSelectedSetting({...selectedSetting, smtpPort: e.target.value})}
                     placeholder="587"
                   />
                 </div>
@@ -666,14 +695,36 @@ export function EmailManagement() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="templateName">Template Name</Label>
-              <Input
-                id="templateName"
-                value={selectedTemplate.name}
-                onChange={(e) => setSelectedTemplate({...selectedTemplate, name: e.target.value})}
-                placeholder="Welcome Email"
-              />
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="templateName">Template Name</Label>
+                <Input
+                  id="templateName"
+                  value={selectedTemplate.name}
+                  onChange={(e) => setSelectedTemplate({...selectedTemplate, name: e.target.value})}
+                  placeholder="Welcome Email"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="templateType">Template Type</Label>
+                <Select
+                  value={selectedTemplate.type}
+                  onValueChange={(value: 'welcome' | 'reset_password' | 'verification' | 'notification' | 'custom') => 
+                    setSelectedTemplate({...selectedTemplate, type: value})
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="welcome">Welcome</SelectItem>
+                    <SelectItem value="reset_password">Reset Password</SelectItem>
+                    <SelectItem value="verification">Verification</SelectItem>
+                    <SelectItem value="notification">Notification</SelectItem>
+                    <SelectItem value="custom">Custom</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -687,12 +738,12 @@ export function EmailManagement() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="content">Content</Label>
+              <Label htmlFor="htmlContent">HTML Content</Label>
               <Textarea
-                id="content"
-                value={selectedTemplate.content}
-                onChange={(e) => setSelectedTemplate({...selectedTemplate, content: e.target.value})}
-                placeholder="Hello {{user_name}}, welcome to our platform!"
+                id="htmlContent"
+                value={selectedTemplate.htmlContent}
+                onChange={(e) => setSelectedTemplate({...selectedTemplate, htmlContent: e.target.value})}
+                placeholder="<h1>Hello {{user_name}}</h1><p>Welcome to our platform!</p>"
                 rows={6}
               />
             </div>

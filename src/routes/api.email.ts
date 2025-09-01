@@ -9,18 +9,28 @@ export const ServerRoute = createServerFileRoute('/api/email').methods({
       const url = new URL(request.url);
       const endpoint = url.pathname.split('/api/email')[1]; // Get the part after /api/email
       
-      if (endpoint === '/templates') {
+      // Handle nested routes with IDs (e.g., /settings/123/activate)
+      const pathParts = endpoint.split('/').filter(Boolean);
+      const [resource, id, action] = pathParts;
+      
+      if (resource === 'templates' && !id) {
         // Handle /api/email/templates
         const templates = await EmailService.getAllTemplates();
         return new Response(JSON.stringify({ success: true, data: templates }), {
           headers: { 'Content-Type': 'application/json' },
         });
-      } else if (endpoint === '/logs') {
+      } else if (resource === 'logs' && !id) {
         // Handle /api/email/logs
-        const limit = parseInt(url.searchParams.get('limit') || '50');
-        const offset = parseInt(url.searchParams.get('offset') || '0');
+        const limit = parseInt(url.searchParams.get('limit') || '50', 10);
+        const offset = parseInt(url.searchParams.get('offset') || '0', 10);
         const logs = await EmailService.getEmailLogs(limit, offset);
         return new Response(JSON.stringify({ success: true, data: logs }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } else if (resource === 'settings' && !id) {
+        // Handle /api/email/settings
+        const settings = await EmailService.getAllSettings();
+        return new Response(JSON.stringify({ success: true, data: settings }), {
           headers: { 'Content-Type': 'application/json' },
         });
       } else {
@@ -43,9 +53,24 @@ export const ServerRoute = createServerFileRoute('/api/email').methods({
     try {
       const url = new URL(request.url);
       const endpoint = url.pathname.split('/api/email')[1];
+      
+      // Handle nested routes with IDs (e.g., /settings/123/activate)
+      const pathParts = endpoint.split('/').filter(Boolean);
+      const [resource, id, action] = pathParts;
+      
+      // Handle settings activation
+      if (resource === 'settings' && id && action === 'activate') {
+        // Set the setting as active and deactivate others
+        await EmailService.deactivateAllSettings();
+        const updatedSettings = await EmailService.updateSettings(id, { isActive: true });
+        return new Response(JSON.stringify({ success: true, data: updatedSettings }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      
       const body = await request.json();
       
-      if (endpoint === '/templates') {
+      if (resource === 'templates' && !id) {
         // Handle POST /api/email/templates - Create new template
         const validatedData = v.parse(insertEmailTemplateSchema, body);
         const newTemplate = await EmailService.createTemplate(validatedData);
@@ -53,7 +78,14 @@ export const ServerRoute = createServerFileRoute('/api/email').methods({
           status: 201,
           headers: { 'Content-Type': 'application/json' },
         });
-      } else if (endpoint === '/send') {
+      } else if (resource === 'settings' && !id) {
+        // Handle POST /api/email/settings - Create new settings
+        const newSettings = await EmailService.createSettings(body);
+        return new Response(JSON.stringify({ success: true, data: newSettings }), {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } else if (resource === 'send' && !id) {
         // Handle POST /api/email/send - Send email
         const result = await EmailService.sendEmail(body);
         return new Response(JSON.stringify(result), {
@@ -89,18 +121,13 @@ export const ServerRoute = createServerFileRoute('/api/email').methods({
       const endpoint = url.pathname.split('/api/email')[1];
       const body = await request.json();
       
-      if (endpoint === '/templates') {
-        // Handle PUT /api/email/templates - Update template
-        const { id, ...updateData } = body;
-        
-        if (!id) {
-          return new Response(
-            JSON.stringify({ success: false, error: 'Template ID is required' }),
-            { status: 400, headers: { 'Content-Type': 'application/json' } }
-          );
-        }
-        
-        const validatedData = v.parse(updateEmailTemplateSchema, updateData);
+      // Handle nested routes with IDs (e.g., /settings/123)
+      const pathParts = endpoint.split('/').filter(Boolean);
+      const [resource, id] = pathParts;
+      
+      if (resource === 'templates' && id) {
+        // Handle PUT /api/email/templates/123 - Update template
+        const validatedData = v.parse(updateEmailTemplateSchema, body);
         const updatedTemplate = await EmailService.updateTemplate(id, validatedData);
         
         if (!updatedTemplate) {
@@ -111,6 +138,20 @@ export const ServerRoute = createServerFileRoute('/api/email').methods({
         }
         
         return new Response(JSON.stringify({ success: true, data: updatedTemplate }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } else if (resource === 'settings' && id) {
+        // Handle PUT /api/email/settings/123 - Update settings
+        const updatedSettings = await EmailService.updateSettings(id, body);
+        
+        if (!updatedSettings) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Settings not found' }),
+            { status: 404, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        return new Response(JSON.stringify({ success: true, data: updatedSettings }), {
           headers: { 'Content-Type': 'application/json' },
         });
       } else {
@@ -141,20 +182,22 @@ export const ServerRoute = createServerFileRoute('/api/email').methods({
       const url = new URL(request.url);
       const endpoint = url.pathname.split('/api/email')[1];
       
-      if (endpoint === '/templates') {
-        // Handle DELETE /api/email/templates - Delete template
-        const id = url.searchParams.get('id');
-        
-        if (!id) {
-          return new Response(
-            JSON.stringify({ success: false, error: 'Template ID is required' }),
-            { status: 400, headers: { 'Content-Type': 'application/json' } }
-          );
-        }
-        
+      // Handle nested routes with IDs (e.g., /settings/123)
+      const pathParts = endpoint.split('/').filter(Boolean);
+      const [resource, id] = pathParts;
+      
+      if (resource === 'templates' && id) {
+        // Handle DELETE /api/email/templates/123 - Delete template
         // Note: EmailService doesn't have a deleteTemplate method, so we'll return a not implemented error
         return new Response(
           JSON.stringify({ success: false, error: 'Delete template functionality not implemented' }),
+          { status: 501, headers: { 'Content-Type': 'application/json' } }
+        );
+      } else if (resource === 'settings' && id) {
+        // Handle DELETE /api/email/settings/123 - Delete settings
+        // Note: EmailService doesn't have a deleteSettings method, so we'll return a not implemented error
+        return new Response(
+          JSON.stringify({ success: false, error: 'Delete settings functionality not implemented' }),
           { status: 501, headers: { 'Content-Type': 'application/json' } }
         );
       } else {

@@ -14,9 +14,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DashboardBrandingRouteImport } from './routes/dashboard/branding'
-import { Route as DashboardEmailRouteImport } from './routes/dashboard/email'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as DashboardStorageSettingsRouteImport } from './routes/dashboard/storage-settings'
+import { Route as DashboardFileManagerRouteImport } from './routes/dashboard/file-manager'
+import { Route as DashboardEmailRouteImport } from './routes/dashboard/email'
+import { Route as DashboardBrandingRouteImport } from './routes/dashboard/branding'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthSigninRouteImport } from './routes/auth/signin'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
@@ -24,10 +26,13 @@ import { Route as DashboardUserManagementUsersRouteImport } from './routes/dashb
 import { Route as DashboardUserManagementRolesRouteImport } from './routes/dashboard/user-management/roles'
 import { Route as DashboardUserManagementPermissionsRouteImport } from './routes/dashboard/user-management/permissions'
 import { ServerRoute as ApiUsersServerRouteImport } from './routes/api.users'
-import { ServerRoute as ApiRolesServerRouteImport } from './routes/api.roles'
-import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api.auth.$'
-import { ServerRoute as ApiBrandingServerRouteImport } from './routes/api.branding'
 import { ServerRoute as ApiTestServerRouteImport } from './routes/api.test'
+import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api.storage-settings'
+import { ServerRoute as ApiRolesServerRouteImport } from './routes/api.roles'
+import { ServerRoute as ApiFilesServerRouteImport } from './routes/api.files'
+import { ServerRoute as ApiEmailServerRouteImport } from './routes/api.email'
+import { ServerRoute as ApiBrandingServerRouteImport } from './routes/api.branding'
+import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api.auth.$'
 
 const rootServerRouteImport = createServerRootRoute()
 
@@ -46,9 +51,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardBrandingRoute = DashboardBrandingRouteImport.update({
-  id: '/branding',
-  path: '/branding',
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardStorageSettingsRoute =
+  DashboardStorageSettingsRouteImport.update({
+    id: '/storage-settings',
+    path: '/storage-settings',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardFileManagerRoute = DashboardFileManagerRouteImport.update({
+  id: '/file-manager',
+  path: '/file-manager',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardEmailRoute = DashboardEmailRouteImport.update({
@@ -56,9 +72,9 @@ const DashboardEmailRoute = DashboardEmailRouteImport.update({
   path: '/email',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: '/',
-  path: '/',
+const DashboardBrandingRoute = DashboardBrandingRouteImport.update({
+  id: '/branding',
+  path: '/branding',
   getParentRoute: () => DashboardRoute,
 } as any)
 const AuthSignupRoute = AuthSignupRouteImport.update({
@@ -99,14 +115,30 @@ const ApiUsersServerRoute = ApiUsersServerRouteImport.update({
   path: '/api/users',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiTestServerRoute = ApiTestServerRouteImport.update({
+  id: '/api/test',
+  path: '/api/test',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiStorageSettingsServerRoute =
+  ApiStorageSettingsServerRouteImport.update({
+    id: '/api/storage-settings',
+    path: '/api/storage-settings',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiRolesServerRoute = ApiRolesServerRouteImport.update({
   id: '/api/roles',
   path: '/api/roles',
   getParentRoute: () => rootServerRouteImport,
 } as any)
-const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
+const ApiFilesServerRoute = ApiFilesServerRouteImport.update({
+  id: '/api/files',
+  path: '/api/files',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiEmailServerRoute = ApiEmailServerRouteImport.update({
+  id: '/api/email',
+  path: '/api/email',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiBrandingServerRoute = ApiBrandingServerRouteImport.update({
@@ -114,70 +146,404 @@ const ApiBrandingServerRoute = ApiBrandingServerRouteImport.update({
   path: '/api/branding',
   getParentRoute: () => rootServerRouteImport,
 } as any)
-const ApiTestServerRoute = ApiTestServerRouteImport.update({
-  id: '/api/test',
-  path: '/api/test',
+const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 
-const DashboardRouteWithChildren = DashboardRoute._addFileChildren({
-  DashboardIndexRoute,
-  DashboardBrandingRoute,
-  DashboardEmailRoute,
-  DashboardUserManagementUsersRoute,
-  DashboardUserManagementRolesRoute,
-  DashboardUserManagementPermissionsRoute,
-})
-
-const rootRouteWithChildren = rootRouteImport._addFileChildren({
-  IndexRoute,
-  AdminRoute,
-  DashboardRoute: DashboardRouteWithChildren,
-  AuthResetPasswordRoute,
-  AuthSigninRoute,
-  AuthSignupRoute,
-})
-
-const rootServerRouteWithChildren = rootServerRouteImport._addFileChildren({
-  ApiUsersServerRoute,
-  ApiRolesServerRoute,
-  ApiAuthSplatServerRoute,
-  ApiBrandingServerRoute,
-  ApiTestServerRoute,
-})
-
-export const routeTree = rootRouteWithChildren
-export const serverRouteTree = rootServerRouteWithChildren
-
+export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/signin': typeof AuthSigninRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/dashboard/branding': typeof DashboardBrandingRoute
+  '/dashboard/email': typeof DashboardEmailRoute
+  '/dashboard/file-manager': typeof DashboardFileManagerRoute
+  '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
+  '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
+  '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/signin': typeof AuthSigninRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/dashboard/branding': typeof DashboardBrandingRoute
+  '/dashboard/email': typeof DashboardEmailRoute
+  '/dashboard/file-manager': typeof DashboardFileManagerRoute
+  '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
+  '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
+  '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
+  '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/signin': typeof AuthSigninRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/dashboard/branding': typeof DashboardBrandingRoute
+  '/dashboard/email': typeof DashboardEmailRoute
+  '/dashboard/file-manager': typeof DashboardFileManagerRoute
+  '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
+  '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
+  '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
+}
 export interface FileRouteTypes {
-  fileRoutesByFullPath: any
-  fullPaths: any
-  fileRoutesByTo: any
-  to: any
-  id: any
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/auth/reset-password'
+    | '/auth/signin'
+    | '/auth/signup'
+    | '/dashboard/branding'
+    | '/dashboard/email'
+    | '/dashboard/file-manager'
+    | '/dashboard/storage-settings'
+    | '/dashboard/'
+    | '/dashboard/user-management/permissions'
+    | '/dashboard/user-management/roles'
+    | '/dashboard/user-management/users'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/admin'
+    | '/auth/reset-password'
+    | '/auth/signin'
+    | '/auth/signup'
+    | '/dashboard/branding'
+    | '/dashboard/email'
+    | '/dashboard/file-manager'
+    | '/dashboard/storage-settings'
+    | '/dashboard'
+    | '/dashboard/user-management/permissions'
+    | '/dashboard/user-management/roles'
+    | '/dashboard/user-management/users'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/auth/reset-password'
+    | '/auth/signin'
+    | '/auth/signup'
+    | '/dashboard/branding'
+    | '/dashboard/email'
+    | '/dashboard/file-manager'
+    | '/dashboard/storage-settings'
+    | '/dashboard/'
+    | '/dashboard/user-management/permissions'
+    | '/dashboard/user-management/roles'
+    | '/dashboard/user-management/users'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
+  AuthSigninRoute: typeof AuthSigninRoute
+  AuthSignupRoute: typeof AuthSignupRoute
+}
+export interface FileServerRoutesByFullPath {
+  '/api/branding': typeof ApiBrandingServerRoute
+  '/api/email': typeof ApiEmailServerRoute
+  '/api/files': typeof ApiFilesServerRoute
+  '/api/roles': typeof ApiRolesServerRoute
+  '/api/storage-settings': typeof ApiStorageSettingsServerRoute
+  '/api/test': typeof ApiTestServerRoute
+  '/api/users': typeof ApiUsersServerRoute
+  '/api/auth/$': typeof ApiAuthSplatServerRoute
+}
+export interface FileServerRoutesByTo {
+  '/api/branding': typeof ApiBrandingServerRoute
+  '/api/email': typeof ApiEmailServerRoute
+  '/api/files': typeof ApiFilesServerRoute
+  '/api/roles': typeof ApiRolesServerRoute
+  '/api/storage-settings': typeof ApiStorageSettingsServerRoute
+  '/api/test': typeof ApiTestServerRoute
+  '/api/users': typeof ApiUsersServerRoute
+  '/api/auth/$': typeof ApiAuthSplatServerRoute
+}
+export interface FileServerRoutesById {
+  __root__: typeof rootServerRouteImport
+  '/api/branding': typeof ApiBrandingServerRoute
+  '/api/email': typeof ApiEmailServerRoute
+  '/api/files': typeof ApiFilesServerRoute
+  '/api/roles': typeof ApiRolesServerRoute
+  '/api/storage-settings': typeof ApiStorageSettingsServerRoute
+  '/api/test': typeof ApiTestServerRoute
+  '/api/users': typeof ApiUsersServerRoute
+  '/api/auth/$': typeof ApiAuthSplatServerRoute
+}
+export interface FileServerRouteTypes {
+  fileServerRoutesByFullPath: FileServerRoutesByFullPath
+  fullPaths:
+    | '/api/branding'
+    | '/api/email'
+    | '/api/files'
+    | '/api/roles'
+    | '/api/storage-settings'
+    | '/api/test'
+    | '/api/users'
+    | '/api/auth/$'
+  fileServerRoutesByTo: FileServerRoutesByTo
+  to:
+    | '/api/branding'
+    | '/api/email'
+    | '/api/files'
+    | '/api/roles'
+    | '/api/storage-settings'
+    | '/api/test'
+    | '/api/users'
+    | '/api/auth/$'
+  id:
+    | '__root__'
+    | '/api/branding'
+    | '/api/email'
+    | '/api/files'
+    | '/api/roles'
+    | '/api/storage-settings'
+    | '/api/test'
+    | '/api/users'
+    | '/api/auth/$'
+  fileServerRoutesById: FileServerRoutesById
+}
+export interface RootServerRouteChildren {
+  ApiBrandingServerRoute: typeof ApiBrandingServerRoute
+  ApiEmailServerRoute: typeof ApiEmailServerRoute
+  ApiFilesServerRoute: typeof ApiFilesServerRoute
+  ApiRolesServerRoute: typeof ApiRolesServerRoute
+  ApiStorageSettingsServerRoute: typeof ApiStorageSettingsServerRoute
+  ApiTestServerRoute: typeof ApiTestServerRoute
+  ApiUsersServerRoute: typeof ApiUsersServerRoute
+  ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
 }
 
 declare module '@tanstack/react-router' {
-  interface FileRoutesByFullPath {
-    '/': any
-    '/admin': any
-    '/dashboard': any
-    '/auth/reset-password': any
-    '/auth/signin': any
-    '/auth/signup': any
-    '/dashboard/': any
-    '/dashboard/branding': any
-    '/dashboard/email': any
-    '/dashboard/user-management/permissions': any
-    '/dashboard/user-management/roles': any
-    '/dashboard/user-management/users': any
-  }
-
-  interface FileServerRoutesByFullPath {
-    '/api/users': any
-    '/api/roles': any
-    '/api/auth/$': any
-    '/api/branding': any
-    '/api/test': any
+  interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/storage-settings': {
+      id: '/dashboard/storage-settings'
+      path: '/storage-settings'
+      fullPath: '/dashboard/storage-settings'
+      preLoaderRoute: typeof DashboardStorageSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/file-manager': {
+      id: '/dashboard/file-manager'
+      path: '/file-manager'
+      fullPath: '/dashboard/file-manager'
+      preLoaderRoute: typeof DashboardFileManagerRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/email': {
+      id: '/dashboard/email'
+      path: '/email'
+      fullPath: '/dashboard/email'
+      preLoaderRoute: typeof DashboardEmailRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/branding': {
+      id: '/dashboard/branding'
+      path: '/branding'
+      fullPath: '/dashboard/branding'
+      preLoaderRoute: typeof DashboardBrandingRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/auth/signup': {
+      id: '/auth/signup'
+      path: '/auth/signup'
+      fullPath: '/auth/signup'
+      preLoaderRoute: typeof AuthSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/signin': {
+      id: '/auth/signin'
+      path: '/auth/signin'
+      fullPath: '/auth/signin'
+      preLoaderRoute: typeof AuthSigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/auth/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/user-management/users': {
+      id: '/dashboard/user-management/users'
+      path: '/user-management/users'
+      fullPath: '/dashboard/user-management/users'
+      preLoaderRoute: typeof DashboardUserManagementUsersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/user-management/roles': {
+      id: '/dashboard/user-management/roles'
+      path: '/user-management/roles'
+      fullPath: '/dashboard/user-management/roles'
+      preLoaderRoute: typeof DashboardUserManagementRolesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/user-management/permissions': {
+      id: '/dashboard/user-management/permissions'
+      path: '/user-management/permissions'
+      fullPath: '/dashboard/user-management/permissions'
+      preLoaderRoute: typeof DashboardUserManagementPermissionsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
+declare module '@tanstack/react-start/server' {
+  interface ServerFileRoutesByPath {
+    '/api/users': {
+      id: '/api/users'
+      path: '/api/users'
+      fullPath: '/api/users'
+      preLoaderRoute: typeof ApiUsersServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/test': {
+      id: '/api/test'
+      path: '/api/test'
+      fullPath: '/api/test'
+      preLoaderRoute: typeof ApiTestServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/storage-settings': {
+      id: '/api/storage-settings'
+      path: '/api/storage-settings'
+      fullPath: '/api/storage-settings'
+      preLoaderRoute: typeof ApiStorageSettingsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/roles': {
+      id: '/api/roles'
+      path: '/api/roles'
+      fullPath: '/api/roles'
+      preLoaderRoute: typeof ApiRolesServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/files': {
+      id: '/api/files'
+      path: '/api/files'
+      fullPath: '/api/files'
+      preLoaderRoute: typeof ApiFilesServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/email': {
+      id: '/api/email'
+      path: '/api/email'
+      fullPath: '/api/email'
+      preLoaderRoute: typeof ApiEmailServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/branding': {
+      id: '/api/branding'
+      path: '/api/branding'
+      fullPath: '/api/branding'
+      preLoaderRoute: typeof ApiBrandingServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+  }
+}
+
+interface DashboardRouteChildren {
+  DashboardBrandingRoute: typeof DashboardBrandingRoute
+  DashboardEmailRoute: typeof DashboardEmailRoute
+  DashboardFileManagerRoute: typeof DashboardFileManagerRoute
+  DashboardStorageSettingsRoute: typeof DashboardStorageSettingsRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardUserManagementPermissionsRoute: typeof DashboardUserManagementPermissionsRoute
+  DashboardUserManagementRolesRoute: typeof DashboardUserManagementRolesRoute
+  DashboardUserManagementUsersRoute: typeof DashboardUserManagementUsersRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardBrandingRoute: DashboardBrandingRoute,
+  DashboardEmailRoute: DashboardEmailRoute,
+  DashboardFileManagerRoute: DashboardFileManagerRoute,
+  DashboardStorageSettingsRoute: DashboardStorageSettingsRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardUserManagementPermissionsRoute:
+    DashboardUserManagementPermissionsRoute,
+  DashboardUserManagementRolesRoute: DashboardUserManagementRolesRoute,
+  DashboardUserManagementUsersRoute: DashboardUserManagementUsersRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  DashboardRoute: DashboardRouteWithChildren,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
+  AuthSigninRoute: AuthSigninRoute,
+  AuthSignupRoute: AuthSignupRoute,
+}
+export const routeTree = rootRouteImport
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
+const rootServerRouteChildren: RootServerRouteChildren = {
+  ApiBrandingServerRoute: ApiBrandingServerRoute,
+  ApiEmailServerRoute: ApiEmailServerRoute,
+  ApiFilesServerRoute: ApiFilesServerRoute,
+  ApiRolesServerRoute: ApiRolesServerRoute,
+  ApiStorageSettingsServerRoute: ApiStorageSettingsServerRoute,
+  ApiTestServerRoute: ApiTestServerRoute,
+  ApiUsersServerRoute: ApiUsersServerRoute,
+  ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
+}
+export const serverRouteTree = rootServerRouteImport
+  ._addFileChildren(rootServerRouteChildren)
+  ._addFileTypes<FileServerRouteTypes>()
