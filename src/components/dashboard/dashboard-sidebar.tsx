@@ -1,13 +1,13 @@
 import type * as React from "react";
-import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, PieChart } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { UserLogoutCard } from "./user-logout-card";
-
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
@@ -57,9 +57,23 @@ const userManagementNavigation = [
   },
 ];
 
+const systemAdminNavigation = [
+  {
+    title: "Branding",
+    url: "/dashboard/branding",
+    icon: Palette,
+  },
+  {
+    title: "Email Management",
+    url: "/dashboard/email",
+    icon: Mail,
+  },
+];
+
 export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  
   return (
-    <Sidebar className="dashboard-sidebar" {...props}>
+    <Sidebar variant="inset" className="dashboard-sidebar" {...props}>
       <SidebarHeader className="dashboard-sidebar__header">
         <SidebarMenu className="dashboard-sidebar__header-menu">
           <SidebarMenuItem className="dashboard-sidebar__header-menu-item">
@@ -114,6 +128,32 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
                     >
                       <Icon className="dashboard-sidebar__user-management-icon size-4" />
                       <span className="dashboard-sidebar__user-management-text">{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+        <SidebarGroup className="dashboard-sidebar__system-admin-group">
+          <SidebarGroupLabel className="dashboard-sidebar__group-label">
+            System Administration
+          </SidebarGroupLabel>
+          <SidebarMenu className="dashboard-sidebar__system-admin-menu">
+            {systemAdminNavigation.map((item) => {
+              const Icon = item.icon;
+              return (
+                <SidebarMenuItem
+                  key={item.title}
+                  className="dashboard-sidebar__system-admin-item"
+                >
+                  <SidebarMenuButton asChild className="dashboard-sidebar__system-admin-button">
+                    <Link
+                      to={item.url}
+                      className="dashboard-sidebar__system-admin-link font-medium"
+                    >
+                      <Icon className="dashboard-sidebar__system-admin-icon size-4" />
+                      <span className="dashboard-sidebar__system-admin-text">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

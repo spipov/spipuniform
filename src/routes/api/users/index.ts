@@ -7,7 +7,7 @@ import { auth } from "@/lib/auth";
 // Dynamic imports will be used inside functions to avoid SSR issues
 import * as v from "valibot";
 
-export const ServerRoute = createServerFileRoute("/api/users").methods({
+export const ServerRoute = createServerFileRoute("/api/users/").methods({
   GET: async ({ request }) => {
     try {
       // Check authentication
@@ -143,6 +143,15 @@ export const ServerRoute = createServerFileRoute("/api/users").methods({
           headers: { "Content-Type": "application/json" },
         });
       }
+
+      // Hash password using scrypt with dynamic imports
+      const crypto = await import("node:crypto");
+      const { promisify } = await import("node:util");
+      const scryptAsync = promisify(crypto.scrypt);
+      
+      const salt = crypto.randomBytes(16).toString("hex");
+      const derivedKey = (await scryptAsync(validatedData.password, salt, 64)) as Buffer;
+      const hashedPassword = salt + ":" + derivedKey.toString("hex");
 
       // Create user using Better Auth admin API
       const newUser = await auth.api.adminCreateUser({
