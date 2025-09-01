@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { user } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { registerSchema } from "@/schemas/auth";
+import * as v from "valibot";
 
 /**
  * Automated database seeding script that creates an admin user
@@ -41,11 +42,11 @@ async function seedAdmin() {
       confirmPassword: adminPassword,
     };
 
-    const parsed = registerSchema.safeParse(adminData);
+    const parsed = v.safeParse(registerSchema, adminData);
     if (!parsed.success) {
       console.error("❌ Validation errors:");
-      parsed.error.issues.forEach((issue) => {
-        console.error(`- ${issue.path.join(".")}: ${issue.message}`);
+      parsed.issues.forEach((issue) => {
+        console.error(`- ${issue.path?.map(p => p.key).join(".") || "unknown"}: ${issue.message}`);
       });
       process.exit(1);
     }
