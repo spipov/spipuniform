@@ -18,7 +18,8 @@ export class FileService {
     }
 
     const settings = activeSettings[0];
-    const provider = StorageProviderFactory.create(settings.provider, settings.config);
+    const config = settings.config || {};
+    const provider = StorageProviderFactory.create(settings.provider, config);
 
     return { provider, settings };
   }
@@ -131,9 +132,7 @@ export class FileService {
       for (const fileUpload of fileUploads) {
         try {
           // Generate unique filename
-          const safeName = provider.generateSafeName ? 
-            provider.generateSafeName(fileUpload.name) : 
-            this.generateSafeName(fileUpload.name);
+          const safeName = this.generateSafeName(fileUpload.name);
           
           const filePath = `${path}/${safeName}`.replace(/\/+/g, '/');
 
@@ -188,6 +187,11 @@ export class FileService {
         throw new Error('File not found');
       }
 
+      // If it's a folder, recursively delete all contents first
+      if (file.type === 'folder') {
+        await this.deleteFolderContents(file.path + '/' + file.name, userId);
+      }
+
       // Soft delete in database first
       await db
         .update(files)
@@ -198,19 +202,67 @@ export class FileService {
         })
         .where(eq(files.id, id));
 
-      // Delete from storage provider
-      try {
-        const { provider } = await this.getActiveStorageProvider();
-        await provider.delete(file.url || '');
-      } catch (error) {
-        console.error('Error deleting from storage provider:', error);
-        // Continue even if storage deletion fails
+      // Delete from storage provider (only for files, not folders)
+      if (file.type === 'file') {
+        try {
+          const { provider } = await this.getActiveStorageProvider();
+          await provider.delete(file.url || '');
+        } catch (error) {
+          console.error('Error deleting from storage provider:', error);
+          // Continue even if storage deletion fails
+        }
       }
 
       return true;
     } catch (error) {
       console.error('Error deleting file:', error);
       throw new Error('Failed to delete file');
+    }
+  }
+
+  private static async deleteFolderContents(folderPath: string, userId?: string): Promise<void> {
+    try {
+      // Get all files and folders in this path
+      const contents = await db
+        .select()
+        .from(files)
+        .where(
+          and(
+            eq(files.path, folderPath),
+            eq(files.isDeleted, false),
+            userId ? eq(files.ownerId, userId) : undefined
+          )
+        );
+
+      // Recursively delete each item
+      for (const item of contents) {
+        if (item.type === 'folder') {
+          // Recursively delete subfolder contents
+          await this.deleteFolderContents(folderPath + '/' + item.name, userId);
+        } else {
+          // Delete file from storage
+          try {
+            const { provider } = await this.getActiveStorageProvider();
+            await provider.delete(item.url || '');
+          } catch (error) {
+            console.error(`Error deleting file ${item.name} from storage:`, error);
+            // Continue with other files
+          }
+        }
+
+        // Soft delete item from database
+        await db
+          .update(files)
+          .set({
+            isDeleted: true,
+            deletedAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(files.id, item.id));
+      }
+    } catch (error) {
+      console.error('Error deleting folder contents:', error);
+      throw new Error('Failed to delete folder contents');
     }
   }
 
@@ -252,7 +304,7 @@ export class FileService {
         type: 'folder',
         provider: 'local', // Folders are always local
         size: 0,
-        ownerId: ownerId || null,
+        ownerId: ownerId || undefined,
         metadata: {
           createdAt: new Date().toISOString(),
         },

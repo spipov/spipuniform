@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { FileManagerDashboard } from "@/components/file-system/file-manager-dashboard";
+import { FileManager } from "@/components/file-system";
 
 export const Route = createFileRoute("/dashboard/file-manager")({  
   component: FileManagerPage,
@@ -15,7 +15,7 @@ function FileManagerPage() {
         </div>
       </div>
       <div className="flex-1 min-h-0">
-        <FileManagerDashboard />
+        <FileManager />
       </div>
     </div>
   );
