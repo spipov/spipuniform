@@ -1,19 +1,14 @@
-import { pgTable, serial, text, timestamp, foreignKey, unique, uuid, jsonb, boolean, index, bigint, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, unique, text, timestamp, uuid, jsonb, boolean, index, bigint, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
+export const credentialProvider = pgEnum("credential_provider", ['google', 'microsoft', 'aws', 'azure', 'sendgrid', 'mailgun', 'custom'])
+export const credentialType = pgEnum("credential_type", ['oauth_google', 'oauth_microsoft', 'smtp', 'imap', 'api_key', 'webhook', 'database', 'storage'])
 export const emailProvider = pgEnum("email_provider", ['smtp', 'microsoft365', 'google_workspace'])
 export const emailStatus = pgEnum("email_status", ['pending', 'sent', 'failed', 'delivered', 'bounced'])
 export const fileType = pgEnum("file_type", ['file', 'folder'])
 export const storageProvider = pgEnum("storage_provider", ['local', 's3', 'pcloud'])
 export const templateType = pgEnum("template_type", ['welcome', 'reset_password', 'verification', 'notification', 'custom'])
 
-
-export const posts = pgTable("posts", {
-	id: serial().primaryKey().notNull(),
-	title: text().notNull(),
-	content: text(),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
-});
 
 export const session = pgTable("session", {
 	id: text().primaryKey().notNull(),
@@ -127,34 +122,34 @@ export const account = pgTable("account", {
 		}),
 ]);
 
-export const branding = pgTable("branding", {
+export const credentials = pgTable("credentials", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	siteName: text("site_name").notNull(),
-	siteDescription: text("site_description"),
-	siteUrl: text("site_url"),
-	logoUrl: text("logo_url"),
-	logoAlt: text("logo_alt"),
-	faviconUrl: text("favicon_url"),
-	primaryColor: text("primary_color").default('#3b82f6'),
-	secondaryColor: text("secondary_color").default('#64748b'),
-	accentColor: text("accent_color").default('#f59e0b'),
-	backgroundColor: text("background_color").default('#ffffff'),
-	textColor: text("text_color").default('#1f2937'),
-	fontFamily: text("font_family").default('Inter, sans-serif'),
-	headingFont: text("heading_font"),
-	borderRadius: text("border_radius").default('0.5rem'),
-	spacing: text().default('1rem'),
-	supportEmail: text("support_email"),
-	contactPhone: text("contact_phone"),
-	socialLinks: jsonb("social_links"),
-	customCss: text("custom_css"),
+	name: text().notNull(),
+	type: credentialType().notNull(),
+	provider: credentialProvider().notNull(),
+	clientId: text("client_id"),
+	clientSecret: text("client_secret"),
+	apiKey: text("api_key"),
+	username: text(),
+	password: text(),
+	accessToken: text("access_token"),
+	refreshToken: text("refresh_token"),
+	tokenExpiry: timestamp("token_expiry", { mode: 'string' }),
+	tenantId: text("tenant_id"),
+	projectId: text("project_id"),
+	region: text(),
+	endpoint: text(),
+	config: jsonb(),
 	isActive: boolean("is_active").default(true),
-	version: text().default('1.0.0'),
+	isDefault: boolean("is_default").default(false),
+	description: text(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("branding_active_idx").using("btree", table.isActive.asc().nullsLast().op("bool_ops")),
-	index("branding_created_at_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	index("credentials_active_idx").using("btree", table.isActive.asc().nullsLast().op("bool_ops")),
+	index("credentials_default_idx").using("btree", table.isDefault.asc().nullsLast().op("bool_ops")),
+	index("credentials_provider_idx").using("btree", table.provider.asc().nullsLast().op("enum_ops")),
+	index("credentials_type_idx").using("btree", table.type.asc().nullsLast().op("enum_ops")),
 ]);
 
 export const emailTemplates = pgTable("email_templates", {
@@ -214,6 +209,38 @@ export const emailLogs = pgTable("email_logs", {
 		}),
 ]);
 
+export const branding = pgTable("branding", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	siteName: text("site_name").notNull(),
+	siteDescription: text("site_description"),
+	siteUrl: text("site_url"),
+	logoUrl: text("logo_url"),
+	logoAlt: text("logo_alt"),
+	faviconUrl: text("favicon_url"),
+	logoDisplayMode: text("logo_display_mode").default('logo-with-name'),
+	primaryColor: text("primary_color").default('#3b82f6'),
+	secondaryColor: text("secondary_color").default('#64748b'),
+	accentColor: text("accent_color").default('#f59e0b'),
+	backgroundColor: text("background_color").default('#ffffff'),
+	textColor: text("text_color").default('#1f2937'),
+	fontFamily: text("font_family").default('Inter, sans-serif'),
+	headingFont: text("heading_font"),
+	customFonts: jsonb("custom_fonts"),
+	borderRadius: text("border_radius").default('0.5rem'),
+	spacing: text().default('1rem'),
+	supportEmail: text("support_email"),
+	contactPhone: text("contact_phone"),
+	socialLinks: jsonb("social_links"),
+	customCss: text("custom_css"),
+	isActive: boolean("is_active").default(true),
+	version: text().default('1.0.0'),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("branding_active_idx").using("btree", table.isActive.asc().nullsLast().op("bool_ops")),
+	index("branding_created_at_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
+]);
+
 export const emailSettings = pgTable("email_settings", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	provider: emailProvider().notNull(),
@@ -236,6 +263,11 @@ export const emailSettings = pgTable("email_settings", {
 	description: text(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+	imapHost: text("imap_host"),
+	imapPort: text("imap_port"),
+	imapUser: text("imap_user"),
+	imapPassword: text("imap_password"),
+	imapSecure: boolean("imap_secure").default(true),
 }, (table) => [
 	index("email_settings_active_idx").using("btree", table.isActive.asc().nullsLast().op("bool_ops")),
 	index("email_settings_provider_idx").using("btree", table.provider.asc().nullsLast().op("enum_ops")),

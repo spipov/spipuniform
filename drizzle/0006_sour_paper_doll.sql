@@ -1,0 +1,1 @@
+ALTER TABLE "branding" ADD COLUMN "logo_display_mode" text DEFAULT 'logo-with-name';

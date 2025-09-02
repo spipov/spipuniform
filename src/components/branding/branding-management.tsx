@@ -29,8 +29,9 @@ interface BrandingConfig {
   siteDescription?: string;
   siteUrl?: string;
   logoUrl?: string;
-  logoAltText?: string;
+  logoAlt?: string;
   faviconUrl?: string;
+  logoDisplayMode?: 'logo-only' | 'logo-with-name' | 'name-only';
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
@@ -38,8 +39,18 @@ interface BrandingConfig {
   textColor: string;
   fontFamily: string;
   headingFont?: string;
-  fontSize: string;
-  lineHeight: string;
+  borderRadius?: string;
+  spacing?: string;
+  supportEmail?: string;
+  contactPhone?: string;
+  socialLinks?: {
+    twitter?: string;
+    facebook?: string;
+    linkedin?: string;
+    instagram?: string;
+    github?: string;
+  };
+  customCss?: string;
   customFonts?: Record<string, {
     url: string;
     format: string;
@@ -47,6 +58,7 @@ interface BrandingConfig {
     style?: string;
   }>;
   isActive: boolean;
+  version?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -117,7 +129,8 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
 
   const handleFileClick = (file: FileItem) => {
     if (file.type === 'folder') {
-      setCurrentPath(file.path === '/' ? `/${file.name}` : `${file.path}/${file.name}`);
+      // The file.path already includes the full path to the folder
+      setCurrentPath(file.path);
     } else {
       onFileSelect(file);
     }
@@ -618,8 +631,9 @@ export function BrandingManagement() {
       siteDescription: '',
       siteUrl: '',
       logoUrl: preselectedFiles.logo?.url || '',
-      logoAltText: '',
+      logoAlt: '',
       faviconUrl: preselectedFiles.favicon?.url || '',
+      logoDisplayMode: 'logo-with-name',
       primaryColor: '#3b82f6',
       secondaryColor: '#64748b',
       accentColor: '#f59e0b',
@@ -627,8 +641,12 @@ export function BrandingManagement() {
       textColor: '#1f2937',
       fontFamily: preselectedFiles.font ? preselectedFiles.font.name.replace(/\.(woff2?|ttf|otf)$/i, '') : 'Inter',
       headingFont: preselectedFiles.font ? preselectedFiles.font.name.replace(/\.(woff2?|ttf|otf)$/i, '') : 'Inter',
-      fontSize: '16px',
-      lineHeight: '1.5',
+      borderRadius: '0.5rem',
+      spacing: '1rem',
+      supportEmail: '',
+      contactPhone: '',
+      socialLinks: {},
+      customCss: '',
       customFonts: preselectedFiles.font && preselectedFiles.font.url ? {
         [preselectedFiles.font.name.replace(/\.(woff2?|ttf|otf)$/i, '')]: {
           url: preselectedFiles.font.url,
@@ -637,6 +655,7 @@ export function BrandingManagement() {
           style: 'normal',
         }
       } : undefined,
+      version: '1.0.0',
       isActive: false
     });
     setLogoPreview(preselectedFiles.logo?.url || null);
@@ -815,16 +834,19 @@ export function BrandingManagement() {
                       <Label htmlFor="logo">Logo</Label>
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenFilePicker('logo')}
-                            className="flex items-center gap-2"
-                          >
-                            <FolderOpen className="h-4 w-4" />
-                            Choose from File System
-                          </Button>
+                          <div className="flex flex-col gap-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleOpenFilePicker('logo')}
+                              className="flex items-center gap-2"
+                            >
+                              <FolderOpen className="h-4 w-4" />
+                              Choose from File System
+                            </Button>
+                            <span className="text-xs text-muted-foreground">Opens file browser below</span>
+                          </div>
                           <span className="text-sm text-muted-foreground">or</span>
                           <div className="flex-1">
                             <Input
@@ -837,47 +859,93 @@ export function BrandingManagement() {
                           </div>
                         </div>
                         {logoPreview && (
-                          <div className="w-16 h-16 border rounded-lg flex items-center justify-center bg-gray-50">
+                          <div className="w-16 h-16 border rounded-lg flex items-center justify-center bg-gray-50 relative group">
                             <img
                               src={logoPreview}
                               alt="Logo preview"
                               className="max-w-full max-h-full object-contain"
                             />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute -top-2 -right-2 w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => {
+                                setLogoPreview(null);
+                                setFormData(prev => ({ ...prev, logoUrl: '' }));
+                              }}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
                           </div>
                         )}
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="logoAltText">Logo Alt Text</Label>
+                      <Label htmlFor="logoAlt">Logo Alt Text</Label>
                       <Input
-                        id="logoAltText"
-                        value={formData.logoAltText || ''}
-                        onChange={(e) => handleInputChange('logoAltText', e.target.value)}
+                        id="logoAlt"
+                        value={formData.logoAlt || ''}
+                        onChange={(e) => handleInputChange('logoAlt', e.target.value)}
                         placeholder="Descriptive text for your logo"
                       />
+                    </div>
+                    <div>
+                      <Label htmlFor="logoDisplayMode">Logo Display Mode</Label>
+                      <Select
+                        value={formData.logoDisplayMode || 'logo-with-name'}
+                        onValueChange={(value) => handleInputChange('logoDisplayMode', value as 'logo-only' | 'logo-with-name' | 'name-only')}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select logo display mode" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="logo-only">Logo Only</SelectItem>
+                          <SelectItem value="logo-with-name">Logo + Name</SelectItem>
+                          <SelectItem value="name-only">Name Only</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        How the logo and app name appear in the header and throughout the app
+                      </p>
                     </div>
                     <div>
                       <Label htmlFor="favicon">Favicon</Label>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenFilePicker('favicon')}
-                            className="flex items-center gap-2"
-                          >
-                            <FolderOpen className="h-4 w-4" />
-                            Choose from File System
-                          </Button>
+                          <div className="flex flex-col gap-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleOpenFilePicker('favicon')}
+                              className="flex items-center gap-2"
+                            >
+                              <FolderOpen className="h-4 w-4" />
+                              Choose from File System
+                            </Button>
+                            <span className="text-xs text-muted-foreground">Opens file browser below</span>
+                          </div>
                           <span className="text-sm text-muted-foreground">or</span>
-                          <Input
-                            id="faviconUrl"
-                            value={formData.faviconUrl || ''}
-                            onChange={(e) => handleInputChange('faviconUrl', e.target.value)}
-                            placeholder="URL to your favicon"
-                            className="flex-1"
-                          />
+                          <div className="flex-1 flex items-center gap-2">
+                            <Input
+                              id="faviconUrl"
+                              value={formData.faviconUrl || ''}
+                              onChange={(e) => handleInputChange('faviconUrl', e.target.value)}
+                              placeholder="URL to your favicon"
+                            />
+                            {formData.faviconUrl && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleInputChange('faviconUrl', '')}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -975,7 +1043,7 @@ export function BrandingManagement() {
                       <Label htmlFor="fontFamily">Body Font</Label>
                       <div className="space-y-2">
                         <Select
-                          value={formData.customFonts && formData.fontFamily && formData.fontFamily in formData.customFonts ? formData.fontFamily : (formData.fontFamily || 'Inter')}
+                          value={formData.fontFamily || 'Inter'}
                           onValueChange={(value) => {
                             if (value === 'custom') {
                               handleOpenFilePicker('font');
@@ -993,7 +1061,15 @@ export function BrandingManagement() {
                                 {font.label}
                               </SelectItem>
                             ))}
-                            {/* Add custom fonts */}
+                            {/* Add current custom font if it's not in the standard list */}
+                            {formData.fontFamily && 
+                             !fontOptions.some(font => font.value === formData.fontFamily) && 
+                             formData.fontFamily !== 'custom' && (
+                              <SelectItem key={formData.fontFamily} value={formData.fontFamily}>
+                                {formData.fontFamily} (Current Custom)
+                              </SelectItem>
+                            )}
+                            {/* Add custom fonts from customFonts object */}
                             {formData.customFonts && Object.keys(formData.customFonts).map((fontName) => (
                               <SelectItem key={fontName} value={fontName}>
                                 {fontName} (Custom)
@@ -1043,6 +1119,8 @@ export function BrandingManagement() {
                         </Button>
                         <p className="text-xs text-muted-foreground">
                           Upload .woff or .woff2 font files to use custom fonts across your app
+                          <br />
+                          📁 <strong>Opens file browser below</strong> - scroll down to browse and upload files
                         </p>
                       </div>
                     </div>
@@ -1086,17 +1164,165 @@ export function BrandingManagement() {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Contact & Settings */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Contact & Settings</CardTitle>
+                    <CardDescription>Additional configuration and contact information</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="supportEmail">Support Email</Label>
+                        <Input
+                          id="supportEmail"
+                          type="email"
+                          value={formData.supportEmail || ''}
+                          onChange={(e) => handleInputChange('supportEmail', e.target.value)}
+                          placeholder="support@yourapp.com"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="contactPhone">Contact Phone</Label>
+                        <Input
+                          id="contactPhone"
+                          value={formData.contactPhone || ''}
+                          onChange={(e) => handleInputChange('contactPhone', e.target.value)}
+                          placeholder="+1 (555) 123-4567"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="borderRadius">Border Radius</Label>
+                        <Input
+                          id="borderRadius"
+                          value={formData.borderRadius || '0.5rem'}
+                          onChange={(e) => handleInputChange('borderRadius', e.target.value)}
+                          placeholder="0.5rem"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="spacing">Spacing</Label>
+                        <Input
+                          id="spacing"
+                          value={formData.spacing || '1rem'}
+                          onChange={(e) => handleInputChange('spacing', e.target.value)}
+                          placeholder="1rem"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="version">Version</Label>
+                      <Input
+                        id="version"
+                        value={formData.version || '1.0.0'}
+                        onChange={(e) => handleInputChange('version', e.target.value)}
+                        placeholder="1.0.0"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Social Links */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Social Media Links</CardTitle>
+                    <CardDescription>Configure your social media presence</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="twitter">Twitter/X URL</Label>
+                        <Input
+                          id="twitter"
+                          value={formData.socialLinks?.twitter || ''}
+                          onChange={(e) => handleInputChange('socialLinks', { ...formData.socialLinks, twitter: e.target.value })}
+                          placeholder="https://twitter.com/yourapp"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="facebook">Facebook URL</Label>
+                        <Input
+                          id="facebook"
+                          value={formData.socialLinks?.facebook || ''}
+                          onChange={(e) => handleInputChange('socialLinks', { ...formData.socialLinks, facebook: e.target.value })}
+                          placeholder="https://facebook.com/yourapp"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="linkedin">LinkedIn URL</Label>
+                        <Input
+                          id="linkedin"
+                          value={formData.socialLinks?.linkedin || ''}
+                          onChange={(e) => handleInputChange('socialLinks', { ...formData.socialLinks, linkedin: e.target.value })}
+                          placeholder="https://linkedin.com/company/yourapp"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="instagram">Instagram URL</Label>
+                        <Input
+                          id="instagram"
+                          value={formData.socialLinks?.instagram || ''}
+                          onChange={(e) => handleInputChange('socialLinks', { ...formData.socialLinks, instagram: e.target.value })}
+                          placeholder="https://instagram.com/yourapp"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="github">GitHub URL</Label>
+                      <Input
+                        id="github"
+                        value={formData.socialLinks?.github || ''}
+                        onChange={(e) => handleInputChange('socialLinks', { ...formData.socialLinks, github: e.target.value })}
+                        placeholder="https://github.com/yourapp"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Custom CSS */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Advanced Customization</CardTitle>
+                    <CardDescription>Custom CSS and advanced styling options</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="customCss">Custom CSS</Label>
+                      <Textarea
+                        id="customCss"
+                        value={formData.customCss || ''}
+                        onChange={(e) => handleInputChange('customCss', e.target.value)}
+                        placeholder="/* Add your custom CSS here */&#10;.custom-class {&#10;  /* Your styles */&#10;}"
+                        rows={8}
+                        className="font-mono text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Custom CSS will be injected into the application
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
               {/* File Picker Inline */}
               {filePickerType && (
                 <div className="mt-6 pt-6 border-t">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium">
-                      Select {filePickerType === 'logo' ? 'Logo Image' :
-                             filePickerType === 'favicon' ? 'Favicon' :
-                             filePickerType === 'font' ? 'Font File' : 'File'}
-                    </h3>
+                    <div>
+                      <h3 className="text-lg font-medium">
+                        Select {filePickerType === 'logo' ? 'Logo Image' :
+                               filePickerType === 'favicon' ? 'Favicon' :
+                               filePickerType === 'font' ? 'Font File' : 'File'}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        📁 Scroll down to browse files and folders in the file explorer below
+                      </p>
+                    </div>
                     <Button variant="outline" size="sm" onClick={handleFilePickerCancel}>
                       <X className="h-4 w-4" />
                     </Button>
@@ -1109,18 +1335,17 @@ export function BrandingManagement() {
                 </div>
               )}
 
-              {!filePickerType && (
-                <div className="flex justify-end gap-2 pt-6 border-t">
-                  <Button variant="outline" onClick={handleCancel}>
-                    <X className="mr-2 h-4 w-4" />
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSave} disabled={isSaving}>
-                    <Save className="mr-2 h-4 w-4" />
-                    {isSaving ? 'Saving...' : 'Save'}
-                  </Button>
-                </div>
-              )}
+              {/* Always show save buttons */}
+              <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                <Button variant="outline" onClick={handleCancel}>
+                  <X className="mr-2 h-4 w-4" />
+                  Cancel
+                </Button>
+                <Button onClick={handleSave} disabled={isSaving}>
+                  <Save className="mr-2 h-4 w-4" />
+                  {isSaving ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
@@ -1155,16 +1380,19 @@ export function BrandingManagement() {
             <div className="space-y-2">
               <Label>Logo</Label>
               <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleOpenFilePicker('logo')}
-                  className="flex items-center gap-2"
-                >
-                  <FolderOpen className="h-4 w-4" />
-                  Choose Logo
-                </Button>
+                <div className="flex flex-col gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenFilePicker('logo')}
+                    className="flex items-center gap-2"
+                  >
+                    <FolderOpen className="h-4 w-4" />
+                    Choose Logo
+                  </Button>
+                  <span className="text-xs text-muted-foreground text-center">File browser opens below</span>
+                </div>
                 {preselectedFiles.logo && (
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 border rounded overflow-hidden bg-muted">
@@ -1177,6 +1405,15 @@ export function BrandingManagement() {
                     <span className="text-sm text-muted-foreground truncate max-w-24">
                       {preselectedFiles.logo.name}
                     </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setPreselectedFiles(prev => ({ ...prev, logo: undefined }))}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
                   </div>
                 )}
               </div>
@@ -1186,16 +1423,19 @@ export function BrandingManagement() {
             <div className="space-y-2">
               <Label>Favicon</Label>
               <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleOpenFilePicker('favicon')}
-                  className="flex items-center gap-2"
-                >
-                  <FolderOpen className="h-4 w-4" />
-                  Choose Favicon
-                </Button>
+                <div className="flex flex-col gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenFilePicker('favicon')}
+                    className="flex items-center gap-2"
+                  >
+                    <FolderOpen className="h-4 w-4" />
+                    Choose Favicon
+                  </Button>
+                  <span className="text-xs text-muted-foreground text-center">File browser opens below</span>
+                </div>
                 {preselectedFiles.favicon && (
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 border rounded overflow-hidden bg-muted">
@@ -1208,6 +1448,15 @@ export function BrandingManagement() {
                     <span className="text-sm text-muted-foreground truncate max-w-24">
                       {preselectedFiles.favicon.name}
                     </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setPreselectedFiles(prev => ({ ...prev, favicon: undefined }))}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
                   </div>
                 )}
               </div>
@@ -1217,22 +1466,34 @@ export function BrandingManagement() {
             <div className="space-y-2">
               <Label>Custom Font</Label>
               <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleOpenFilePicker('font')}
-                  className="flex items-center gap-2"
-                >
-                  <Type className="h-4 w-4" />
-                  Choose Font
-                </Button>
+                <div className="flex flex-col gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenFilePicker('font')}
+                    className="flex items-center gap-2"
+                  >
+                    <Type className="h-4 w-4" />
+                    Choose Font
+                  </Button>
+                  <span className="text-xs text-muted-foreground text-center">File browser opens below</span>
+                </div>
                 {preselectedFiles.font && (
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground truncate max-w-24">
                       {preselectedFiles.font.name}
                     </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setPreselectedFiles(prev => ({ ...prev, font: undefined }))}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
                   </div>
                 )}
               </div>

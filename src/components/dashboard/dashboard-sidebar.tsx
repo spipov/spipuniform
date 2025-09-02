@@ -2,12 +2,12 @@ import type * as React from "react";
 import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { UserLogoutCard } from "./user-logout-card";
+import { BrandingProvider, SmartBrandingLogo } from "@/components/branding/branding-logo";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
@@ -83,24 +83,22 @@ const systemAdminNavigation = [
 export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   
   return (
-    <Sidebar variant="inset" className="dashboard-sidebar" {...props}>
-      <SidebarHeader className="dashboard-sidebar__header">
-        <SidebarMenu className="dashboard-sidebar__header-menu">
-          <SidebarMenuItem className="dashboard-sidebar__header-menu-item">
-            <SidebarMenuButton size="lg" asChild className="dashboard-sidebar__header-button">
-              <Link to="/dashboard" className="dashboard-sidebar__header-link">
-                <div className="dashboard-sidebar__logo bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <LayoutDashboard className="dashboard-sidebar__logo-icon size-4" />
-                </div>
-                <div className="dashboard-sidebar__brand flex flex-col gap-0.5 leading-none">
-                  <span className="dashboard-sidebar__brand-title font-medium">Dashboard</span>
-                  <span className="dashboard-sidebar__brand-subtitle text-xs">Admin Panel</span>
-                </div>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
+    <BrandingProvider>
+      <Sidebar variant="inset" className="dashboard-sidebar" {...props}>
+        <SidebarHeader className="dashboard-sidebar__header">
+          <SidebarMenu className="dashboard-sidebar__header-menu">
+            <SidebarMenuItem className="dashboard-sidebar__header-menu-item">
+              <SidebarMenuButton size="lg" asChild className="dashboard-sidebar__header-button">
+                <Link to="/dashboard" className="dashboard-sidebar__header-link">
+                  <SmartBrandingLogo 
+                    size="sm" 
+                    className="text-sidebar-foreground"
+                  />
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
       <SidebarContent className="dashboard-sidebar__content">
         <SidebarGroup className="dashboard-sidebar__nav-group">
           <SidebarMenu className="dashboard-sidebar__nav-menu">
@@ -181,5 +179,6 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
       </SidebarFooter>
       <SidebarRail className="dashboard-sidebar__rail" />
     </Sidebar>
+    </BrandingProvider>
   );
 }

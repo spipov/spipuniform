@@ -43,6 +43,13 @@
       "when": 1756805511618,
       "tag": "0005_daily_quentin_quire",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1756844541718,
+      "tag": "0006_sour_paper_doll",
+      "breakpoints": true
     }
   ]
 }
