@@ -74,7 +74,7 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [currentPath, setCurrentPath] = useState('/');
+  const [currentPath, setCurrentPath] = useState('/uploads');
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
 
@@ -85,17 +85,17 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
       const result = await response.json();
 
       if (result.success) {
-        // Filter files based on type
+        // Filter files based on type but always show folders for navigation
         let filteredFiles = result.data.files;
         if (type === 'font') {
           filteredFiles = filteredFiles.filter((file: FileItem) =>
-            file.type === 'file' &&
-            (file.mimeType?.startsWith('font/') || /\.(woff2?|ttf|otf)$/i.test(file.name))
+            file.type === 'folder' || 
+            (file.type === 'file' && (file.mimeType?.startsWith('font/') || /\.(woff2?|ttf|otf)$/i.test(file.name)))
           );
         } else if (type === 'logo' || type === 'favicon') {
           filteredFiles = filteredFiles.filter((file: FileItem) =>
-            file.type === 'file' &&
-            (file.mimeType?.startsWith('image/') || /\.(jpg|jpeg|png|svg|gif|webp)$/i.test(file.name))
+            file.type === 'folder' || 
+            (file.type === 'file' && (file.mimeType?.startsWith('image/') || /\.(jpg|jpeg|png|svg|gif|webp)$/i.test(file.name)))
           );
         }
 
