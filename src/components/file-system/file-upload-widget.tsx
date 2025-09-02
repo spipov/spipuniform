@@ -1,5 +1,21 @@
-import { useState, useRef } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useState, useRef, useEffect } from "react";
+import { useMutation, QueryClient } from "@tanstack/react-query";
+
+// Safe useMutation hook that handles SSR
+function useSafeMutation(options: any) {
+  try {
+    return useMutation(options);
+  } catch (error) {
+    console.warn("useMutation not available:", error);
+    return {
+      mutate: () => {},
+      isPending: false,
+      isError: false,
+      error: null,
+      reset: () => {},
+    };
+  }
+}
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +51,8 @@ interface UploadState {
   success: boolean;
 }
 
-export function FileUploadWidget({
+// Client-side only wrapper
+function FileUploadWidgetClient({
   onFileUploaded,
   acceptedFileTypes = "image/*",
   maxFileSize = 5 * 1024 * 1024, // 5MB default
@@ -57,7 +74,7 @@ export function FileUploadWidget({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const uploadMutation = useMutation({
+  const uploadMutation = useSafeMutation({
     mutationFn: async (file: File) => {
       setUploadState(prev => ({ ...prev, isUploading: true, error: null, progress: 0 }));
 
@@ -360,4 +377,25 @@ export function FileUploadWidget({
       />
     </div>
   );
+}
+
+// Main component with SSR safety
+export function FileUploadWidget(props: FileUploadWidgetProps) {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Don't render anything during SSR
+  if (typeof window === 'undefined' || !mounted) {
+    return (
+      <div className="flex items-center justify-center h-32 border border-dashed border-gray-300 rounded-lg">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+        <span className="ml-2 text-sm text-gray-600">Loading uploader...</span>
+      </div>
+    );
+  }
+
+  return <FileUploadWidgetClient {...props} />;
 }

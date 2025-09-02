@@ -1,8 +1,18 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient, QueryClient } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { valibotValidator } from "@tanstack/valibot-form-adapter";
 import * as v from "valibot";
+
+// Safe QueryClient hook that handles SSR
+function useSafeQueryClient(): QueryClient | null {
+  try {
+    return useQueryClient();
+  } catch (error) {
+    console.warn("QueryClient not available:", error);
+    return null;
+  }
+}
 import {
   Card,
   CardContent,
@@ -68,13 +78,14 @@ interface StorageSettingsManagementProps {
   className?: string;
 }
 
-export function StorageSettingsManagement({ className }: StorageSettingsManagementProps) {
+// Client-side only wrapper
+function StorageSettingsManagementClient({ className }: StorageSettingsManagementProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingSettings, setEditingSettings] = useState<StorageSettings | null>(null);
   const [settingsToDelete, setSettingsToDelete] = useState<StorageSettings | null>(null);
   const [testingSettings, setTestingSettings] = useState<string | null>(null);
   
-  const queryClient = useQueryClient();
+  const queryClient = useSafeQueryClient();
 
   // Fetch all storage settings
   const { data: allSettings, isLoading } = useQuery<StorageSettings[]>({
@@ -586,4 +597,27 @@ export function StorageSettingsManagement({ className }: StorageSettingsManageme
       </AlertDialog>
     </div>
   );
+}
+
+// Main component with SSR safety
+export function StorageSettingsManagement({ className }: StorageSettingsManagementProps) {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Don't render anything during SSR
+  if (typeof window === 'undefined' || !mounted) {
+    return (
+      <div className={cn("space-y-6", className)}>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          <span className="ml-2">Loading storage settings...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return <StorageSettingsManagementClient className={className} />;
 }

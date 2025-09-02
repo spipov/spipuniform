@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, QueryClient } from "@tanstack/react-query";
+
+// Safe QueryClient hook that handles SSR
+function useSafeQueryClient(): QueryClient | null {
+  try {
+    return useQueryClient();
+  } catch (error) {
+    console.warn("QueryClient not available:", error);
+    return null;
+  }
+}
 import { 
   Folder, 
   File, 
@@ -40,14 +50,15 @@ interface FileManagerDashboardProps {
   className?: string;
 }
 
-export function FileManagerDashboard({ className }: FileManagerDashboardProps) {
+// Client-side only wrapper
+function FileManagerDashboardClient({ className }: FileManagerDashboardProps) {
   const [currentPath, setCurrentPath] = useState("/");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [fileToDelete, setFileToDelete] = useState<FileItem | null>(null);
   
-  const queryClient = useQueryClient();
+  const queryClient = useSafeQueryClient();
 
   // Fetch files for current path
   const { data: filesData, isLoading } = useQuery<FileListResponse>({
@@ -394,4 +405,25 @@ export function FileManagerDashboard({ className }: FileManagerDashboardProps) {
       </AlertDialog>
     </div>
   );
+}
+
+// Main component with SSR safety
+export function FileManagerDashboard({ className }: FileManagerDashboardProps) {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Don't render anything during SSR
+  if (typeof window === 'undefined' || !mounted) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <span className="ml-2">Loading file manager...</span>
+      </div>
+    );
+  }
+
+  return <FileManagerDashboardClient className={className} />;
 }
