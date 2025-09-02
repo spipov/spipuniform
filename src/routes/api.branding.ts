@@ -10,7 +10,18 @@ export const ServerRoute = createServerFileRoute('/api/branding').methods({
     const url = new URL(request.url);
     const endpoint = url.pathname.split('/api/branding')[1];
 
-    // Handle custom font CSS endpoint
+    // Handle complete branding CSS endpoint
+    if (endpoint === '/branding.css') {
+      const brandingCSS = await BrandingService.generateBrandingCSS();
+      return new Response(brandingCSS, {
+        headers: {
+          'Content-Type': 'text/css',
+          'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+        },
+      });
+    }
+
+    // Handle custom font CSS endpoint (legacy)
     if (endpoint === '/fonts.css') {
       const customFontCSS = await BrandingService.generateCustomFontCSS();
       return new Response(customFontCSS, {

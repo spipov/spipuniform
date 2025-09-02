@@ -261,8 +261,8 @@ export class BrandingService {
         '--accent-color': activeBranding.accentColor || '#f59e0b',
         '--background-color': activeBranding.backgroundColor || '#ffffff',
         '--text-color': activeBranding.textColor || '#1f2937',
-        '--font-family': activeBranding.fontFamily || 'Inter, sans-serif',
-        '--heading-font': activeBranding.headingFont || activeBranding.fontFamily || 'Inter, sans-serif',
+        '--font-family': this.getFontFamilyForCSS(activeBranding.fontFamily) || 'Inter, sans-serif',
+        '--heading-font': this.getFontFamilyForCSS(activeBranding.headingFont) || this.getFontFamilyForCSS(activeBranding.fontFamily) || 'Inter, sans-serif',
         '--border-radius': activeBranding.borderRadius || '0.5rem',
         '--spacing': activeBranding.spacing || '1rem',
       };
@@ -283,35 +283,170 @@ export class BrandingService {
   }
 
   /**
-   * Generate CSS for custom fonts
+   * Generate complete CSS including custom fonts and variables
    */
-  static async generateCustomFontCSS(): Promise<string> {
+  static async generateBrandingCSS(): Promise<string> {
     try {
       const activeBranding = await this.getActiveBranding();
-
-      if (!activeBranding?.customFonts) {
-        return '';
+      const cssVariables = await this.getBrandingCSSVariables();
+      
+      let css = '';
+      
+      // Add CSS variables to :root
+      const rootVariables = Object.entries(cssVariables)
+        .map(([key, value]) => `  ${key}: ${value};`)
+        .join('\n');
+      
+      css += `:root {\n${rootVariables}\n}\n\n`;
+      
+      // Add font imports/declarations
+      if (activeBranding?.fontFamily) {
+        if (this.isWebFont(activeBranding.fontFamily)) {
+          css += `@import url('${this.generateFontImportUrl(activeBranding.fontFamily)}');\n\n`;
+        } else if (this.isCustomFontFile(activeBranding.fontFamily)) {
+          css += this.generateCustomFontFace(activeBranding.fontFamily, 'body-font');
+        }
       }
-
-      const fontFaces: string[] = [];
-
-      for (const [fontName, fontData] of Object.entries(activeBranding.customFonts)) {
-        const fontFace = `
-@font-face {
-  font-family: '${fontName}';
-  src: url('${fontData.url}') format('${fontData.format}');
-  ${fontData.weight ? `font-weight: ${fontData.weight};` : ''}
-  ${fontData.style ? `font-style: ${fontData.style};` : ''}
+      
+      if (activeBranding?.headingFont && 
+          activeBranding.headingFont !== activeBranding.fontFamily) {
+        if (this.isWebFont(activeBranding.headingFont)) {
+          css += `@import url('${this.generateFontImportUrl(activeBranding.headingFont)}');\n\n`;
+        } else if (this.isCustomFontFile(activeBranding.headingFont)) {
+          css += this.generateCustomFontFace(activeBranding.headingFont, 'heading-font');
+        }
+      }
+      
+      // Add ONLY font application - no colors, no layout changes
+      css += `
+/* Apply branding fonts only - minimal and safe */
+body {
+  font-family: var(--font-family), -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 }
-        `.trim();
-        fontFaces.push(fontFace);
-      }
 
-      return fontFaces.join('\n\n');
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--heading-font), var(--font-family), -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+}`;
+
+      return css;
     } catch (error) {
-      console.error('Error generating custom font CSS:', error);
+      console.error('Error generating branding CSS:', error);
       return '';
     }
+  }
+
+  /**
+   * Check if a font family is a web font that needs importing
+   */
+  private static isWebFont(fontFamily: string): boolean {
+    // Check if it's a Google Font or other web font
+    const webFonts = [
+      'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Source Sans Pro',
+      'Raleway', 'Poppins', 'Noto Sans', 'Ubuntu', 'Nunito', 'Playfair Display',
+      'Merriweather', 'Lora', 'Oswald', 'PT Sans', 'Slabo 27px', 'Work Sans'
+    ];
+    return webFonts.some(webFont => fontFamily.includes(webFont));
+  }
+
+  /**
+   * Generate Google Fonts import URL
+   */
+  private static generateFontImportUrl(fontFamily: string): string {
+    // Extract font name and generate Google Fonts URL
+    const fontName = fontFamily.split(',')[0].trim().replace(/['"]/g, '');
+    const encodedFontName = fontName.replace(/\s+/g, '+');
+    return `https://fonts.googleapis.com/css2?family=${encodedFontName}:wght@300;400;500;600;700&display=swap`;
+  }
+
+  /**
+   * Check if a font is a custom font file
+   */
+  private static isCustomFontFile(fontFamily: string): boolean {
+    // Check if it looks like a file name (contains numbers, underscores, or file extensions)
+    return /\d|_|-/.test(fontFamily) && !this.isWebFont(fontFamily);
+  }
+
+  /**
+   * Generate @font-face declaration for custom font files
+   */
+  private static generateCustomFontFace(fontFileName: string, familyName: string): string {
+    // Extract file extension to determine format
+    const fileExtension = fontFileName.split('.').pop()?.toLowerCase();
+    let format = 'woff2';
+    
+    switch (fileExtension) {
+      case 'woff':
+        format = 'woff';
+        break;
+      case 'woff2':
+        format = 'woff2';
+        break;
+      case 'otf':
+        format = 'opentype';
+        break;
+      case 'ttf':
+        format = 'truetype';
+        break;
+      default:
+        // Try to guess from filename or default to woff2
+        if (fontFileName.includes('woff2')) format = 'woff2';
+        else if (fontFileName.includes('woff')) format = 'woff';
+        else if (fontFileName.includes('otf')) format = 'opentype';
+        else if (fontFileName.includes('ttf')) format = 'truetype';
+        break;
+    }
+
+    // Clean font name for family declaration
+    const cleanFontName = fontFileName
+      .replace(/^\d+_/, '') // Remove timestamp prefix
+      .replace(/\.(woff2|woff|otf|ttf)$/, '') // Remove extension
+      .replace(/[-_]/g, ' '); // Replace dashes/underscores with spaces
+
+    return `@font-face {
+  font-family: '${cleanFontName}';
+  src: url('/uploads/fonts/${fontFileName}') format('${format}');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+`;
+  }
+
+  /**
+   * Get the proper font family name for CSS
+   */
+  private static getFontFamilyForCSS(fontFamily: string | null | undefined): string | null {
+    if (!fontFamily) return null;
+    
+    // If it's a web font, return as-is
+    if (this.isWebFont(fontFamily)) {
+      return fontFamily;
+    }
+    
+    // If it's a custom font file, return the cleaned name with quotes
+    if (this.isCustomFontFile(fontFamily)) {
+      const cleanFontName = fontFamily
+        .replace(/^\d+_/, '') // Remove timestamp prefix
+        .replace(/\.(woff2|woff|otf|ttf)$/, '') // Remove extension
+        .replace(/[-_]/g, ' '); // Replace dashes/underscores with spaces
+      
+      return `'${cleanFontName}', sans-serif`;
+    }
+    
+    // Return as-is for system fonts
+    return fontFamily;
+  }
+
+  /**
+   * Generate CSS for custom fonts (legacy method)
+   */
+  static async generateCustomFontCSS(): Promise<string> {
+    const css = await this.generateBrandingCSS();
+    // Extract only the font-face declarations
+    const fontFaceRegex = /@font-face\s*{[^}]+}/g;
+    const fontFaces = css.match(fontFaceRegex);
+    return fontFaces ? fontFaces.join('\n\n') : '';
   }
 }
 
