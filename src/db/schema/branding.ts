@@ -113,6 +113,27 @@ export const selectBrandingSchema = createSelectSchema(branding);
 export const updateBrandingSchema = v.partial(insertBrandingSchema);
 
 // Types
-export type Branding = typeof branding.$inferSelect;
-export type NewBranding = typeof branding.$inferInsert;
-export type UpdateBranding = v.InferInput<typeof updateBrandingSchema>;
+export type Branding = typeof branding.$inferSelect & {
+  customFonts?: Record<string, {
+    url: string;
+    format: string;
+    weight?: string;
+    style?: string;
+  }>;
+};
+export type NewBranding = typeof branding.$inferInsert & {
+  customFonts?: Record<string, {
+    url: string;
+    format: string;
+    weight?: string;
+    style?: string;
+  }>;
+};
+export type UpdateBranding = v.InferInput<typeof updateBrandingSchema> & {
+  customFonts?: Record<string, {
+    url: string;
+    format: string;
+    weight?: string;
+    style?: string;
+  }>;
+};

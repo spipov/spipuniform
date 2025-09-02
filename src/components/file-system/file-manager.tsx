@@ -79,6 +79,8 @@ function FileManagerContent({ className }: FileManagerProps) {
   // File upload mutation
   const uploadMutation = useMutation({
     mutationFn: async (files: FileList) => {
+      console.log('FileManager: Starting upload - files:', Array.from(files).map(f => f.name), 'to path:', state.currentPath);
+      
       const formData = new FormData();
       Array.from(files).forEach(file => {
         formData.append('files', file);
@@ -90,7 +92,11 @@ function FileManagerContent({ className }: FileManagerProps) {
         body: formData,
       });
 
+      console.log('FileManager: Upload response status:', response.status);
+      
       const result = await response.json();
+      console.log('FileManager: Upload result:', result);
+      
       if (!result.success) {
         throw new Error(result.error);
       }
@@ -114,23 +120,37 @@ function FileManagerContent({ className }: FileManagerProps) {
 
   // File deletion mutation
   const deleteMutation = useMutation({
-    mutationFn: async (fileId: string) => {
-      const response = await fetch(`/api/files?id=${fileId}`, {
+    mutationFn: async (filePath: string) => {
+      console.log('FileManager: Starting delete for path:', filePath);
+      
+      const response = await fetch(`/api/files?path=${encodeURIComponent(filePath)}`, {
         method: 'DELETE',
       });
 
+      console.log('FileManager: Delete response status:', response.status);
+      
       const result = await response.json();
+      console.log('FileManager: Delete result:', result);
+      
       if (!result.success) {
         throw new Error(result.error);
       }
 
       return result.data;
     },
-    onSuccess: (_, fileId) => {
-      removeFile(fileId);
+    onSuccess: (_, filePath) => {
+      console.log('FileManager: Delete success callback - filePath:', filePath);
+      // Find the file by path to get id
+      const file = state.files.find(f => f.path === filePath);
+      if (file) {
+        removeFile(file.id);
+      }
       setFileToDelete(null);
+      // Force refetch the current path
+      queryClient.invalidateQueries({ queryKey: ['files', state.currentPath, state.searchQuery] });
       queryClient.invalidateQueries({ queryKey: ['files'] });
       queryClient.invalidateQueries({ queryKey: ['folders'] });
+      refetch();
       toast.success('File deleted successfully');
     },
   });
@@ -138,13 +158,19 @@ function FileManagerContent({ className }: FileManagerProps) {
   // File update mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      console.log('FileManager: Starting rename for id:', id, 'data:', data);
+      
       const response = await fetch('/api/files', {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, ...data }),
       });
 
+      console.log('FileManager: Rename response status:', response.status);
+      
       const result = await response.json();
+      console.log('FileManager: Rename result:', result);
+      
       if (!result.success) {
         throw new Error(result.error);
       }
@@ -152,11 +178,15 @@ function FileManagerContent({ className }: FileManagerProps) {
       return result.data;
     },
     onSuccess: (updatedFile) => {
+      console.log('FileManager: Rename success callback - updatedFile:', updatedFile);
       updateFile(updatedFile);
       setFileToRename(null);
       setNewName('');
+      // Force refetch the current path
+      queryClient.invalidateQueries({ queryKey: ['files', state.currentPath, state.searchQuery] });
       queryClient.invalidateQueries({ queryKey: ['files'] });
       queryClient.invalidateQueries({ queryKey: ['folders'] });
+      refetch();
       toast.success('File renamed successfully');
     },
   });
@@ -164,17 +194,22 @@ function FileManagerContent({ className }: FileManagerProps) {
   // Folder creation mutation
   const createFolderMutation = useMutation({
     mutationFn: async ({ name, path }: { name: string; path: string }) => {
+      console.log('FileManager: Starting folder creation - name:', name, 'path:', path);
+      
       const response = await fetch('/api/files', {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
           path,
-          type: 'folder',
         }),
       });
 
+      console.log('FileManager: Create folder response status:', response.status);
+      
       const result = await response.json();
+      console.log('FileManager: Create folder result:', result);
+      
       if (!result.success) {
         throw new Error(result.error);
       }
@@ -182,11 +217,15 @@ function FileManagerContent({ className }: FileManagerProps) {
       return result.data;
     },
     onSuccess: (newFolder) => {
+      console.log('FileManager: Create folder success callback - newFolder:', newFolder);
       addFile(newFolder);
       setFolderToCreate(null);
       setNewFolderName('');
+      // Force refetch the current path
+      queryClient.invalidateQueries({ queryKey: ['files', state.currentPath, state.searchQuery] });
       queryClient.invalidateQueries({ queryKey: ['files'] });
       queryClient.invalidateQueries({ queryKey: ['folders'] });
+      refetch();
       toast.success('Folder created successfully');
     },
   });
@@ -218,10 +257,12 @@ function FileManagerContent({ className }: FileManagerProps) {
   };
 
   const handleDelete = (file: FileItem) => {
+    console.log('FileManager: Delete button clicked for file:', file);
     setFileToDelete(file);
   };
 
   const handleDeleteById = (fileId: string) => {
+    console.log('FileManager: Delete by ID clicked for fileId:', fileId);
     const file = state.files.find(f => f.id === fileId);
     if (file) {
       setFileToDelete(file);
@@ -229,6 +270,7 @@ function FileManagerContent({ className }: FileManagerProps) {
   };
 
   const handleRename = (file: FileItem) => {
+    console.log('FileManager: Rename button clicked for file:', file);
     setFileToRename(file);
     setNewName(file.name);
   };
@@ -240,21 +282,25 @@ function FileManagerContent({ className }: FileManagerProps) {
 
   const handleCreateFolder = (parentPath?: string) => {
     const path = parentPath || state.currentPath;
+    console.log('FileManager: Create folder button clicked for path:', path);
     setFolderToCreate(path);
     setNewFolderName('');
   };
 
   const handleFilesDrop = (files: FileList) => {
+    console.log('FileManager: Files dropped:', Array.from(files).map(f => f.name));
     uploadMutation.mutate(files);
   };
 
   const confirmDelete = () => {
+    console.log('FileManager: Confirm delete clicked for file:', fileToDelete);
     if (fileToDelete) {
-      deleteMutation.mutate(fileToDelete.id);
+      deleteMutation.mutate(fileToDelete.path);
     }
   };
 
   const confirmRename = () => {
+    console.log('FileManager: Confirm rename clicked - file:', fileToRename, 'newName:', newName);
     if (fileToRename && newName.trim()) {
       updateMutation.mutate({
         id: fileToRename.id,
@@ -264,6 +310,7 @@ function FileManagerContent({ className }: FileManagerProps) {
   };
 
   const confirmCreateFolder = () => {
+    console.log('FileManager: Confirm create folder clicked - path:', folderToCreate, 'name:', newFolderName);
     if (folderToCreate && newFolderName.trim()) {
       createFolderMutation.mutate({
         name: newFolderName.trim(),

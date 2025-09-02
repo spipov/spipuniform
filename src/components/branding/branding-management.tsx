@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Palette, Eye, Settings, Plus, Edit, Trash2, Check, Save, X, FolderOpen, Type, Upload, Image, File, Folder } from 'lucide-react';
+import { Palette, Eye, Settings, Plus, Edit, Trash2, Check, Save, X, FolderOpen, Type, Upload, Image, File, Folder, FileText, MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 interface FileItem {
   id: string;
@@ -74,6 +75,8 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [currentPath, setCurrentPath] = useState('/');
+  const [creatingFolder, setCreatingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
 
   const loadFiles = useCallback(async () => {
     try {
@@ -128,27 +131,116 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
     }
   };
 
+  const handleCreateFolder = async () => {
+    console.log('Create folder clicked, folder name:', newFolderName);
+    
+    if (!newFolderName.trim()) {
+      toast.error('Folder name is required');
+      return;
+    }
+
+    const folderData = {
+      path: currentPath,
+      name: newFolderName.trim(),
+    };
+    
+    console.log('Making PUT request to create folder:', folderData);
+
+    try {
+      const response = await fetch('/api/files', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(folderData),
+      });
+
+      console.log('Create folder response status:', response.status);
+      
+      const result = await response.json();
+      console.log('Create folder result:', result);
+
+      if (result.success) {
+        toast.success(`Folder "${newFolderName}" created successfully`);
+        setNewFolderName('');
+        setCreatingFolder(false);
+        console.log('Reloading files after folder creation');
+        await loadFiles(); // Reload the file list
+      } else {
+        toast.error(result.error || 'Failed to create folder');
+      }
+    } catch (error) {
+      console.error('Error creating folder:', error);
+      toast.error('Failed to create folder');
+    }
+  };
+
+  const handleDeleteFile = async (file: FileItem, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent triggering the file click
+    
+    console.log('Delete button clicked for file:', file);
+    
+    if (!confirm(`Are you sure you want to delete "${file.name}"?`)) {
+      console.log('User cancelled delete');
+      return;
+    }
+    
+    const deleteUrl = `/api/files?path=${encodeURIComponent(file.path)}`;
+    console.log('Making DELETE request to:', deleteUrl);
+    
+    try {
+      const response = await fetch(deleteUrl, {
+        method: 'DELETE',
+      });
+      
+      console.log('Delete response status:', response.status);
+      console.log('Delete response:', response);
+      
+      const result = await response.json();
+      console.log('Delete result:', result);
+      
+      if (result.success) {
+        toast.success(`"${file.name}" deleted successfully`);
+        console.log('Reloading files after delete');
+        await loadFiles(); // Reload the file list
+      } else {
+        toast.error(result.error || 'Failed to delete file');
+      }
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      toast.error('Failed to delete file');
+    }
+  };
+
   const handleFileUpload = async () => {
+    console.log('Upload button clicked');
+    
     const input = document.createElement('input');
     input.type = 'file';
     input.style.display = 'none';
-    
+    input.style.position = 'fixed';
+    input.style.top = '0';
+    input.style.left = '0';
+    input.style.zIndex = '999999';
+
     // Set appropriate file filters based on type
     if (type === 'font') {
       input.accept = '.woff,.woff2,.ttf,.otf';
     } else if (type === 'logo' || type === 'favicon') {
       input.accept = '.jpg,.jpeg,.png,.svg,.gif,.webp';
     }
-    
+
     input.onchange = async (event) => {
       const file = (event.target as HTMLInputElement).files?.[0];
+      console.log('File selected for upload:', file);
+      
       if (file) {
         try {
           setUploading(true);
           const formData = new FormData();
-          formData.append('file', file);
+          formData.append('files', file); // Note: changed from 'file' to 'files'
           formData.append('path', currentPath);
-          
+
           // Determine category based on type
           let category = 'documents';
           if (type === 'font') {
@@ -157,16 +249,22 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
             category = 'images';
           }
           formData.append('category', category);
-          
+
+          console.log('Uploading file with category:', category, 'to path:', currentPath);
+
           const response = await fetch('/api/files', {
             method: 'POST',
             body: formData,
           });
+
+          console.log('Upload response status:', response.status);
           
           const result = await response.json();
-          
+          console.log('Upload result:', result);
+
           if (result.success) {
             toast.success(`${file.name} uploaded successfully`);
+            console.log('Reloading files after upload');
             await loadFiles(); // Reload the file list
           } else {
             toast.error(result.error || 'Failed to upload file');
@@ -178,15 +276,22 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
           setUploading(false);
         }
       }
-      document.body.removeChild(input);
+      if (document.body.contains(input)) {
+        document.body.removeChild(input);
+      }
     };
-    
+
     input.oncancel = () => {
-      document.body.removeChild(input);
+      if (document.body.contains(input)) {
+        document.body.removeChild(input);
+      }
     };
-    
+
     document.body.appendChild(input);
-    input.click();
+    // Add a small delay to ensure the input is properly rendered before clicking
+    setTimeout(() => {
+      input.click();
+    }, 10);
   };
 
   if (loading) {
@@ -200,7 +305,7 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
 
   return (
     <div className="space-y-4">
-      {/* Header with Upload Button */}
+      {/* Header with Upload and Create Folder Buttons */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button
@@ -213,26 +318,67 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
           </Button>
           <span className="text-sm font-medium">{currentPath === '/' ? 'Root' : currentPath}</span>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleFileUpload}
-          disabled={uploading}
-          className="flex items-center gap-2"
-        >
-          {uploading ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-              Uploading...
-            </>
-          ) : (
-            <>
-              <Upload className="h-4 w-4" />
-              Upload New
-            </>
-          )}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCreatingFolder(true)}
+            className="flex items-center gap-2"
+          >
+            <Folder className="h-4 w-4" />
+            Create Folder
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleFileUpload}
+            disabled={uploading}
+            className="flex items-center gap-2"
+          >
+            {uploading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Upload className="h-4 w-4" />
+                Upload New
+              </>
+            )}
+          </Button>
+        </div>
       </div>
+
+      {/* Create Folder Input */}
+      {creatingFolder && (
+        <div className="flex items-center gap-2 mt-4 p-3 bg-muted rounded">
+          <Input
+            placeholder="Enter folder name"
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleCreateFolder();
+              } else if (e.key === 'Escape') {
+                setCreatingFolder(false);
+                setNewFolderName('');
+              }
+            }}
+            className="flex-1"
+            autoFocus
+          />
+          <Button size="sm" onClick={handleCreateFolder} disabled={!newFolderName.trim()}>
+            Create
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => {
+            setCreatingFolder(false);
+            setNewFolderName('');
+          }}>
+            Cancel
+          </Button>
+        </div>
+      )}
 
       {/* File List */}
       <div className="max-h-96 overflow-y-auto border rounded">
@@ -250,31 +396,47 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
             {files.map((file) => (
               <div
                 key={file.id}
-                className="flex items-center gap-3 p-3 hover:bg-muted cursor-pointer"
-                onClick={() => handleFileClick(file)}
+                className="flex items-center gap-3 p-3 hover:bg-muted group relative"
               >
-                {file.type === 'folder' ? (
-                  <Folder className="h-5 w-5 text-blue-500" />
-                ) : (
-                  <File className="h-5 w-5 text-gray-500" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{file.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {file.type === 'folder' ? 'Folder' : `${((file.size || 0) / 1024).toFixed(1)} KB`}
-                  </p>
-                </div>
-                {file.type === 'file' && file.url && (type === 'logo' || type === 'favicon') && (
-                  <div className="w-8 h-8 rounded overflow-hidden bg-muted">
-                    <img 
-                      src={file.url} 
-                      alt={file.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
+                <div 
+                  className="flex items-center gap-3 flex-1 cursor-pointer"
+                  onClick={() => handleFileClick(file)}
+                >
+                  {file.type === 'folder' ? (
+                    <Folder className="h-5 w-5 text-blue-500" />
+                  ) : (
+                    <File className="h-5 w-5 text-gray-500" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{file.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {file.type === 'folder' ? 'Folder' : `${((file.size || 0) / 1024).toFixed(1)} KB`}
+                    </p>
                   </div>
+                  {file.type === 'file' && file.url && (type === 'logo' || type === 'favicon') && (
+                    <div className="w-8 h-8 rounded overflow-hidden bg-muted">
+                      <img 
+                        src={file.url} 
+                        alt={file.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+                
+                {/* Delete button - only show for files */}
+                {file.type === 'file' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={(e) => handleDeleteFile(file, e)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 )}
               </div>
             ))}
@@ -306,8 +468,6 @@ const lineHeightOptions = [
   { value: '1.8', label: 'Loose (1.8)' }
 ];
 
-// Global modal state to test if it's a rendering issue within the component
-let globalModalOpen = false;
 
 export function BrandingManagement() {
   const [brandingConfigs, setBrandingConfigs] = useState<BrandingConfig[]>([]);
@@ -318,15 +478,18 @@ export function BrandingManagement() {
   const [formData, setFormData] = useState<Partial<BrandingConfig>>({});
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   
-  // File Picker Dialog State
-  const [filePickerOpen, setFilePickerOpen] = useState<{ type: 'logo' | 'favicon' | 'font' | null, open: boolean }>({ type: null, open: false });
+  // File Picker Inline State
+  const [filePickerType, setFilePickerType] = useState<'logo' | 'favicon' | 'font' | null>(null);
+  const [preselectedFiles, setPreselectedFiles] = useState<{
+    logo?: FileItem;
+    favicon?: FileItem;
+    font?: FileItem;
+  }>({});
   
   // Debug the state changes
   useEffect(() => {
-    console.log('filePickerOpen state changed:', filePickerOpen);
-    console.log('filePickerOpen.open:', filePickerOpen.open);
-    console.log('filePickerOpen.type:', filePickerOpen.type);
-  }, [filePickerOpen]);
+    console.log('filePickerType state changed:', filePickerType);
+  }, [filePickerType]);
 
   // Fetch branding configurations from API
   useEffect(() => {
@@ -454,21 +617,29 @@ export function BrandingManagement() {
       siteName: '',
       siteDescription: '',
       siteUrl: '',
-      logoUrl: '',
+      logoUrl: preselectedFiles.logo?.url || '',
       logoAltText: '',
-      faviconUrl: '',
+      faviconUrl: preselectedFiles.favicon?.url || '',
       primaryColor: '#3b82f6',
       secondaryColor: '#64748b',
       accentColor: '#f59e0b',
       backgroundColor: '#ffffff',
       textColor: '#1f2937',
-      fontFamily: 'Inter',
-      headingFont: 'Inter',
+      fontFamily: preselectedFiles.font ? preselectedFiles.font.name.replace(/\.(woff2?|ttf|otf)$/i, '') : 'Inter',
+      headingFont: preselectedFiles.font ? preselectedFiles.font.name.replace(/\.(woff2?|ttf|otf)$/i, '') : 'Inter',
       fontSize: '16px',
       lineHeight: '1.5',
+      customFonts: preselectedFiles.font && preselectedFiles.font.url ? {
+        [preselectedFiles.font.name.replace(/\.(woff2?|ttf|otf)$/i, '')]: {
+          url: preselectedFiles.font.url,
+          format: preselectedFiles.font.name.split('.').pop() || 'woff2',
+          weight: 'normal',
+          style: 'normal',
+        }
+      } : undefined,
       isActive: false
     });
-    setLogoPreview(null);
+    setLogoPreview(preselectedFiles.logo?.url || null);
     setIsEditing(true);
   };
 
@@ -496,21 +667,21 @@ export function BrandingManagement() {
     }
   };
 
-  const [clickCounter, setClickCounter] = useState(0);
-
   const handleOpenFilePicker = (type: 'logo' | 'favicon' | 'font') => {
-    console.log('Opening file picker for type:', type);
-    console.log('Current filePickerOpen state:', filePickerOpen);
-    setFilePickerOpen({ type, open: true });
-    setClickCounter(prev => prev + 1);
-    console.log('Setting filePickerOpen to:', { type, open: true });
+    setFilePickerType(type);
   };
 
   const handleFilePickerSelect = async (file: FileItem) => {
-    if (!filePickerOpen.type || !file.url) return;
-    
-    const type = filePickerOpen.type;
-    
+    if (!filePickerType || !file.url) return;
+
+    const type = filePickerType;
+
+    // Store in preselected files
+    setPreselectedFiles(prev => ({
+      ...prev,
+      [type]: file
+    }));
+
     if (type === 'logo') {
       setLogoPreview(file.url);
       setFormData(prev => ({ ...prev, logoUrl: file.url }));
@@ -522,12 +693,12 @@ export function BrandingManagement() {
       // For fonts, we would need to add custom font handling
       toast.success(`Font "${file.name}" selected successfully`);
     }
-    
-    setFilePickerOpen({ type: null, open: false });
+
+    setFilePickerType(null);
   };
 
   const handleFilePickerCancel = () => {
-    setFilePickerOpen({ type: null, open: false });
+    setFilePickerType(null);
   };
 
   const handleNativeFileSelect = async (file: File, type: 'logo' | 'favicon' | 'font') => {
@@ -577,346 +748,383 @@ export function BrandingManagement() {
 
   if (isEditing) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">
-            {selectedConfig ? 'Edit Branding Configuration' : 'Create New Branding Configuration'}
-          </h2>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleCancel}>
-              <X className="mr-2 h-4 w-4" />
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
-              <Save className="mr-2 h-4 w-4" />
-              {isSaving ? 'Saving...' : 'Save'}
-            </Button>
-          </div>
-        </div>
+      <>
+        <Dialog open={isEditing} onOpenChange={(open) => {
+          if (!open) {
+            handleCancel();
+          }
+        }}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {selectedConfig ? 'Edit Branding Configuration' : 'Create New Branding Configuration'}
+              </DialogTitle>
+              <DialogDescription>
+                Configure your app's branding and visual identity
+              </DialogDescription>
+            </DialogHeader>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>Configure your app's basic branding details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="siteName">App Name *</Label>
-                <Input
-                  id="siteName"
-                  value={formData.siteName || ''}
-                  onChange={(e) => handleInputChange('siteName', e.target.value)}
-                  placeholder="Enter your app name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="siteDescription">App Description</Label>
-                <Textarea
-                  id="siteDescription"
-                  value={formData.siteDescription || ''}
-                  onChange={(e) => handleInputChange('siteDescription', e.target.value)}
-                  placeholder="Brief description of your app"
-                  rows={3}
-                />
-              </div>
-              <div>
-                <Label htmlFor="siteUrl">App URL</Label>
-                <Input
-                  id="siteUrl"
-                  value={formData.siteUrl || ''}
-                  onChange={(e) => handleInputChange('siteUrl', e.target.value)}
-                  placeholder="https://yourapp.com"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Logo & Visual Assets */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Logo & Visual Assets</CardTitle>
-              <CardDescription>Upload and configure your app's visual identity</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="logo">Logo</Label>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenFilePicker('logo')}
-                      className="flex items-center gap-2"
-                    >
-                      <FolderOpen className="h-4 w-4" />
-                      Choose from File System
-                    </Button>
-                    <span className="text-sm text-muted-foreground">or</span>
-                    <div className="flex-1">
+            <div className="space-y-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Basic Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Basic Information</CardTitle>
+                    <CardDescription>Configure your app's basic branding details</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="siteName">App Name *</Label>
                       <Input
-                        id="logo"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="cursor-pointer"
+                        id="siteName"
+                        value={formData.siteName || ''}
+                        onChange={(e) => handleInputChange('siteName', e.target.value)}
+                        placeholder="Enter your app name"
                       />
                     </div>
-                  </div>
-                  {logoPreview && (
-                    <div className="w-16 h-16 border rounded-lg flex items-center justify-center bg-gray-50">
-                      <img
-                        src={logoPreview}
-                        alt="Logo preview"
-                        className="max-w-full max-h-full object-contain"
+                    <div>
+                      <Label htmlFor="siteDescription">App Description</Label>
+                      <Textarea
+                        id="siteDescription"
+                        value={formData.siteDescription || ''}
+                        onChange={(e) => handleInputChange('siteDescription', e.target.value)}
+                        placeholder="Brief description of your app"
+                        rows={3}
                       />
                     </div>
-                  )}
-                </div>
+                    <div>
+                      <Label htmlFor="siteUrl">App URL</Label>
+                      <Input
+                        id="siteUrl"
+                        value={formData.siteUrl || ''}
+                        onChange={(e) => handleInputChange('siteUrl', e.target.value)}
+                        placeholder="https://yourapp.com"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Logo & Visual Assets */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Logo & Visual Assets</CardTitle>
+                    <CardDescription>Upload and configure your app's visual identity</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="logo">Logo</Label>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenFilePicker('logo')}
+                            className="flex items-center gap-2"
+                          >
+                            <FolderOpen className="h-4 w-4" />
+                            Choose from File System
+                          </Button>
+                          <span className="text-sm text-muted-foreground">or</span>
+                          <div className="flex-1">
+                            <Input
+                              id="logo"
+                              type="file"
+                              accept="image/*"
+                              onChange={handleLogoUpload}
+                              className="cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                        {logoPreview && (
+                          <div className="w-16 h-16 border rounded-lg flex items-center justify-center bg-gray-50">
+                            <img
+                              src={logoPreview}
+                              alt="Logo preview"
+                              className="max-w-full max-h-full object-contain"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="logoAltText">Logo Alt Text</Label>
+                      <Input
+                        id="logoAltText"
+                        value={formData.logoAltText || ''}
+                        onChange={(e) => handleInputChange('logoAltText', e.target.value)}
+                        placeholder="Descriptive text for your logo"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="favicon">Favicon</Label>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenFilePicker('favicon')}
+                            className="flex items-center gap-2"
+                          >
+                            <FolderOpen className="h-4 w-4" />
+                            Choose from File System
+                          </Button>
+                          <span className="text-sm text-muted-foreground">or</span>
+                          <Input
+                            id="faviconUrl"
+                            value={formData.faviconUrl || ''}
+                            onChange={(e) => handleInputChange('faviconUrl', e.target.value)}
+                            placeholder="URL to your favicon"
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Color Scheme */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Color Scheme</CardTitle>
+                    <CardDescription>Define your app's color palette</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="primaryColor">Primary Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="primaryColor"
+                            type="color"
+                            value={formData.primaryColor || '#3b82f6'}
+                            onChange={(e) => handleInputChange('primaryColor', e.target.value)}
+                            className="w-16 h-10 p-1 border rounded"
+                          />
+                          <Input
+                            value={formData.primaryColor || '#3b82f6'}
+                            onChange={(e) => handleInputChange('primaryColor', e.target.value)}
+                            placeholder="#3b82f6"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="secondaryColor">Secondary Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="secondaryColor"
+                            type="color"
+                            value={formData.secondaryColor || '#64748b'}
+                            onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
+                            className="w-16 h-10 p-1 border rounded"
+                          />
+                          <Input
+                            value={formData.secondaryColor || '#64748b'}
+                            onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
+                            placeholder="#64748b"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="accentColor">Accent Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="accentColor"
+                            type="color"
+                            value={formData.accentColor || '#f59e0b'}
+                            onChange={(e) => handleInputChange('accentColor', e.target.value)}
+                            className="w-16 h-10 p-1 border rounded"
+                          />
+                          <Input
+                            value={formData.accentColor || '#f59e0b'}
+                            onChange={(e) => handleInputChange('accentColor', e.target.value)}
+                            placeholder="#f59e0b"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="backgroundColor">Background Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="backgroundColor"
+                            type="color"
+                            value={formData.backgroundColor || '#ffffff'}
+                            onChange={(e) => handleInputChange('backgroundColor', e.target.value)}
+                            className="w-16 h-10 p-1 border rounded"
+                          />
+                          <Input
+                            value={formData.backgroundColor || '#ffffff'}
+                            onChange={(e) => handleInputChange('backgroundColor', e.target.value)}
+                            placeholder="#ffffff"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Typography */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Typography</CardTitle>
+                    <CardDescription>Configure your app's typography settings</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="fontFamily">Body Font</Label>
+                      <div className="space-y-2">
+                        <Select
+                          value={formData.customFonts && formData.fontFamily && formData.fontFamily in formData.customFonts ? formData.fontFamily : (formData.fontFamily || 'Inter')}
+                          onValueChange={(value) => {
+                            if (value === 'custom') {
+                              handleOpenFilePicker('font');
+                            } else {
+                              handleInputChange('fontFamily', value);
+                            }
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select font family" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {fontOptions.map((font) => (
+                              <SelectItem key={font.value} value={font.value}>
+                                {font.label}
+                              </SelectItem>
+                            ))}
+                            {/* Add custom fonts */}
+                            {formData.customFonts && Object.keys(formData.customFonts).map((fontName) => (
+                              <SelectItem key={fontName} value={fontName}>
+                                {fontName} (Custom)
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {formData.customFonts && formData.fontFamily && formData.fontFamily in formData.customFonts && (
+                          <div className="text-sm text-muted-foreground">
+                            Custom font selected: {formData.fontFamily}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="headingFont">Heading Font</Label>
+                      <Select
+                        value={formData.headingFont || 'Inter'}
+                        onValueChange={(value) => handleInputChange('headingFont', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select heading font" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {fontOptions.map((font) => (
+                            <SelectItem key={font.value} value={font.value}>
+                              {font.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Custom Font Upload */}
+                    <div>
+                      <Label>Custom Font Upload</Label>
+                      <div className="space-y-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenFilePicker('font')}
+                          className="flex items-center gap-2 w-full"
+                        >
+                          <Type className="h-4 w-4" />
+                          Upload Custom Font (WOFF/WOFF2)
+                        </Button>
+                        <p className="text-xs text-muted-foreground">
+                          Upload .woff or .woff2 font files to use custom fonts across your app
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="fontSize">Base Font Size</Label>
+                        <Select
+                          value={formData.fontSize || '16px'}
+                          onValueChange={(value) => handleInputChange('fontSize', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select font size" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {fontSizeOptions.map((size) => (
+                              <SelectItem key={size.value} value={size.value}>
+                                {size.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="lineHeight">Line Height</Label>
+                        <Select
+                          value={formData.lineHeight || '1.5'}
+                          onValueChange={(value) => handleInputChange('lineHeight', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select line height" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {lineHeightOptions.map((height) => (
+                              <SelectItem key={height.value} value={height.value}>
+                                {height.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-              <div>
-                <Label htmlFor="logoAltText">Logo Alt Text</Label>
-                <Input
-                  id="logoAltText"
-                  value={formData.logoAltText || ''}
-                  onChange={(e) => handleInputChange('logoAltText', e.target.value)}
-                  placeholder="Descriptive text for your logo"
-                />
-              </div>
-              <div>
-                <Label htmlFor="favicon">Favicon</Label>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenFilePicker('favicon')}
-                      className="flex items-center gap-2"
-                    >
-                      <FolderOpen className="h-4 w-4" />
-                      Choose from File System
+
+              {/* File Picker Inline */}
+              {filePickerType && (
+                <div className="mt-6 pt-6 border-t">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium">
+                      Select {filePickerType === 'logo' ? 'Logo Image' :
+                             filePickerType === 'favicon' ? 'Favicon' :
+                             filePickerType === 'font' ? 'Font File' : 'File'}
+                    </h3>
+                    <Button variant="outline" size="sm" onClick={handleFilePickerCancel}>
+                      <X className="h-4 w-4" />
                     </Button>
-                    <span className="text-sm text-muted-foreground">or</span>
-                    <Input
-                      id="faviconUrl"
-                      value={formData.faviconUrl || ''}
-                      onChange={(e) => handleInputChange('faviconUrl', e.target.value)}
-                      placeholder="URL to your favicon"
-                      className="flex-1"
-                    />
                   </div>
+                  <FilePicker
+                    type={filePickerType}
+                    onFileSelect={handleFilePickerSelect}
+                    onCancel={handleFilePickerCancel}
+                  />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              )}
 
-          {/* Color Scheme */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Color Scheme</CardTitle>
-              <CardDescription>Define your app's color palette</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="primaryColor">Primary Color</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="primaryColor"
-                      type="color"
-                      value={formData.primaryColor || '#3b82f6'}
-                      onChange={(e) => handleInputChange('primaryColor', e.target.value)}
-                      className="w-16 h-10 p-1 border rounded"
-                    />
-                    <Input
-                      value={formData.primaryColor || '#3b82f6'}
-                      onChange={(e) => handleInputChange('primaryColor', e.target.value)}
-                      placeholder="#3b82f6"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="secondaryColor">Secondary Color</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="secondaryColor"
-                      type="color"
-                      value={formData.secondaryColor || '#64748b'}
-                      onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
-                      className="w-16 h-10 p-1 border rounded"
-                    />
-                    <Input
-                      value={formData.secondaryColor || '#64748b'}
-                      onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
-                      placeholder="#64748b"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="accentColor">Accent Color</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="accentColor"
-                      type="color"
-                      value={formData.accentColor || '#f59e0b'}
-                      onChange={(e) => handleInputChange('accentColor', e.target.value)}
-                      className="w-16 h-10 p-1 border rounded"
-                    />
-                    <Input
-                      value={formData.accentColor || '#f59e0b'}
-                      onChange={(e) => handleInputChange('accentColor', e.target.value)}
-                      placeholder="#f59e0b"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="backgroundColor">Background Color</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="backgroundColor"
-                      type="color"
-                      value={formData.backgroundColor || '#ffffff'}
-                      onChange={(e) => handleInputChange('backgroundColor', e.target.value)}
-                      className="w-16 h-10 p-1 border rounded"
-                    />
-                    <Input
-                      value={formData.backgroundColor || '#ffffff'}
-                      onChange={(e) => handleInputChange('backgroundColor', e.target.value)}
-                      placeholder="#ffffff"
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Typography */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Typography</CardTitle>
-              <CardDescription>Configure your app's typography settings</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="fontFamily">Body Font</Label>
-                <div className="space-y-2">
-                  <Select
-                    value={formData.customFonts && formData.fontFamily && formData.fontFamily in formData.customFonts ? formData.fontFamily : (formData.fontFamily || 'Inter')}
-                    onValueChange={(value) => {
-                      if (value === 'custom') {
-                        handleOpenFilePicker('font');
-                      } else {
-                        handleInputChange('fontFamily', value);
-                      }
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select font family" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fontOptions.map((font) => (
-                        <SelectItem key={font.value} value={font.value}>
-                          {font.label}
-                        </SelectItem>
-                      ))}
-                      {/* Add custom fonts */}
-                      {formData.customFonts && Object.keys(formData.customFonts).map((fontName) => (
-                        <SelectItem key={fontName} value={fontName}>
-                          {fontName} (Custom)
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {formData.customFonts && formData.fontFamily && formData.fontFamily in formData.customFonts && (
-                    <div className="text-sm text-muted-foreground">
-                      Custom font selected: {formData.fontFamily}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="headingFont">Heading Font</Label>
-                <Select
-                  value={formData.headingFont || 'Inter'}
-                  onValueChange={(value) => handleInputChange('headingFont', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select heading font" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {fontOptions.map((font) => (
-                      <SelectItem key={font.value} value={font.value}>
-                        {font.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Custom Font Upload */}
-              <div>
-                <Label>Custom Font Upload</Label>
-                <div className="space-y-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleOpenFilePicker('font')}
-                    className="flex items-center gap-2 w-full"
-                  >
-                    <Type className="h-4 w-4" />
-                    Upload Custom Font (WOFF/WOFF2)
+              {!filePickerType && (
+                <div className="flex justify-end gap-2 pt-6 border-t">
+                  <Button variant="outline" onClick={handleCancel}>
+                    <X className="mr-2 h-4 w-4" />
+                    Cancel
                   </Button>
-                  <p className="text-xs text-muted-foreground">
-                    Upload .woff or .woff2 font files to use custom fonts across your app
-                  </p>
+                  <Button onClick={handleSave} disabled={isSaving}>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isSaving ? 'Saving...' : 'Save'}
+                  </Button>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="fontSize">Base Font Size</Label>
-                  <Select
-                    value={formData.fontSize || '16px'}
-                    onValueChange={(value) => handleInputChange('fontSize', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select font size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fontSizeOptions.map((size) => (
-                        <SelectItem key={size.value} value={size.value}>
-                          {size.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="lineHeight">Line Height</Label>
-                  <Select
-                    value={formData.lineHeight || '1.5'}
-                    onValueChange={(value) => handleInputChange('lineHeight', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select line height" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {lineHeightOptions.map((height) => (
-                        <SelectItem key={height.value} value={height.value}>
-                          {height.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
@@ -932,6 +1140,123 @@ export function BrandingManagement() {
           Create New
         </Button>
       </div>
+
+      {/* File Assets Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>File Assets</CardTitle>
+          <CardDescription>
+            Pre-select logo, favicon, and font files from your file system before creating a configuration
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            {/* Logo Selection */}
+            <div className="space-y-2">
+              <Label>Logo</Label>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenFilePicker('logo')}
+                  className="flex items-center gap-2"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                  Choose Logo
+                </Button>
+                {preselectedFiles.logo && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 border rounded overflow-hidden bg-muted">
+                      <img
+                        src={preselectedFiles.logo.url}
+                        alt={preselectedFiles.logo.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <span className="text-sm text-muted-foreground truncate max-w-24">
+                      {preselectedFiles.logo.name}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Favicon Selection */}
+            <div className="space-y-2">
+              <Label>Favicon</Label>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenFilePicker('favicon')}
+                  className="flex items-center gap-2"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                  Choose Favicon
+                </Button>
+                {preselectedFiles.favicon && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 border rounded overflow-hidden bg-muted">
+                      <img
+                        src={preselectedFiles.favicon.url}
+                        alt={preselectedFiles.favicon.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <span className="text-sm text-muted-foreground truncate max-w-24">
+                      {preselectedFiles.favicon.name}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Font Selection */}
+            <div className="space-y-2">
+              <Label>Custom Font</Label>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenFilePicker('font')}
+                  className="flex items-center gap-2"
+                >
+                  <Type className="h-4 w-4" />
+                  Choose Font
+                </Button>
+                {preselectedFiles.font && (
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground truncate max-w-24">
+                      {preselectedFiles.font.name}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {(preselectedFiles.logo || preselectedFiles.favicon || preselectedFiles.font) && (
+            <div className="flex items-center gap-2 pt-2 border-t">
+              <span className="text-sm text-muted-foreground">
+                Files selected. Click "Create New" to use them in a new configuration.
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setPreselectedFiles({})}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Clear All
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Overview Stats */}
       <div className="grid gap-6 md:grid-cols-3">
@@ -1088,81 +1413,7 @@ export function BrandingManagement() {
         </CardContent>
       </Card>
 
-      {/* File Picker Dialog */}
-      {filePickerOpen.open && (
-        <div 
-          className="fixed inset-0 z-[9999] bg-red-500 flex items-center justify-center"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(255, 0, 0, 0.8)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          <div 
-            className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-auto"
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              padding: '24px',
-              maxWidth: '896px',
-              width: '100%',
-              margin: '0 16px',
-              maxHeight: '90vh',
-              overflow: 'auto'
-            }}
-          >
-            <h2 className="text-xl font-semibold mb-2" style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px', color: 'black' }}>
-              🚨 MODAL IS OPEN! 🚨
-            </h2>
-            <h3 className="text-lg font-semibold mb-2" style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', color: 'black' }}>
-              Select {filePickerOpen.type === 'logo' ? 'Logo' : 
-                     filePickerOpen.type === 'favicon' ? 'Favicon' : 
-                     filePickerOpen.type === 'font' ? 'Font File' : 'File'}
-            </h3>
-            <p className="text-gray-600 mb-4" style={{ color: 'gray', marginBottom: '16px' }}>
-              Choose a file from your internal file system or upload a new one.
-            </p>
-            <div className="mb-4" style={{ marginBottom: '16px' }}>
-              <p style={{ color: 'black', fontWeight: 'bold' }}>Dialog is open! Type: {filePickerOpen.type}</p>
-              <p style={{ color: 'black', fontWeight: 'bold' }}>This is a test to confirm the dialog opens correctly.</p>
-            </div>
-            <div className="mt-4 flex justify-end" style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  console.log('Close button clicked!');
-                  setFilePickerOpen({ type: null, open: false });
-                }}
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#e5e7eb',
-                  borderRadius: '4px',
-                  border: 'none',
-                  cursor: 'pointer'
-                }}
-              >
-                Close Modal
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Debug info */}
-      <div className="fixed top-4 right-4 bg-yellow-200 p-2 rounded text-sm z-[10000]">
-        <p>filePickerOpen.open: {filePickerOpen.open.toString()}</p>
-        <p>filePickerOpen.type: {filePickerOpen.type || 'null'}</p>
-        <p>Click counter: {clickCounter}</p>
-        <p>Should show modal: {filePickerOpen.open ? 'YES' : 'NO'}</p>
-      </div>
 
 
     </div>
