@@ -130,4 +130,28 @@ code {
   body {
     @apply bg-background text-foreground;
   }
+  button:hover {
+    cursor: pointer;
+  }
+  a:hover {
+    cursor: pointer;
+  }
+  [role="button"]:hover {
+    cursor: pointer;
+  }
+  [role="tab"]:hover {
+    cursor: pointer;
+  }
+  [role="menuitem"]:hover {
+    cursor: pointer;
+  }
+  [role="menuitemcheckbox"]:hover {
+    cursor: pointer;
+  }
+  [role="menuitemradio"]:hover {
+    cursor: pointer;
+  }
+  [role="option"]:hover {
+    cursor: pointer;
+  }
 }

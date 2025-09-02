@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Mail, Send, Settings, FileText, Activity, Plus, Edit, Trash2, TestTube, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -301,7 +302,15 @@ export function EmailManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <Tabs defaultValue="settings" className="space-y-6">
+      <TabsList>
+        <TabsTrigger value="settings">Settings</TabsTrigger>
+        <TabsTrigger value="templates">Templates</TabsTrigger>
+        <TabsTrigger value="logs">Logs</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="settings" className="space-y-6">
       {/* Overview Stats */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -440,8 +449,10 @@ export function EmailManagement() {
           </div>
         </CardContent>
       </Card>
+      </TabsContent>
 
-      {/* Email Templates */}
+      <TabsContent value="templates" className="space-y-6">
+        {/* Email Templates */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
@@ -513,8 +524,10 @@ export function EmailManagement() {
           </div>
         </CardContent>
       </Card>
+      </TabsContent>
 
-      {/* Email Logs */}
+      <TabsContent value="logs" className="space-y-6">
+        {/* Email Logs */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
@@ -557,134 +570,136 @@ export function EmailManagement() {
           </div>
         </CardContent>
       </Card>
+      </TabsContent>
+    </Tabs>
 
-      {/* Edit Setting Modal */}
-      {isEditingSetting && selectedSetting && (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {selectedSetting.id ? 'Edit' : 'Create'} Email Setting
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="settingName">Setting Name</Label>
-                <Input
-                  id="settingName"
-                  value={selectedSetting.configName}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, configName: e.target.value})}
-                  placeholder="Primary SMTP"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="provider">Provider</Label>
-                <Select
-                  value={selectedSetting.provider}
-                  onValueChange={(value: 'smtp' | 'microsoft365' | 'google_workspace') => 
-                    setSelectedSetting({...selectedSetting, provider: value})
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="smtp">SMTP</SelectItem>
-                    <SelectItem value="microsoft365">Microsoft 365</SelectItem>
-                    <SelectItem value="google_workspace">Google Workspace</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="fromName">From Name</Label>
-                <Input
-                  id="fromName"
-                  value={selectedSetting.fromName}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, fromName: e.target.value})}
-                  placeholder="Your Company"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="fromEmail">From Email</Label>
-                <Input
-                  id="fromEmail"
-                  value={selectedSetting.fromEmail}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, fromEmail: e.target.value})}
-                  placeholder="noreply@company.com"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="replyToEmail">Reply To Email</Label>
-                <Input
-                  id="replyToEmail"
-                  value={selectedSetting.replyToEmail || ''}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, replyToEmail: e.target.value})}
-                  placeholder="support@company.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="smtpPassword">Password</Label>
-                <Input
-                  id="smtpPassword"
-                  type="password"
-                  value={selectedSetting.smtpPassword || ''}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, smtpPassword: e.target.value})}
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
-
-            {selectedSetting.provider === 'smtp' && (
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="smtpHost">SMTP Host</Label>
-                  <Input
-                    id="smtpHost"
-                    value={selectedSetting.smtpHost || ''}
-                    onChange={(e) => setSelectedSetting({...selectedSetting, smtpHost: e.target.value})}
-                    placeholder="smtp.gmail.com"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="smtpPort">Port</Label>
-                  <Input
-                    id="smtpPort"
-                    type="number"
-                    value={selectedSetting.smtpPort || ''}
-                    onChange={(e) => setSelectedSetting({...selectedSetting, smtpPort: e.target.value})}
-                    placeholder="587"
-                  />
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="isActive"
-                checked={selectedSetting.isActive}
-                onCheckedChange={(checked) => setSelectedSetting({...selectedSetting, isActive: checked})}
+    {/* Edit Setting Modal */}
+    {isEditingSetting && selectedSetting && (
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            {selectedSetting.id ? 'Edit' : 'Create'} Email Setting
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="settingName">Setting Name</Label>
+              <Input
+                id="settingName"
+                value={selectedSetting.configName}
+                onChange={(e) => setSelectedSetting({...selectedSetting, configName: e.target.value})}
+                placeholder="Primary SMTP"
               />
-              <Label htmlFor="isActive">Set as active provider</Label>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="provider">Provider</Label>
+              <Select
+                value={selectedSetting.provider}
+                onValueChange={(value: 'smtp' | 'microsoft365' | 'google_workspace') =>
+                  setSelectedSetting({...selectedSetting, provider: value})
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="smtp">SMTP</SelectItem>
+                  <SelectItem value="microsoft365">Microsoft 365</SelectItem>
+                  <SelectItem value="google_workspace">Google Workspace</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsEditingSetting(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSaveSetting} disabled={saving}>
-                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {selectedSetting.id ? 'Update' : 'Create'}
-              </Button>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="fromName">From Name</Label>
+              <Input
+                id="fromName"
+                value={selectedSetting.fromName}
+                onChange={(e) => setSelectedSetting({...selectedSetting, fromName: e.target.value})}
+                placeholder="Your Company"
+              />
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div className="space-y-2">
+              <Label htmlFor="fromEmail">From Email</Label>
+              <Input
+                id="fromEmail"
+                value={selectedSetting.fromEmail}
+                onChange={(e) => setSelectedSetting({...selectedSetting, fromEmail: e.target.value})}
+                placeholder="noreply@company.com"
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="replyToEmail">Reply To Email</Label>
+              <Input
+                id="replyToEmail"
+                value={selectedSetting.replyToEmail || ''}
+                onChange={(e) => setSelectedSetting({...selectedSetting, replyToEmail: e.target.value})}
+                placeholder="support@company.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="smtpPassword">Password</Label>
+              <Input
+                id="smtpPassword"
+                type="password"
+                value={selectedSetting.smtpPassword || ''}
+                onChange={(e) => setSelectedSetting({...selectedSetting, smtpPassword: e.target.value})}
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+
+          {selectedSetting.provider === 'smtp' && (
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="smtpHost">SMTP Host</Label>
+                <Input
+                  id="smtpHost"
+                  value={selectedSetting.smtpHost || ''}
+                  onChange={(e) => setSelectedSetting({...selectedSetting, smtpHost: e.target.value})}
+                  placeholder="smtp.gmail.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="smtpPort">Port</Label>
+                <Input
+                  id="smtpPort"
+                  type="number"
+                  value={selectedSetting.smtpPort || ''}
+                  onChange={(e) => setSelectedSetting({...selectedSetting, smtpPort: e.target.value})}
+                  placeholder="587"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="isActive"
+              checked={selectedSetting.isActive}
+              onCheckedChange={(checked) => setSelectedSetting({...selectedSetting, isActive: checked})}
+            />
+            <Label htmlFor="isActive">Set as active provider</Label>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsEditingSetting(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveSetting} disabled={saving}>
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {selectedSetting.id ? 'Update' : 'Create'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )}
 
       {/* Edit Template Modal */}
       {isEditingTemplate && selectedTemplate && (
@@ -709,7 +724,7 @@ export function EmailManagement() {
                 <Label htmlFor="templateType">Template Type</Label>
                 <Select
                   value={selectedTemplate.type}
-                  onValueChange={(value: 'welcome' | 'reset_password' | 'verification' | 'notification' | 'custom') => 
+                  onValueChange={(value: 'welcome' | 'reset_password' | 'verification' | 'notification' | 'custom') =>
                     setSelectedTemplate({...selectedTemplate, type: value})
                   }
                 >
@@ -726,7 +741,7 @@ export function EmailManagement() {
                 </Select>
               </div>
             </div>
-
+  
             <div className="space-y-2">
               <Label htmlFor="subject">Subject</Label>
               <Input
@@ -736,7 +751,7 @@ export function EmailManagement() {
                 placeholder="Welcome to {{company_name}}!"
               />
             </div>
-
+  
             <div className="space-y-2">
               <Label htmlFor="htmlContent">HTML Content</Label>
               <Textarea
@@ -747,7 +762,7 @@ export function EmailManagement() {
                 rows={6}
               />
             </div>
-
+  
             <div className="flex items-center space-x-2">
               <Switch
                 id="templateActive"
@@ -756,7 +771,7 @@ export function EmailManagement() {
               />
               <Label htmlFor="templateActive">Active template</Label>
             </div>
-
+  
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsEditingTemplate(false)}>
                 Cancel
@@ -769,6 +784,6 @@ export function EmailManagement() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </>
   );
 }
