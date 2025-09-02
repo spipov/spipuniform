@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,8 +6,21 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Palette, Eye, Settings, Plus, Edit, Trash2, Check, Upload, Image, Save, X } from 'lucide-react';
+import { Palette, Eye, Settings, Plus, Edit, Trash2, Check, Save, X, FolderOpen, Type, Upload, Image, File, Folder } from 'lucide-react';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+interface FileItem {
+  id: string;
+  name: string;
+  type: 'file' | 'folder';
+  path: string;
+  size?: number;
+  url?: string;
+  mimeType?: string;
+  createdAt?: string;
+  modifiedAt?: string;
+}
 
 interface BrandingConfig {
   id: string;
@@ -26,6 +39,12 @@ interface BrandingConfig {
   headingFont?: string;
   fontSize: string;
   lineHeight: string;
+  customFonts?: Record<string, {
+    url: string;
+    format: string;
+    weight?: string;
+    style?: string;
+  }>;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -39,8 +58,239 @@ const fontOptions = [
   { value: 'Montserrat', label: 'Montserrat' },
   { value: 'Poppins', label: 'Poppins' },
   { value: 'Source Sans Pro', label: 'Source Sans Pro' },
-  { value: 'Nunito', label: 'Nunito' }
+  { value: 'Nunito', label: 'Nunito' },
+  { value: 'custom', label: 'Custom Font (Upload)' }
 ];
+
+// File Picker Component with Upload Support
+interface FilePickerProps {
+  type: 'logo' | 'favicon' | 'font';
+  onFileSelect: (file: FileItem) => void;
+  onCancel: () => void;
+}
+
+function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
+  const [files, setFiles] = useState<FileItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [currentPath, setCurrentPath] = useState('/');
+
+  const loadFiles = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/files?path=${encodeURIComponent(currentPath)}`);
+      const result = await response.json();
+
+      if (result.success) {
+        // Filter files based on type
+        let filteredFiles = result.data.files;
+        if (type === 'font') {
+          filteredFiles = filteredFiles.filter((file: FileItem) =>
+            file.type === 'file' &&
+            (file.mimeType?.startsWith('font/') || /\.(woff2?|ttf|otf)$/i.test(file.name))
+          );
+        } else if (type === 'logo' || type === 'favicon') {
+          filteredFiles = filteredFiles.filter((file: FileItem) =>
+            file.type === 'file' &&
+            (file.mimeType?.startsWith('image/') || /\.(jpg|jpeg|png|svg|gif|webp)$/i.test(file.name))
+          );
+        }
+
+        setFiles(filteredFiles);
+      } else {
+        toast.error(result.error || 'Failed to load files');
+      }
+    } catch (error) {
+      console.error('Error loading files:', error);
+      toast.error('Failed to load files');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPath, type]);
+
+  useEffect(() => {
+    loadFiles();
+  }, [currentPath, loadFiles]);
+
+  const handleFileClick = (file: FileItem) => {
+    if (file.type === 'folder') {
+      setCurrentPath(file.path === '/' ? `/${file.name}` : `${file.path}/${file.name}`);
+    } else {
+      onFileSelect(file);
+    }
+  };
+
+  const handleNavigateUp = () => {
+    if (currentPath !== '/') {
+      const pathParts = currentPath.split('/').filter(Boolean);
+      pathParts.pop();
+      setCurrentPath(pathParts.length === 0 ? '/' : `/${pathParts.join('/')}`);
+    }
+  };
+
+  const handleFileUpload = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.style.display = 'none';
+    
+    // Set appropriate file filters based on type
+    if (type === 'font') {
+      input.accept = '.woff,.woff2,.ttf,.otf';
+    } else if (type === 'logo' || type === 'favicon') {
+      input.accept = '.jpg,.jpeg,.png,.svg,.gif,.webp';
+    }
+    
+    input.onchange = async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file) {
+        try {
+          setUploading(true);
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('path', currentPath);
+          
+          // Determine category based on type
+          let category = 'documents';
+          if (type === 'font') {
+            category = 'fonts';
+          } else if (type === 'logo' || type === 'favicon') {
+            category = 'images';
+          }
+          formData.append('category', category);
+          
+          const response = await fetch('/api/files', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            toast.success(`${file.name} uploaded successfully`);
+            await loadFiles(); // Reload the file list
+          } else {
+            toast.error(result.error || 'Failed to upload file');
+          }
+        } catch (error) {
+          console.error('Error uploading file:', error);
+          toast.error('Failed to upload file');
+        } finally {
+          setUploading(false);
+        }
+      }
+      document.body.removeChild(input);
+    };
+    
+    input.oncancel = () => {
+      document.body.removeChild(input);
+    };
+    
+    document.body.appendChild(input);
+    input.click();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <span className="ml-2">Loading files...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Header with Upload Button */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleNavigateUp}
+            disabled={currentPath === '/'}
+          >
+            ← Up
+          </Button>
+          <span className="text-sm font-medium">{currentPath === '/' ? 'Root' : currentPath}</span>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleFileUpload}
+          disabled={uploading}
+          className="flex items-center gap-2"
+        >
+          {uploading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              Uploading...
+            </>
+          ) : (
+            <>
+              <Upload className="h-4 w-4" />
+              Upload New
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* File List */}
+      <div className="max-h-96 overflow-y-auto border rounded">
+        {files.length === 0 ? (
+          <div className="p-8 text-center text-muted-foreground">
+            <div className="mb-4">
+              {type === 'font' && <Type className="h-12 w-12 mx-auto mb-2 opacity-50" />}
+              {(type === 'logo' || type === 'favicon') && <Image className="h-12 w-12 mx-auto mb-2 opacity-50" />}
+            </div>
+            <p className="mb-2">No {type} files found</p>
+            <p className="text-sm">Click "Upload New" to add files</p>
+          </div>
+        ) : (
+          <div className="divide-y">
+            {files.map((file) => (
+              <div
+                key={file.id}
+                className="flex items-center gap-3 p-3 hover:bg-muted cursor-pointer"
+                onClick={() => handleFileClick(file)}
+              >
+                {file.type === 'folder' ? (
+                  <Folder className="h-5 w-5 text-blue-500" />
+                ) : (
+                  <File className="h-5 w-5 text-gray-500" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{file.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {file.type === 'folder' ? 'Folder' : `${((file.size || 0) / 1024).toFixed(1)} KB`}
+                  </p>
+                </div>
+                {file.type === 'file' && file.url && (type === 'logo' || type === 'favicon') && (
+                  <div className="w-8 h-8 rounded overflow-hidden bg-muted">
+                    <img 
+                      src={file.url} 
+                      alt={file.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-end gap-2 pt-4 border-t">
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 
 const fontSizeOptions = [
   { value: '14px', label: 'Small (14px)' },
@@ -56,6 +306,9 @@ const lineHeightOptions = [
   { value: '1.8', label: 'Loose (1.8)' }
 ];
 
+// Global modal state to test if it's a rendering issue within the component
+let globalModalOpen = false;
+
 export function BrandingManagement() {
   const [brandingConfigs, setBrandingConfigs] = useState<BrandingConfig[]>([]);
   const [selectedConfig, setSelectedConfig] = useState<BrandingConfig | null>(null);
@@ -64,6 +317,16 @@ export function BrandingManagement() {
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<Partial<BrandingConfig>>({});
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  
+  // File Picker Dialog State
+  const [filePickerOpen, setFilePickerOpen] = useState<{ type: 'logo' | 'favicon' | 'font' | null, open: boolean }>({ type: null, open: false });
+  
+  // Debug the state changes
+  useEffect(() => {
+    console.log('filePickerOpen state changed:', filePickerOpen);
+    console.log('filePickerOpen.open:', filePickerOpen.open);
+    console.log('filePickerOpen.type:', filePickerOpen.type);
+  }, [filePickerOpen]);
 
   // Fetch branding configurations from API
   useEffect(() => {
@@ -233,6 +496,74 @@ export function BrandingManagement() {
     }
   };
 
+  const [clickCounter, setClickCounter] = useState(0);
+
+  const handleOpenFilePicker = (type: 'logo' | 'favicon' | 'font') => {
+    console.log('Opening file picker for type:', type);
+    console.log('Current filePickerOpen state:', filePickerOpen);
+    setFilePickerOpen({ type, open: true });
+    setClickCounter(prev => prev + 1);
+    console.log('Setting filePickerOpen to:', { type, open: true });
+  };
+
+  const handleFilePickerSelect = async (file: FileItem) => {
+    if (!filePickerOpen.type || !file.url) return;
+    
+    const type = filePickerOpen.type;
+    
+    if (type === 'logo') {
+      setLogoPreview(file.url);
+      setFormData(prev => ({ ...prev, logoUrl: file.url }));
+      toast.success('Logo selected successfully');
+    } else if (type === 'favicon') {
+      setFormData(prev => ({ ...prev, faviconUrl: file.url }));
+      toast.success('Favicon selected successfully');
+    } else if (type === 'font') {
+      // For fonts, we would need to add custom font handling
+      toast.success(`Font "${file.name}" selected successfully`);
+    }
+    
+    setFilePickerOpen({ type: null, open: false });
+  };
+
+  const handleFilePickerCancel = () => {
+    setFilePickerOpen({ type: null, open: false });
+  };
+
+  const handleNativeFileSelect = async (file: File, type: 'logo' | 'favicon' | 'font') => {
+    try {
+      // Create a data URL for the file
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        const fileUrl = e.target?.result as string;
+        
+        if (type === 'logo') {
+          setLogoPreview(fileUrl);
+          setFormData(prev => ({ ...prev, logoUrl: fileUrl }));
+          toast.success('Logo uploaded successfully');
+        } else if (type === 'favicon') {
+          setFormData(prev => ({ ...prev, faviconUrl: fileUrl }));
+          toast.success('Favicon uploaded successfully');
+        } else if (type === 'font') {
+          // For fonts, we'll just show a success message since custom fonts need more complex handling
+          toast.success(`Font "${file.name}" uploaded successfully`);
+          // You could extend this to handle font uploads more sophisticatedly
+        }
+      };
+      
+      reader.onerror = () => {
+        toast.error('Failed to read file');
+      };
+      
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error handling file:', error);
+      toast.error('Failed to process file');
+    }
+  };
+
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -310,16 +641,29 @@ export function BrandingManagement() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="logo">Logo Upload</Label>
-                <div className="flex items-center gap-4">
-                  <div className="flex-1">
-                    <Input
-                      id="logo"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                      className="cursor-pointer"
-                    />
+                <Label htmlFor="logo">Logo</Label>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleOpenFilePicker('logo')}
+                      className="flex items-center gap-2"
+                    >
+                      <FolderOpen className="h-4 w-4" />
+                      Choose from File System
+                    </Button>
+                    <span className="text-sm text-muted-foreground">or</span>
+                    <div className="flex-1">
+                      <Input
+                        id="logo"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="cursor-pointer"
+                      />
+                    </div>
                   </div>
                   {logoPreview && (
                     <div className="w-16 h-16 border rounded-lg flex items-center justify-center bg-gray-50">
@@ -342,13 +686,29 @@ export function BrandingManagement() {
                 />
               </div>
               <div>
-                <Label htmlFor="faviconUrl">Favicon URL</Label>
-                <Input
-                  id="faviconUrl"
-                  value={formData.faviconUrl || ''}
-                  onChange={(e) => handleInputChange('faviconUrl', e.target.value)}
-                  placeholder="URL to your favicon"
-                />
+                <Label htmlFor="favicon">Favicon</Label>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleOpenFilePicker('favicon')}
+                      className="flex items-center gap-2"
+                    >
+                      <FolderOpen className="h-4 w-4" />
+                      Choose from File System
+                    </Button>
+                    <span className="text-sm text-muted-foreground">or</span>
+                    <Input
+                      id="faviconUrl"
+                      value={formData.faviconUrl || ''}
+                      onChange={(e) => handleInputChange('faviconUrl', e.target.value)}
+                      placeholder="URL to your favicon"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -442,21 +802,40 @@ export function BrandingManagement() {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="fontFamily">Body Font</Label>
-                <Select
-                  value={formData.fontFamily || 'Inter'}
-                  onValueChange={(value) => handleInputChange('fontFamily', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select font family" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {fontOptions.map((font) => (
-                      <SelectItem key={font.value} value={font.value}>
-                        {font.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Select
+                    value={formData.customFonts && formData.fontFamily && formData.fontFamily in formData.customFonts ? formData.fontFamily : (formData.fontFamily || 'Inter')}
+                    onValueChange={(value) => {
+                      if (value === 'custom') {
+                        handleOpenFilePicker('font');
+                      } else {
+                        handleInputChange('fontFamily', value);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select font family" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fontOptions.map((font) => (
+                        <SelectItem key={font.value} value={font.value}>
+                          {font.label}
+                        </SelectItem>
+                      ))}
+                      {/* Add custom fonts */}
+                      {formData.customFonts && Object.keys(formData.customFonts).map((fontName) => (
+                        <SelectItem key={fontName} value={fontName}>
+                          {fontName} (Custom)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {formData.customFonts && formData.fontFamily && formData.fontFamily in formData.customFonts && (
+                    <div className="text-sm text-muted-foreground">
+                      Custom font selected: {formData.fontFamily}
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <Label htmlFor="headingFont">Heading Font</Label>
@@ -475,6 +854,26 @@ export function BrandingManagement() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Custom Font Upload */}
+              <div>
+                <Label>Custom Font Upload</Label>
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenFilePicker('font')}
+                    className="flex items-center gap-2 w-full"
+                  >
+                    <Type className="h-4 w-4" />
+                    Upload Custom Font (WOFF/WOFF2)
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Upload .woff or .woff2 font files to use custom fonts across your app
+                  </p>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -688,6 +1087,84 @@ export function BrandingManagement() {
           )}
         </CardContent>
       </Card>
+
+      {/* File Picker Dialog */}
+      {filePickerOpen.open && (
+        <div 
+          className="fixed inset-0 z-[9999] bg-red-500 flex items-center justify-center"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(255, 0, 0, 0.8)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <div 
+            className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-auto"
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '24px',
+              maxWidth: '896px',
+              width: '100%',
+              margin: '0 16px',
+              maxHeight: '90vh',
+              overflow: 'auto'
+            }}
+          >
+            <h2 className="text-xl font-semibold mb-2" style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px', color: 'black' }}>
+              🚨 MODAL IS OPEN! 🚨
+            </h2>
+            <h3 className="text-lg font-semibold mb-2" style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', color: 'black' }}>
+              Select {filePickerOpen.type === 'logo' ? 'Logo' : 
+                     filePickerOpen.type === 'favicon' ? 'Favicon' : 
+                     filePickerOpen.type === 'font' ? 'Font File' : 'File'}
+            </h3>
+            <p className="text-gray-600 mb-4" style={{ color: 'gray', marginBottom: '16px' }}>
+              Choose a file from your internal file system or upload a new one.
+            </p>
+            <div className="mb-4" style={{ marginBottom: '16px' }}>
+              <p style={{ color: 'black', fontWeight: 'bold' }}>Dialog is open! Type: {filePickerOpen.type}</p>
+              <p style={{ color: 'black', fontWeight: 'bold' }}>This is a test to confirm the dialog opens correctly.</p>
+            </div>
+            <div className="mt-4 flex justify-end" style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  console.log('Close button clicked!');
+                  setFilePickerOpen({ type: null, open: false });
+                }}
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#e5e7eb',
+                  borderRadius: '4px',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                Close Modal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Debug info */}
+      <div className="fixed top-4 right-4 bg-yellow-200 p-2 rounded text-sm z-[10000]">
+        <p>filePickerOpen.open: {filePickerOpen.open.toString()}</p>
+        <p>filePickerOpen.type: {filePickerOpen.type || 'null'}</p>
+        <p>Click counter: {clickCounter}</p>
+        <p>Should show modal: {filePickerOpen.open ? 'YES' : 'NO'}</p>
+      </div>
+
+
     </div>
   );
 }

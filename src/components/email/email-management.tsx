@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Mail, Send, Settings, FileText, Activity, Plus, Edit, Trash2, TestTube, Loader2 } from 'lucide-react';
+import { Mail, Send, Settings, FileText, Activity, Plus, Edit, Trash2, TestTube, Loader2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface EmailSetting {
@@ -21,11 +21,6 @@ interface EmailSetting {
   smtpUser?: string;
   smtpPassword?: string;
   smtpSecure?: boolean;
-  imapHost?: string;
-  imapPort?: string;
-  imapUser?: string;
-  imapPassword?: string;
-  imapSecure?: boolean;
   clientId?: string;
   clientSecret?: string;
   tenantId?: string;
@@ -74,8 +69,18 @@ export function EmailManagement() {
   const [isEditingTemplate, setIsEditingTemplate] = useState(false);
   const [isSettingDialogOpen, setIsSettingDialogOpen] = useState(false);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  const [isTestEmailDialogOpen, setIsTestEmailDialogOpen] = useState(false);
+  const [testEmailTo, setTestEmailTo] = useState('');
+  const [testEmailSubject, setTestEmailSubject] = useState('Test Email');
+  const [testEmailBody, setTestEmailBody] = useState('This is a test email to verify your email configuration.');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
+  const [showPasswords, setShowPasswords] = useState({
+    oauthPassword: false,
+    clientSecret: false,
+    smtpPassword: false,
+  });
 
   // Load data on component mount
   useEffect(() => {
@@ -129,10 +134,36 @@ export function EmailManagement() {
   const handleSaveSetting = async () => {
     if (!selectedSetting) return;
 
+    // Validate required fields
+    if (!selectedSetting.configName.trim()) {
+      toast.error('Setting name is required');
+      return;
+    }
+    if (!selectedSetting.fromName.trim()) {
+      toast.error('From name is required');
+      return;
+    }
+    if (!selectedSetting.fromEmail.trim()) {
+      toast.error('From email is required');
+      return;
+    }
+    if (!selectedSetting.provider) {
+      toast.error('Provider is required');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(selectedSetting.fromEmail)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
     try {
       setSaving(true);
-      const method = selectedSetting.id ? 'PUT' : 'POST';
-      const url = selectedSetting.id 
+      const isUpdate = selectedSetting.id && selectedSetting.id.trim() !== '';
+      const method = isUpdate ? 'PUT' : 'POST';
+      const url = isUpdate
         ? `/api/email/settings/${selectedSetting.id}`
         : '/api/email/settings';
 
@@ -145,14 +176,14 @@ export function EmailManagement() {
       if (response.ok) {
         const apiResponse = await response.json();
         const savedSetting = apiResponse.data;
-        if (selectedSetting.id) {
-          setEmailSettings(settings => 
+        if (isUpdate) {
+          setEmailSettings(settings =>
             settings.map(s => s.id === savedSetting.id ? savedSetting : s)
           );
         } else {
           setEmailSettings(settings => [...settings, savedSetting]);
         }
-        toast.success(selectedSetting.id ? 'Setting updated' : 'Setting created');
+        toast.success(isUpdate ? 'Setting updated' : 'Setting created');
         setIsSettingDialogOpen(false);
         setSelectedSetting(null);
       } else {
@@ -270,6 +301,44 @@ export function EmailManagement() {
     }
   };
 
+  const handleSendTestEmail = async (settingId: string) => {
+    if (!testEmailTo.trim()) {
+      toast.error('Please enter a recipient email address');
+      return;
+    }
+
+    try {
+      setSendingTest(true);
+      const response = await fetch(`/api/email/test`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          settingId,
+          to: testEmailTo,
+          subject: testEmailSubject,
+          body: testEmailBody
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast.success('Test email sent successfully!');
+        setIsTestEmailDialogOpen(false);
+        setTestEmailTo('');
+        // Refresh logs to show the test email
+        loadEmailData();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Failed to send test email');
+      }
+    } catch (error) {
+      console.error('Failed to send test email:', error);
+      toast.error('Failed to send test email');
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
   const handleEditSetting = (setting: EmailSetting) => {
     setSelectedSetting(setting);
     setIsSettingDialogOpen(true);
@@ -277,15 +346,21 @@ export function EmailManagement() {
 
   const handleCreateNewSetting = () => {
     setSelectedSetting({
-      id: '',
-      configName: '',
+      configName: 'New Email Provider',
       provider: 'smtp',
-      fromEmail: '',
-      fromName: '',
-      isActive: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    });
+      smtpHost: '',
+      smtpPort: '587',
+      smtpUser: '',
+      smtpPassword: '',
+      smtpSecure: true,
+      clientId: '',
+      clientSecret: '',
+      tenantId: '',
+      fromEmail: 'admin@example.com',
+      fromName: 'Your Company',
+      replyToEmail: '',
+      isActive: false
+    } as EmailSetting);
     setIsSettingDialogOpen(true);
   };
 
@@ -437,7 +512,6 @@ export function EmailManagement() {
                       <p>Provider: {setting.provider.toUpperCase()}</p>
                       <p>Email: {setting.fromEmail}</p>
                       {setting.smtpHost && <p>SMTP: {setting.smtpHost}:{setting.smtpPort}</p>}
-                      {setting.imapHost && <p>IMAP: {setting.imapHost}:{setting.imapPort}</p>}
                       {setting.clientId && <p>OAuth: Configured</p>}
                     </div>
                   </div>
@@ -445,7 +519,10 @@ export function EmailManagement() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => toast.success('Test email sent!')}
+                      onClick={() => {
+                        setSelectedSetting(setting);
+                        setIsTestEmailDialogOpen(true);
+                      }}
                     >
                       <TestTube className="h-4 w-4" />
                     </Button>
@@ -680,14 +757,30 @@ export function EmailManagement() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="smtpPassword">Password</Label>
-              <Input
-                id="smtpPassword"
-                type="password"
-                value={selectedSetting.smtpPassword || ''}
-                onChange={(e) => setSelectedSetting({...selectedSetting, smtpPassword: e.target.value})}
-                placeholder="••••••••"
-              />
+              <Label htmlFor="oauthPassword">Password</Label>
+              <div className="relative">
+                <Input
+                  id="oauthPassword"
+                  type={showPasswords.oauthPassword ? "text" : "password"}
+                  value={selectedSetting.smtpPassword || ''}
+                  onChange={(e) => setSelectedSetting({...selectedSetting, smtpPassword: e.target.value})}
+                  placeholder="••••••••"
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPasswords(prev => ({ ...prev, oauthPassword: !prev.oauthPassword }))}
+                >
+                  {showPasswords.oauthPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -742,13 +835,29 @@ export function EmailManagement() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="clientSecret">Client Secret</Label>
-                  <Input
-                    id="clientSecret"
-                    type="password"
-                    value={selectedSetting.clientSecret || ''}
-                    onChange={(e) => setSelectedSetting({...selectedSetting, clientSecret: e.target.value})}
-                    placeholder="Your OAuth client secret"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="clientSecret"
+                      type={showPasswords.clientSecret ? "text" : "password"}
+                      value={selectedSetting.clientSecret || ''}
+                      onChange={(e) => setSelectedSetting({...selectedSetting, clientSecret: e.target.value})}
+                      placeholder="Your OAuth client secret"
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPasswords(prev => ({ ...prev, clientSecret: !prev.clientSecret }))}
+                    >
+                      {showPasswords.clientSecret ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
               {selectedSetting.provider === 'microsoft365' && (
@@ -838,13 +947,29 @@ export function EmailManagement() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="smtpPassword">SMTP Password</Label>
-                  <Input
-                    id="smtpPassword"
-                    type="password"
-                    value={selectedSetting.smtpPassword || ''}
-                    onChange={(e) => setSelectedSetting({...selectedSetting, smtpPassword: e.target.value})}
-                    placeholder="Your SMTP password"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="smtpPassword"
+                      type={showPasswords.smtpPassword ? "text" : "password"}
+                      value={selectedSetting.smtpPassword || ''}
+                      onChange={(e) => setSelectedSetting({...selectedSetting, smtpPassword: e.target.value})}
+                      placeholder="Your SMTP password"
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPasswords(prev => ({ ...prev, smtpPassword: !prev.smtpPassword }))}
+                    >
+                      {showPasswords.smtpPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -860,98 +985,6 @@ export function EmailManagement() {
             </div>
           )}
 
-          {/* IMAP Configuration */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-sm">IMAP Configuration (Optional)</h4>
-
-            {/* Credential Selection */}
-            <div className="space-y-2">
-              <Label htmlFor="imapCredential">Select IMAP Credential (Optional)</Label>
-              <Select
-                value=""
-                onValueChange={(value) => {
-                  if (value) {
-                    const credential = credentials.find(c => c.id === value);
-                    if (credential) {
-                      setSelectedSetting({
-                        ...selectedSetting,
-                        imapHost: credential.endpoint,
-                        imapPort: credential.region,
-                        imapUser: credential.username,
-                        imapPassword: credential.password,
-                        imapSecure: credential.config?.secure ?? true
-                      });
-                    }
-                  }
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose existing IMAP credential or enter manually" />
-                </SelectTrigger>
-                <SelectContent>
-                  {credentials
-                    .filter(c => c.type === 'imap')
-                    .map((credential) => (
-                      <SelectItem key={credential.id} value={credential.id}>
-                        {credential.name} ({credential.provider})
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="imapHost">IMAP Host</Label>
-                <Input
-                  id="imapHost"
-                  value={selectedSetting.imapHost || ''}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, imapHost: e.target.value})}
-                  placeholder="imap.gmail.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="imapPort">IMAP Port</Label>
-                <Input
-                  id="imapPort"
-                  value={selectedSetting.imapPort || ''}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, imapPort: e.target.value})}
-                  placeholder="993"
-                />
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="imapUser">IMAP Username</Label>
-                <Input
-                  id="imapUser"
-                  value={selectedSetting.imapUser || ''}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, imapUser: e.target.value})}
-                  placeholder="your-email@example.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="imapPassword">IMAP Password</Label>
-                <Input
-                  id="imapPassword"
-                  type="password"
-                  value={selectedSetting.imapPassword || ''}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, imapPassword: e.target.value})}
-                  placeholder="Your IMAP password"
-                />
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="imapSecure"
-                checked={selectedSetting.imapSecure ?? true}
-                onChange={(e) => setSelectedSetting({...selectedSetting, imapSecure: e.target.checked})}
-                className="rounded"
-              />
-              <Label htmlFor="imapSecure">Use secure connection (SSL/TLS)</Label>
-            </div>
-          </div>
 
           <div className="flex items-center space-x-2">
             <Switch
@@ -1063,6 +1096,65 @@ export function EmailManagement() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Test Email Dialog */}
+      <Dialog open={isTestEmailDialogOpen} onOpenChange={setIsTestEmailDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Test Email</DialogTitle>
+            <DialogDescription>
+              Send a test email to verify your email configuration is working correctly.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="testEmailTo">To</Label>
+              <Input
+                id="testEmailTo"
+                type="email"
+                value={testEmailTo}
+                onChange={(e) => setTestEmailTo(e.target.value)}
+                placeholder="recipient@example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="testEmailSubject">Subject</Label>
+              <Input
+                id="testEmailSubject"
+                value={testEmailSubject}
+                onChange={(e) => setTestEmailSubject(e.target.value)}
+                placeholder="Test Email Subject"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="testEmailBody">Message</Label>
+              <Textarea
+                id="testEmailBody"
+                value={testEmailBody}
+                onChange={(e) => setTestEmailBody(e.target.value)}
+                placeholder="Test email content..."
+                rows={4}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsTestEmailDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => selectedSetting && handleSendTestEmail(selectedSetting.id)}
+                disabled={sendingTest || !testEmailTo.trim()}
+              >
+                {sendingTest && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Send Test Email
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>

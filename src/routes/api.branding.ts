@@ -7,6 +7,21 @@ import * as v from 'valibot';
 
 export const ServerRoute = createServerFileRoute('/api/branding').methods({
   GET: async ({ request }) => {
+    const url = new URL(request.url);
+    const endpoint = url.pathname.split('/api/branding')[1];
+
+    // Handle custom font CSS endpoint
+    if (endpoint === '/fonts.css') {
+      const customFontCSS = await BrandingService.generateCustomFontCSS();
+      return new Response(customFontCSS, {
+        headers: {
+          'Content-Type': 'text/css',
+          'Cache-Control': 'public, max-age=31536000',
+        },
+      });
+    }
+
+    // Regular branding configurations
     try {
       const brandingConfigs = await BrandingService.getAllBranding();
       return new Response(JSON.stringify({ success: true, data: brandingConfigs }), {
@@ -23,18 +38,40 @@ export const ServerRoute = createServerFileRoute('/api/branding').methods({
 
   POST: async ({ request }) => {
     try {
-      const body = await request.json();
-      
-      // Validate input
-      const validatedData = v.parse(insertBrandingSchema, body);
-      
-      const newBranding = await BrandingService.createBranding(validatedData);
-      return new Response(JSON.stringify({ success: true, data: newBranding }), {
-        status: 201,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const url = new URL(request.url);
+      const endpoint = url.pathname.split('/api/branding')[1];
+
+      if (endpoint === '/activate') {
+        // Handle activation request
+        const body = await request.json();
+        const { id } = body;
+
+        if (!id) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'ID is required for activation' }),
+            { status: 400, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const activatedBranding = await BrandingService.activateBranding(id);
+        return new Response(JSON.stringify({ data: activatedBranding, success: true }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } else {
+        // Handle creation request
+        const body = await request.json();
+        
+        // Validate input
+        const validatedData = v.parse(insertBrandingSchema, body);
+        
+        const newBranding = await BrandingService.createBranding(validatedData);
+        return new Response(JSON.stringify({ success: true, data: newBranding }), {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
     } catch (error) {
-      console.error('Error creating branding configuration:', error);
+      console.error('Error processing branding request:', error);
       
       if (error instanceof v.ValiError) {
         return new Response(
@@ -44,7 +81,7 @@ export const ServerRoute = createServerFileRoute('/api/branding').methods({
       }
       
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to create branding configuration' }),
+        JSON.stringify({ success: false, error: 'Failed to process branding request' }),
         { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }

@@ -62,7 +62,7 @@ export class EmailService {
   /**
    * Get all email settings
    */
-  static async getAllSettings(): Promise<EmailSettings[]> {
+  static async getAllEmailSettings(): Promise<EmailSettings[]> {
     try {
       return await db
         .select()
@@ -75,15 +75,34 @@ export class EmailService {
   }
 
   /**
+   * Get email setting by ID
+   */
+  static async getEmailSettingById(id: string): Promise<EmailSettings | null> {
+    try {
+      const result = await db
+        .select()
+        .from(emailSettings)
+        .where(eq(emailSettings.id, id))
+        .limit(1);
+      
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error fetching email setting:', error);
+      throw new Error('Failed to fetch email setting');
+    }
+  }
+
+  /**
    * Create email settings
    */
-  static async createSettings(data: NewEmailSettings): Promise<EmailSettings> {
+  static async createEmailSetting(data: NewEmailSettings): Promise<EmailSettings> {
     try {
-      const validatedData = v.parse(insertEmailSettingsSchema, data);
+      // Data is already validated and cleaned at the API route level
+      const validatedData = data;
       
       // If this is being set as active, deactivate all others first
       if (validatedData.isActive) {
-        await this.deactivateAllSettings();
+        await this.deactivateAllEmailSettings();
       }
       
       const result = await db
@@ -107,13 +126,13 @@ export class EmailService {
   /**
    * Update email settings
    */
-  static async updateSettings(id: string, data: UpdateEmailSettings): Promise<EmailSettings> {
+  static async updateEmailSetting(id: string, data: UpdateEmailSettings): Promise<EmailSettings> {
     try {
       const validatedData = v.parse(updateEmailSettingsSchema, data);
       
       // If this is being set as active, deactivate all others first
       if (validatedData.isActive) {
-        await this.deactivateAllSettings();
+        await this.deactivateAllEmailSettings();
       }
       
       const result = await db
@@ -136,9 +155,65 @@ export class EmailService {
   }
 
   /**
+   * Activate email setting
+   */
+  static async activateEmailSetting(id: string): Promise<EmailSettings> {
+    try {
+      // First deactivate all settings
+      await this.deactivateAllEmailSettings();
+      
+      // Then activate the specified setting
+      const result = await db
+        .update(emailSettings)
+        .set({
+          isActive: true,
+          updatedAt: new Date(),
+        })
+        .where(eq(emailSettings.id, id))
+        .returning();
+      
+      if (!result[0]) {
+        throw new Error('Email setting not found');
+      }
+      
+      return result[0];
+    } catch (error) {
+      console.error('Error activating email setting:', error);
+      throw new Error('Failed to activate email setting');
+    }
+  }
+
+  /**
+   * Delete email setting
+   */
+  static async deleteEmailSetting(id: string): Promise<EmailSettings> {
+    try {
+      // First delete all associated email logs
+      await db
+        .delete(emailLogs)
+        .where(eq(emailLogs.settingsId, id));
+      
+      // Then delete the email setting
+      const result = await db
+        .delete(emailSettings)
+        .where(eq(emailSettings.id, id))
+        .returning();
+      
+      if (!result[0]) {
+        throw new Error('Email setting not found');
+      }
+      
+      return result[0];
+    } catch (error) {
+      console.error('Error deleting email setting:', error);
+      throw new Error('Failed to delete email setting');
+    }
+  }
+
+  /**
    * Deactivate all email settings
    */
-  static async deactivateAllSettings(): Promise<void> {
+  static async deactivateAllEmailSettings(): Promise<void> {
     try {
       await db
         .update(emailSettings)
@@ -155,7 +230,7 @@ export class EmailService {
   /**
    * Get email template by ID
    */
-  static async getTemplateById(id: string): Promise<EmailTemplate | null> {
+  static async getEmailTemplateById(id: string): Promise<EmailTemplate | null> {
     try {
       const result = await db
         .select()
@@ -194,7 +269,7 @@ export class EmailService {
   /**
    * Get all email templates
    */
-  static async getAllTemplates(): Promise<EmailTemplate[]> {
+  static async getAllEmailTemplates(): Promise<EmailTemplate[]> {
     try {
       return await db
         .select()
@@ -209,7 +284,7 @@ export class EmailService {
   /**
    * Create email template
    */
-  static async createTemplate(data: NewEmailTemplate): Promise<EmailTemplate> {
+  static async createEmailTemplate(data: NewEmailTemplate): Promise<EmailTemplate> {
     try {
       const validatedData = v.parse(insertEmailTemplateSchema, data);
       
@@ -234,7 +309,7 @@ export class EmailService {
   /**
    * Update email template
    */
-  static async updateTemplate(id: string, data: UpdateEmailTemplate): Promise<EmailTemplate> {
+  static async updateEmailTemplate(id: string, data: UpdateEmailTemplate): Promise<EmailTemplate> {
     try {
       const validatedData = v.parse(updateEmailTemplateSchema, data);
       
@@ -309,7 +384,7 @@ export class EmailService {
     try {
       switch (settings.provider) {
         case 'smtp':
-          return nodemailer.createTransporter({
+          return nodemailer.createTransport({
             host: settings.smtpHost!,
             port: parseInt(settings.smtpPort || '587'),
             secure: settings.smtpSecure || false,
@@ -318,10 +393,10 @@ export class EmailService {
               pass: settings.smtpPassword!,
             },
           });
-        
+
         case 'microsoft365':
           // OAuth2 configuration for Microsoft 365
-          return nodemailer.createTransporter({
+          return nodemailer.createTransport({
             service: 'outlook',
             auth: {
               type: 'OAuth2',
@@ -332,10 +407,10 @@ export class EmailService {
               accessToken: settings.accessToken!,
             },
           });
-        
+
         case 'google_workspace':
           // OAuth2 configuration for Google Workspace
-          return nodemailer.createTransporter({
+          return nodemailer.createTransport({
             service: 'gmail',
             auth: {
               type: 'OAuth2',
@@ -346,7 +421,7 @@ export class EmailService {
               accessToken: settings.accessToken!,
             },
           });
-        
+
         default:
           throw new Error(`Unsupported email provider: ${settings.provider}`);
       }
@@ -379,7 +454,7 @@ export class EmailService {
         let template: EmailTemplate | null = null;
         
         if (options.templateId) {
-          template = await this.getTemplateById(options.templateId);
+          template = await this.getEmailTemplateById(options.templateId);
         } else if (options.template) {
           template = await this.getTemplateByName(options.template);
         }
@@ -421,14 +496,20 @@ export class EmailService {
       const transporter = await this.createTransporter(settings);
       
       // Send email
-      const mailOptions = {
+      const mailOptions: any = {
         from: `${settings.fromName} <${settings.fromEmail}>`,
         to: options.to,
         subject,
         html: htmlContent,
         text: textContent,
-        replyTo: options.replyTo || settings.replyToEmail,
       };
+
+      // Only add replyTo if it's provided and not empty
+      if (options.replyTo && options.replyTo.trim()) {
+        mailOptions.replyTo = options.replyTo;
+      } else if (settings.replyToEmail && settings.replyToEmail.trim()) {
+        mailOptions.replyTo = settings.replyToEmail;
+      }
       
       const info = await transporter.sendMail(mailOptions);
       
@@ -473,7 +554,79 @@ export class EmailService {
   }
 
   /**
-   * Get email logs with pagination
+   * Delete email template
+   */
+  static async deleteEmailTemplate(id: string): Promise<EmailTemplate> {
+    try {
+      const result = await db
+        .delete(emailTemplates)
+        .where(eq(emailTemplates.id, id))
+        .returning();
+      
+      if (!result[0]) {
+        throw new Error('Email template not found');
+      }
+      
+      return result[0];
+    } catch (error) {
+      console.error('Error deleting email template:', error);
+      throw new Error('Failed to delete email template');
+    }
+  }
+
+  /**
+   * Get email log by ID
+   */
+  static async getEmailLogById(id: string): Promise<EmailLog | null> {
+    try {
+      const result = await db
+        .select()
+        .from(emailLogs)
+        .where(eq(emailLogs.id, id))
+        .limit(1);
+      
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error fetching email log:', error);
+      throw new Error('Failed to fetch email log');
+    }
+  }
+
+  /**
+   * Get email logs with pagination and filters
+   */
+  static async getAllEmailLogs(options: { 
+    limit?: number; 
+    offset?: number; 
+    status?: EmailStatus;
+  } = {}): Promise<EmailLog[]> {
+    try {
+      const { limit = 50, offset = 0, status } = options;
+      
+      if (status) {
+        return await db
+          .select()
+          .from(emailLogs)
+          .where(eq(emailLogs.status, status))
+          .orderBy(desc(emailLogs.createdAt))
+          .limit(limit)
+          .offset(offset);
+      }
+      
+      return await db
+        .select()
+        .from(emailLogs)
+        .orderBy(desc(emailLogs.createdAt))
+        .limit(limit)
+        .offset(offset);
+    } catch (error) {
+      console.error('Error fetching email logs:', error);
+      throw new Error('Failed to fetch email logs');
+    }
+  }
+
+  /**
+   * Get email logs with pagination (legacy method)
    */
   static async getEmailLogs(limit = 50, offset = 0): Promise<EmailLog[]> {
     try {

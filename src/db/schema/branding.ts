@@ -28,6 +28,14 @@ export const branding = pgTable(
     // Typography
     fontFamily: text('font_family').default('Inter, sans-serif'),
     headingFont: text('heading_font'),
+    // customFonts: jsonb('custom_fonts').$type<{
+    //   [fontName: string]: {
+    //     url: string;
+    //     format: string;
+    //     weight?: string;
+    //     style?: string;
+    //   };
+    // }>(),
     
     // Layout & Styling
     borderRadius: text('border_radius').default('0.5rem'),
@@ -79,6 +87,12 @@ export const insertBrandingSchema = createInsertSchema(branding, {
   textColor: v.optional(v.pipe(v.string(), v.regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color'))),
   fontFamily: v.optional(v.string()),
   headingFont: v.optional(v.string()),
+  // customFonts: v.optional(v.record(v.string(), v.object({
+  //   url: v.pipe(v.string(), v.url('Must be a valid URL')),
+  //   format: v.string(),
+  //   weight: v.optional(v.string()),
+  //   style: v.optional(v.string()),
+  // }))),
   borderRadius: v.optional(v.string()),
   spacing: v.optional(v.string()),
   supportEmail: v.optional(v.pipe(v.string(), v.email('Must be a valid email'))),

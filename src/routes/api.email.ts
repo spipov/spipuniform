@@ -92,6 +92,68 @@ export const ServerRoute = createServerFileRoute('/api/email').methods({
           status: result.success ? 200 : 500,
           headers: { 'Content-Type': 'application/json' },
         });
+      } else if (resource === 'test' && !id) {
+        // Handle POST /api/email/test - Send test email
+        const testEmailSchema = v.object({
+          settingId: v.pipe(v.string(), v.minLength(1, 'Setting ID is required')),
+          to: v.pipe(v.string(), v.email('Must be a valid email address')),
+          subject: v.pipe(v.string(), v.minLength(1, 'Subject is required')),
+          body: v.pipe(v.string(), v.minLength(1, 'Body is required')),
+        });
+
+        const validatedData = v.parse(testEmailSchema, body);
+
+        // Get the specific email settings to test
+        const settings = await EmailService.getEmailSettingById(validatedData.settingId);
+        if (!settings) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: 'Email settings not found'
+            }),
+            { status: 404, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Create transporter for the specific settings
+        const transporter = await EmailService.createTransporter(settings);
+
+        // Send test email directly using the transporter
+        const mailOptions = {
+          from: `${settings.fromName} <${settings.fromEmail}>`,
+          to: validatedData.to,
+          subject: validatedData.subject,
+          html: validatedData.body.replace(/\n/g, '<br>'),
+          text: validatedData.body,
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+
+        // Import db and emailLogs for logging
+        const { db } = await import('@/db');
+        const { emailLogs } = await import('@/db/schema');
+
+        // Log the test email to database
+        await db.insert(emailLogs).values({
+          toEmail: validatedData.to,
+          fromEmail: settings.fromEmail,
+          subject: validatedData.subject,
+          settingsId: settings.id,
+          provider: settings.provider,
+          status: 'sent',
+          sentAt: new Date(),
+          messageId: info.messageId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+
+        return new Response(JSON.stringify({
+          success: true,
+          message: 'Test email sent successfully',
+          data: { messageId: info.messageId }
+        }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
       } else {
         return new Response(
           JSON.stringify({ success: false, error: 'Invalid endpoint' }),

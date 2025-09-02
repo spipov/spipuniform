@@ -162,7 +162,10 @@ export const insertEmailSettingsSchema = createInsertSchema(emailSettings, {
   provider: v.picklist(['smtp', 'microsoft365', 'google_workspace']),
   fromName: v.pipe(v.string(), v.minLength(1, 'From name is required')),
   fromEmail: v.pipe(v.string(), v.email('Must be a valid email')),
-  replyToEmail: v.optional(v.pipe(v.string(), v.email('Must be a valid email'))),
+  replyToEmail: v.optional(v.union([
+    v.pipe(v.string(), v.minLength(1), v.email('Must be a valid email')),
+    v.literal('')
+  ])),
   configName: v.pipe(v.string(), v.minLength(1, 'Config name is required')),
   smtpHost: v.optional(v.string()),
   smtpPort: v.optional(v.string()),
@@ -201,7 +204,26 @@ export const selectEmailTemplateSchema = createSelectSchema(emailTemplates);
 export const selectEmailLogSchema = createSelectSchema(emailLogs);
 
 // Update schemas
-export const updateEmailSettingsSchema = v.partial(insertEmailSettingsSchema);
+export const updateEmailSettingsSchema = v.partial(v.object({
+  ...insertEmailSettingsSchema.entries,
+  // Override nullable fields to handle null values from database
+  imapHost: v.optional(v.union([v.string(), v.null()])),
+  imapPort: v.optional(v.union([v.string(), v.null()])),
+  imapUser: v.optional(v.union([v.string(), v.null()])),
+  imapPassword: v.optional(v.union([v.string(), v.null()])),
+  refreshToken: v.optional(v.union([v.string(), v.null()])),
+  accessToken: v.optional(v.union([v.string(), v.null()])),
+  tokenExpiry: v.optional(v.union([v.date(), v.null()])),
+  clientId: v.optional(v.union([v.string(), v.null()])),
+  clientSecret: v.optional(v.union([v.string(), v.null()])),
+  tenantId: v.optional(v.union([v.string(), v.null()])),
+  replyToEmail: v.optional(v.union([
+    v.pipe(v.string(), v.minLength(1), v.email('Must be a valid email')),
+    v.literal(''),
+    v.null()
+  ])),
+  description: v.optional(v.union([v.string(), v.null()]))
+}));
 export const updateEmailTemplateSchema = v.partial(insertEmailTemplateSchema);
 
 // Types

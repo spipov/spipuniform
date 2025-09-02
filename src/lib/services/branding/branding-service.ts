@@ -281,6 +281,38 @@ export class BrandingService {
       };
     }
   }
+
+  /**
+   * Generate CSS for custom fonts
+   */
+  static async generateCustomFontCSS(): Promise<string> {
+    try {
+      const activeBranding = await this.getActiveBranding();
+
+      if (!activeBranding?.customFonts) {
+        return '';
+      }
+
+      const fontFaces: string[] = [];
+
+      for (const [fontName, fontData] of Object.entries(activeBranding.customFonts)) {
+        const fontFace = `
+@font-face {
+  font-family: '${fontName}';
+  src: url('${fontData.url}') format('${fontData.format}');
+  ${fontData.weight ? `font-weight: ${fontData.weight};` : ''}
+  ${fontData.style ? `font-style: ${fontData.style};` : ''}
+}
+        `.trim();
+        fontFaces.push(fontFace);
+      }
+
+      return fontFaces.join('\n\n');
+    } catch (error) {
+      console.error('Error generating custom font CSS:', error);
+      return '';
+    }
+  }
 }
 
 // Export for convenience
