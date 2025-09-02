@@ -31,6 +31,7 @@ import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api
 import { ServerRoute as ApiRolesServerRouteImport } from './routes/api.roles'
 import { ServerRoute as ApiFilesServerRouteImport } from './routes/api.files'
 import { ServerRoute as ApiEmailServerRouteImport } from './routes/api.email'
+import { ServerRoute as ApiCredentialsServerRouteImport } from './routes/api/credentials'
 import { ServerRoute as ApiBrandingServerRouteImport } from './routes/api.branding'
 import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api.auth.$'
 
@@ -139,6 +140,11 @@ const ApiFilesServerRoute = ApiFilesServerRouteImport.update({
 const ApiEmailServerRoute = ApiEmailServerRouteImport.update({
   id: '/api/email',
   path: '/api/email',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiCredentialsServerRoute = ApiCredentialsServerRouteImport.update({
+  id: '/api/credentials',
+  path: '/api/credentials',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiBrandingServerRoute = ApiBrandingServerRouteImport.update({
@@ -260,6 +266,7 @@ export interface RootRouteChildren {
 }
 export interface FileServerRoutesByFullPath {
   '/api/branding': typeof ApiBrandingServerRoute
+  '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/email': typeof ApiEmailServerRoute
   '/api/files': typeof ApiFilesServerRoute
   '/api/roles': typeof ApiRolesServerRoute
@@ -270,6 +277,7 @@ export interface FileServerRoutesByFullPath {
 }
 export interface FileServerRoutesByTo {
   '/api/branding': typeof ApiBrandingServerRoute
+  '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/email': typeof ApiEmailServerRoute
   '/api/files': typeof ApiFilesServerRoute
   '/api/roles': typeof ApiRolesServerRoute
@@ -281,6 +289,7 @@ export interface FileServerRoutesByTo {
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/api/branding': typeof ApiBrandingServerRoute
+  '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/email': typeof ApiEmailServerRoute
   '/api/files': typeof ApiFilesServerRoute
   '/api/roles': typeof ApiRolesServerRoute
@@ -293,6 +302,7 @@ export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
   fullPaths:
     | '/api/branding'
+    | '/api/credentials'
     | '/api/email'
     | '/api/files'
     | '/api/roles'
@@ -303,6 +313,7 @@ export interface FileServerRouteTypes {
   fileServerRoutesByTo: FileServerRoutesByTo
   to:
     | '/api/branding'
+    | '/api/credentials'
     | '/api/email'
     | '/api/files'
     | '/api/roles'
@@ -313,6 +324,7 @@ export interface FileServerRouteTypes {
   id:
     | '__root__'
     | '/api/branding'
+    | '/api/credentials'
     | '/api/email'
     | '/api/files'
     | '/api/roles'
@@ -324,6 +336,7 @@ export interface FileServerRouteTypes {
 }
 export interface RootServerRouteChildren {
   ApiBrandingServerRoute: typeof ApiBrandingServerRoute
+  ApiCredentialsServerRoute: typeof ApiCredentialsServerRoute
   ApiEmailServerRoute: typeof ApiEmailServerRoute
   ApiFilesServerRoute: typeof ApiFilesServerRoute
   ApiRolesServerRoute: typeof ApiRolesServerRoute
@@ -479,6 +492,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiEmailServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/credentials': {
+      id: '/api/credentials'
+      path: '/api/credentials'
+      fullPath: '/api/credentials'
+      preLoaderRoute: typeof ApiCredentialsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/branding': {
       id: '/api/branding'
       path: '/api/branding'
@@ -536,6 +556,7 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
   ApiBrandingServerRoute: ApiBrandingServerRoute,
+  ApiCredentialsServerRoute: ApiCredentialsServerRoute,
   ApiEmailServerRoute: ApiEmailServerRoute,
   ApiFilesServerRoute: ApiFilesServerRoute,
   ApiRolesServerRoute: ApiRolesServerRoute,

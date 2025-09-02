@@ -12,16 +12,12 @@ export * from './branding';
 // Email System tables
 export * from './email';
 
+// Credentials System tables
+export * from './credentials';
+
 // File System tables
 export * from './file-system';
 
-// Example table (remove if not needed)
-export const posts = pgTable('posts', {
-  id: serial('id').primaryKey(),
-  title: text('title').notNull(),
-  content: text('content'),
-  createdAt: timestamp('created_at').defaultNow(),
-});
 
 // Export types for user management
 export type { User, NewUser, Role, NewRole, Permission, NewPermission } from './user-management';
@@ -30,19 +26,28 @@ export type { User, NewUser, Role, NewRole, Permission, NewPermission } from './
 export type { Branding, NewBranding, UpdateBranding } from './branding';
 
 // Export types for email system
-export type { 
-  EmailSettings, 
-  NewEmailSettings, 
+export type {
+  EmailSettings,
+  NewEmailSettings,
   UpdateEmailSettings,
-  EmailTemplate, 
-  NewEmailTemplate, 
+  EmailTemplate,
+  NewEmailTemplate,
   UpdateEmailTemplate,
-  EmailLog, 
+  EmailLog,
   NewEmailLog,
   EmailProvider,
   EmailStatus,
   TemplateType
 } from './email';
+
+// Export types for credentials system
+export type {
+  Credential,
+  NewCredential,
+  UpdateCredential,
+  CredentialType,
+  CredentialProvider
+} from './credentials';
 
 // Export types for file system
 export type {

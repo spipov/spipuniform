@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Mail, Send, Settings, FileText, Activity, Plus, Edit, Trash2, TestTube, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -19,6 +20,18 @@ interface EmailSetting {
   smtpPort?: string;
   smtpUser?: string;
   smtpPassword?: string;
+  smtpSecure?: boolean;
+  imapHost?: string;
+  imapPort?: string;
+  imapUser?: string;
+  imapPassword?: string;
+  imapSecure?: boolean;
+  clientId?: string;
+  clientSecret?: string;
+  tenantId?: string;
+  refreshToken?: string;
+  accessToken?: string;
+  tokenExpiry?: string;
   fromName: string;
   fromEmail: string;
   replyToEmail?: string;
@@ -54,16 +67,20 @@ export function EmailManagement() {
   const [emailSettings, setEmailSettings] = useState<EmailSetting[]>([]);
   const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
+  const [credentials, setCredentials] = useState<any[]>([]);
   const [selectedSetting, setSelectedSetting] = useState<EmailSetting | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
   const [isEditingSetting, setIsEditingSetting] = useState(false);
   const [isEditingTemplate, setIsEditingTemplate] = useState(false);
+  const [isSettingDialogOpen, setIsSettingDialogOpen] = useState(false);
+  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // Load data on component mount
   useEffect(() => {
     loadEmailData();
+    loadCredentials();
   }, []);
 
   const loadEmailData = async () => {
@@ -97,6 +114,18 @@ export function EmailManagement() {
     }
   };
 
+  const loadCredentials = async () => {
+    try {
+      const response = await fetch('/api/credentials');
+      if (response.ok) {
+        const data = await response.json();
+        setCredentials(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to load credentials:', error);
+    }
+  };
+
   const handleSaveSetting = async () => {
     if (!selectedSetting) return;
 
@@ -124,7 +153,7 @@ export function EmailManagement() {
           setEmailSettings(settings => [...settings, savedSetting]);
         }
         toast.success(selectedSetting.id ? 'Setting updated' : 'Setting created');
-        setIsEditingSetting(false);
+        setIsSettingDialogOpen(false);
         setSelectedSetting(null);
       } else {
         const error = await response.json();
@@ -208,7 +237,7 @@ export function EmailManagement() {
           setEmailTemplates(templates => [...templates, savedTemplate]);
         }
         toast.success(selectedTemplate.id ? 'Template updated' : 'Template created');
-        setIsEditingTemplate(false);
+        setIsTemplateDialogOpen(false);
         setSelectedTemplate(null);
       } else {
         const error = await response.json();
@@ -243,7 +272,7 @@ export function EmailManagement() {
 
   const handleEditSetting = (setting: EmailSetting) => {
     setSelectedSetting(setting);
-    setIsEditingSetting(true);
+    setIsSettingDialogOpen(true);
   };
 
   const handleCreateNewSetting = () => {
@@ -257,12 +286,12 @@ export function EmailManagement() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
-    setIsEditingSetting(true);
+    setIsSettingDialogOpen(true);
   };
 
   const handleEditTemplate = (template: EmailTemplate) => {
     setSelectedTemplate(template);
-    setIsEditingTemplate(true);
+    setIsTemplateDialogOpen(true);
   };
 
   const handleCreateNewTemplate = () => {
@@ -276,7 +305,7 @@ export function EmailManagement() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
-    setIsEditingTemplate(true);
+    setIsTemplateDialogOpen(true);
   };
 
   const getStatusBadge = (status: string) => {
@@ -407,7 +436,9 @@ export function EmailManagement() {
                     <div className="text-sm text-muted-foreground">
                       <p>Provider: {setting.provider.toUpperCase()}</p>
                       <p>Email: {setting.fromEmail}</p>
-                      {setting.smtpHost && <p>Host: {setting.smtpHost}:{setting.smtpPort}</p>}
+                      {setting.smtpHost && <p>SMTP: {setting.smtpHost}:{setting.smtpPort}</p>}
+                      {setting.imapHost && <p>IMAP: {setting.imapHost}:{setting.imapPort}</p>}
+                      {setting.clientId && <p>OAuth: Configured</p>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -573,15 +604,20 @@ export function EmailManagement() {
       </TabsContent>
     </Tabs>
 
-    {/* Edit Setting Modal */}
-    {isEditingSetting && selectedSetting && (
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {selectedSetting.id ? 'Edit' : 'Create'} Email Setting
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    {/* Edit Setting Dialog */}
+    <Dialog open={isSettingDialogOpen} onOpenChange={setIsSettingDialogOpen}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {selectedSetting?.id ? 'Edit' : 'Create'} Email Setting
+          </DialogTitle>
+          <DialogDescription>
+            Configure email provider settings and authentication
+          </DialogDescription>
+        </DialogHeader>
+
+        {selectedSetting && (
+          <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="settingName">Setting Name</Label>
@@ -655,29 +691,267 @@ export function EmailManagement() {
             </div>
           </div>
 
-          {selectedSetting.provider === 'smtp' && (
-            <div className="grid gap-4 md:grid-cols-2">
+          {/* OAuth Configuration for Google/Microsoft */}
+          {(selectedSetting.provider === 'google_workspace' || selectedSetting.provider === 'microsoft365') && (
+            <div className="space-y-4">
+              <h4 className="font-medium text-sm">OAuth Configuration</h4>
+
+              {/* Credential Selection */}
               <div className="space-y-2">
-                <Label htmlFor="smtpHost">SMTP Host</Label>
-                <Input
-                  id="smtpHost"
-                  value={selectedSetting.smtpHost || ''}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, smtpHost: e.target.value})}
-                  placeholder="smtp.gmail.com"
-                />
+                <Label htmlFor="oauthCredential">Select OAuth Credential (Optional)</Label>
+                <Select
+                  value=""
+                  onValueChange={(value) => {
+                    if (value) {
+                      const credential = credentials.find(c => c.id === value);
+                      if (credential) {
+                        setSelectedSetting({
+                          ...selectedSetting,
+                          clientId: credential.clientId,
+                          clientSecret: credential.clientSecret,
+                          tenantId: credential.tenantId
+                        });
+                      }
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose existing credential or enter manually" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {credentials
+                      .filter(c => c.type === 'oauth_google' || c.type === 'oauth_microsoft')
+                      .map((credential) => (
+                        <SelectItem key={credential.id} value={credential.id}>
+                          {credential.name} ({credential.provider})
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="clientId">Client ID</Label>
+                  <Input
+                    id="clientId"
+                    value={selectedSetting.clientId || ''}
+                    onChange={(e) => setSelectedSetting({...selectedSetting, clientId: e.target.value})}
+                    placeholder="Your OAuth client ID"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="clientSecret">Client Secret</Label>
+                  <Input
+                    id="clientSecret"
+                    type="password"
+                    value={selectedSetting.clientSecret || ''}
+                    onChange={(e) => setSelectedSetting({...selectedSetting, clientSecret: e.target.value})}
+                    placeholder="Your OAuth client secret"
+                  />
+                </div>
+              </div>
+              {selectedSetting.provider === 'microsoft365' && (
+                <div className="space-y-2">
+                  <Label htmlFor="tenantId">Tenant ID</Label>
+                  <Input
+                    id="tenantId"
+                    value={selectedSetting.tenantId || ''}
+                    onChange={(e) => setSelectedSetting({...selectedSetting, tenantId: e.target.value})}
+                    placeholder="Azure AD tenant ID"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SMTP Configuration */}
+          {selectedSetting.provider === 'smtp' && (
+            <div className="space-y-4">
+              <h4 className="font-medium text-sm">SMTP Configuration</h4>
+
+              {/* Credential Selection */}
               <div className="space-y-2">
-                <Label htmlFor="smtpPort">Port</Label>
-                <Input
-                  id="smtpPort"
-                  type="number"
-                  value={selectedSetting.smtpPort || ''}
-                  onChange={(e) => setSelectedSetting({...selectedSetting, smtpPort: e.target.value})}
-                  placeholder="587"
+                <Label htmlFor="smtpCredential">Select SMTP Credential (Optional)</Label>
+                <Select
+                  value=""
+                  onValueChange={(value) => {
+                    if (value) {
+                      const credential = credentials.find(c => c.id === value);
+                      if (credential) {
+                        setSelectedSetting({
+                          ...selectedSetting,
+                          smtpHost: credential.endpoint,
+                          smtpPort: credential.region,
+                          smtpUser: credential.username,
+                          smtpPassword: credential.password,
+                          smtpSecure: credential.config?.secure ?? true
+                        });
+                      }
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose existing SMTP credential or enter manually" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {credentials
+                      .filter(c => c.type === 'smtp')
+                      .map((credential) => (
+                        <SelectItem key={credential.id} value={credential.id}>
+                          {credential.name} ({credential.provider})
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="smtpHost">SMTP Host</Label>
+                  <Input
+                    id="smtpHost"
+                    value={selectedSetting.smtpHost || ''}
+                    onChange={(e) => setSelectedSetting({...selectedSetting, smtpHost: e.target.value})}
+                    placeholder="smtp.gmail.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="smtpPort">SMTP Port</Label>
+                  <Input
+                    id="smtpPort"
+                    value={selectedSetting.smtpPort || ''}
+                    onChange={(e) => setSelectedSetting({...selectedSetting, smtpPort: e.target.value})}
+                    placeholder="587"
+                  />
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="smtpUser">SMTP Username</Label>
+                  <Input
+                    id="smtpUser"
+                    value={selectedSetting.smtpUser || ''}
+                    onChange={(e) => setSelectedSetting({...selectedSetting, smtpUser: e.target.value})}
+                    placeholder="your-email@example.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="smtpPassword">SMTP Password</Label>
+                  <Input
+                    id="smtpPassword"
+                    type="password"
+                    value={selectedSetting.smtpPassword || ''}
+                    onChange={(e) => setSelectedSetting({...selectedSetting, smtpPassword: e.target.value})}
+                    placeholder="Your SMTP password"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="smtpSecure"
+                  checked={selectedSetting.smtpSecure ?? true}
+                  onChange={(e) => setSelectedSetting({...selectedSetting, smtpSecure: e.target.checked})}
+                  className="rounded"
                 />
+                <Label htmlFor="smtpSecure">Use secure connection (SSL/TLS)</Label>
               </div>
             </div>
           )}
+
+          {/* IMAP Configuration */}
+          <div className="space-y-4">
+            <h4 className="font-medium text-sm">IMAP Configuration (Optional)</h4>
+
+            {/* Credential Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="imapCredential">Select IMAP Credential (Optional)</Label>
+              <Select
+                value=""
+                onValueChange={(value) => {
+                  if (value) {
+                    const credential = credentials.find(c => c.id === value);
+                    if (credential) {
+                      setSelectedSetting({
+                        ...selectedSetting,
+                        imapHost: credential.endpoint,
+                        imapPort: credential.region,
+                        imapUser: credential.username,
+                        imapPassword: credential.password,
+                        imapSecure: credential.config?.secure ?? true
+                      });
+                    }
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose existing IMAP credential or enter manually" />
+                </SelectTrigger>
+                <SelectContent>
+                  {credentials
+                    .filter(c => c.type === 'imap')
+                    .map((credential) => (
+                      <SelectItem key={credential.id} value={credential.id}>
+                        {credential.name} ({credential.provider})
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="imapHost">IMAP Host</Label>
+                <Input
+                  id="imapHost"
+                  value={selectedSetting.imapHost || ''}
+                  onChange={(e) => setSelectedSetting({...selectedSetting, imapHost: e.target.value})}
+                  placeholder="imap.gmail.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="imapPort">IMAP Port</Label>
+                <Input
+                  id="imapPort"
+                  value={selectedSetting.imapPort || ''}
+                  onChange={(e) => setSelectedSetting({...selectedSetting, imapPort: e.target.value})}
+                  placeholder="993"
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="imapUser">IMAP Username</Label>
+                <Input
+                  id="imapUser"
+                  value={selectedSetting.imapUser || ''}
+                  onChange={(e) => setSelectedSetting({...selectedSetting, imapUser: e.target.value})}
+                  placeholder="your-email@example.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="imapPassword">IMAP Password</Label>
+                <Input
+                  id="imapPassword"
+                  type="password"
+                  value={selectedSetting.imapPassword || ''}
+                  onChange={(e) => setSelectedSetting({...selectedSetting, imapPassword: e.target.value})}
+                  placeholder="Your IMAP password"
+                />
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="imapSecure"
+                checked={selectedSetting.imapSecure ?? true}
+                onChange={(e) => setSelectedSetting({...selectedSetting, imapSecure: e.target.checked})}
+                className="rounded"
+              />
+              <Label htmlFor="imapSecure">Use secure connection (SSL/TLS)</Label>
+            </div>
+          </div>
 
           <div className="flex items-center space-x-2">
             <Switch
@@ -688,28 +962,34 @@ export function EmailManagement() {
             <Label htmlFor="isActive">Set as active provider</Label>
           </div>
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsEditingSetting(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveSetting} disabled={saving}>
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {selectedSetting.id ? 'Update' : 'Create'}
-            </Button>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsSettingDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveSetting} disabled={saving}>
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {selectedSetting.id ? 'Update' : 'Create'}
+              </Button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
-    )}
+        )}
+      </DialogContent>
+    </Dialog>
 
-      {/* Edit Template Modal */}
-      {isEditingTemplate && selectedTemplate && (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {selectedTemplate.id ? 'Edit' : 'Create'} Email Template
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+      {/* Edit Template Dialog */}
+      <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedTemplate?.id ? 'Edit' : 'Create'} Email Template
+            </DialogTitle>
+            <DialogDescription>
+              Create and manage reusable email templates
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedTemplate && (
+            <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="templateName">Template Name</Label>
@@ -772,18 +1052,19 @@ export function EmailManagement() {
               <Label htmlFor="templateActive">Active template</Label>
             </div>
   
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsEditingTemplate(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSaveTemplate} disabled={saving}>
-                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {selectedTemplate.id ? 'Update' : 'Create'}
-              </Button>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsTemplateDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveTemplate} disabled={saving}>
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {selectedTemplate.id ? 'Update' : 'Create'}
+                </Button>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

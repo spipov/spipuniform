@@ -29,6 +29,20 @@
       "when": 1756765241729,
       "tag": "0003_deep_james_howlett",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1756805434586,
+      "tag": "0004_spicy_butterfly",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1756805511618,
+      "tag": "0005_daily_quentin_quire",
+      "breakpoints": true
     }
   ]
 }

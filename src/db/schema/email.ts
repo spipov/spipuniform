@@ -23,6 +23,13 @@ export const emailSettings = pgTable(
     smtpUser: text('smtp_user'),
     smtpPassword: text('smtp_password'), // Should be encrypted
     smtpSecure: boolean('smtp_secure').default(true),
+
+    // IMAP Configuration
+    imapHost: text('imap_host'),
+    imapPort: text('imap_port'),
+    imapUser: text('imap_user'),
+    imapPassword: text('imap_password'), // Should be encrypted
+    imapSecure: boolean('imap_secure').default(true),
     
     // OAuth Configuration (for Microsoft 365 / Google Workspace)
     clientId: text('client_id'),
@@ -161,6 +168,10 @@ export const insertEmailSettingsSchema = createInsertSchema(emailSettings, {
   smtpPort: v.optional(v.string()),
   smtpUser: v.optional(v.string()),
   smtpPassword: v.optional(v.string()),
+  imapHost: v.optional(v.string()),
+  imapPort: v.optional(v.string()),
+  imapUser: v.optional(v.string()),
+  imapPassword: v.optional(v.string()),
   clientId: v.optional(v.string()),
   clientSecret: v.optional(v.string()),
   tenantId: v.optional(v.string()),
