@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Reader, renderToStaticMarkup } from '@usewaypoint/email-builder';
+import { renderToStaticMarkup } from '@usewaypoint/email-builder';
+import { EmailPreview } from '@/email/builder/ColumnsRenderer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
 
 interface EmailBuilderIntegrationProps {
   initialHtml?: string;
@@ -126,7 +126,7 @@ export function EmailBuilderIntegration({ initialHtml = '', onHtmlChange }: Emai
               <Label>Live Preview</Label>
               <div className="border rounded-lg p-4 min-h-[400px] bg-white">
                 {jsonData ? (
-                  <Reader document={jsonData} rootBlockId="root" />
+                  <EmailPreview doc={jsonData} />
                 ) : (
                   <div className="text-center text-muted-foreground py-8">
                     No template data to preview. Add JSON data or HTML content.

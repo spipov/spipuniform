@@ -415,7 +415,7 @@ export function EmailManagement() {
 
   return (
     <>
-      <Tabs defaultValue="settings" className="space-y-6">
+      <Tabs defaultValue={(typeof window!=='undefined' && (new URLSearchParams(window.location.search).get('tab')||localStorage.getItem('email:tab')||'settings'))||'settings'} onValueChange={(v)=>{ try { localStorage.setItem('email:tab', v); const u=new URL(window.location.href); u.searchParams.set('tab', v); window.history.replaceState({}, '', u.toString()); } catch {} }} className="space-y-6">
       <TabsList>
         <TabsTrigger value="settings">Settings</TabsTrigger>
         <TabsTrigger value="templates">Templates</TabsTrigger>
@@ -1079,7 +1079,7 @@ export function EmailManagement() {
                 />
               </div>
 
-              <Tabs defaultValue="html" className="w-full">
+              <Tabs defaultValue={(typeof window!=='undefined' && (localStorage.getItem('email:builderTab')||'html'))||'html'} onValueChange={(v)=>{ try { localStorage.setItem('email:builderTab', v);} catch {} }} className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="html" className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
