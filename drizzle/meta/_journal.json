@@ -50,6 +50,13 @@
       "when": 1756844541718,
       "tag": "0006_sour_paper_doll",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1756913695646,
+      "tag": "0007_violet_monster_badoon",
+      "breakpoints": true
     }
   ]
 }

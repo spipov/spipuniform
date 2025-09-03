@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Mail, Send, Settings, FileText, Activity, Plus, Edit, Trash2, TestTube, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Mail, Send, FileText, Activity, Plus, Edit, Trash2, TestTube, Loader2, Eye, EyeOff, Palette } from 'lucide-react';
 import { toast } from 'sonner';
+import EmailBuilderClient from "@/email/builder/EmailBuilderClient";
 
 interface EmailSetting {
   id: string;
@@ -40,6 +41,7 @@ interface EmailTemplate {
   name: string;
   subject: string;
   htmlContent: string;
+  jsonContent?: any; // Waypoint builder JSON (optional until DB migration)
   textContent?: string;
   type: 'welcome' | 'reset_password' | 'verification' | 'notification' | 'custom';
   variables?: Record<string, any>;
@@ -247,14 +249,20 @@ export function EmailManagement() {
     try {
       setSaving(true);
       const method = selectedTemplate.id ? 'PUT' : 'POST';
-      const url = selectedTemplate.id 
+      const url = selectedTemplate.id
         ? `/api/email/templates/${selectedTemplate.id}`
         : '/api/email/templates';
+
+      // Send JSON content if present for re-editing later
+      const payload = { ...selectedTemplate } as any;
+      if (payload.jsonContent === undefined && (window as any).__emailBuilderDoc) {
+        payload.jsonContent = (window as any).__emailBuilderDoc;
+      }
 
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(selectedTemplate)
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {
@@ -567,13 +575,19 @@ export function EmailManagement() {
             <div>
               <CardTitle>Email Templates</CardTitle>
               <CardDescription>
-                Manage reusable email templates with variables
+                Manage reusable email templates with variables and visual builder
               </CardDescription>
             </div>
-            <Button onClick={handleCreateNewTemplate}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Template
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleCreateNewTemplate}>
+                <FileText className="mr-2 h-4 w-4" />
+                HTML Template
+              </Button>
+              <Button onClick={handleCreateNewTemplate}>
+                <Palette className="mr-2 h-4 w-4" />
+                Visual Builder
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -1011,80 +1025,104 @@ export function EmailManagement() {
 
       {/* Edit Template Dialog */}
       <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] lg:max-w-[1280px] max-h-[92vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {selectedTemplate?.id ? 'Edit' : 'Create'} Email Template
             </DialogTitle>
             <DialogDescription>
-              Create and manage reusable email templates
+              Create and manage reusable email templates with visual builder
             </DialogDescription>
           </DialogHeader>
 
           {selectedTemplate && (
             <div className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="templateName">Template Name</Label>
+                  <Input
+                    id="templateName"
+                    value={selectedTemplate.name}
+                    onChange={(e) => setSelectedTemplate({...selectedTemplate, name: e.target.value})}
+                    placeholder="Welcome Email"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="templateType">Template Type</Label>
+                  <Select
+                    value={selectedTemplate.type}
+                    onValueChange={(value: 'welcome' | 'reset_password' | 'verification' | 'notification' | 'custom') =>
+                      setSelectedTemplate({...selectedTemplate, type: value})
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="welcome">Welcome</SelectItem>
+                      <SelectItem value="reset_password">Reset Password</SelectItem>
+                      <SelectItem value="verification">Verification</SelectItem>
+                      <SelectItem value="notification">Notification</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="templateName">Template Name</Label>
+                <Label htmlFor="subject">Subject</Label>
                 <Input
-                  id="templateName"
-                  value={selectedTemplate.name}
-                  onChange={(e) => setSelectedTemplate({...selectedTemplate, name: e.target.value})}
-                  placeholder="Welcome Email"
+                  id="subject"
+                  value={selectedTemplate.subject}
+                  onChange={(e) => setSelectedTemplate({...selectedTemplate, subject: e.target.value})}
+                  placeholder="Welcome to {{company_name}}!"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="templateType">Template Type</Label>
-                <Select
-                  value={selectedTemplate.type}
-                  onValueChange={(value: 'welcome' | 'reset_password' | 'verification' | 'notification' | 'custom') =>
-                    setSelectedTemplate({...selectedTemplate, type: value})
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="welcome">Welcome</SelectItem>
-                    <SelectItem value="reset_password">Reset Password</SelectItem>
-                    <SelectItem value="verification">Verification</SelectItem>
-                    <SelectItem value="notification">Notification</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
-                  </SelectContent>
-                </Select>
+
+              <Tabs defaultValue="html" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="html" className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    HTML Editor
+                  </TabsTrigger>
+                  <TabsTrigger value="visual" className="flex items-center gap-2">
+                    <Palette className="h-4 w-4" />
+                    Visual Builder
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="html" className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="htmlContent">HTML Content</Label>
+                    <Textarea
+                      id="htmlContent"
+                      value={selectedTemplate.htmlContent}
+                      onChange={(e) => setSelectedTemplate({...selectedTemplate, htmlContent: e.target.value})}
+                      placeholder="<h1>Hello {{user_name}}</h1><p>Welcome to our platform!</p>"
+                      rows={8}
+                      className="font-mono text-sm"
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="visual" className="space-y-4">
+                  <EmailBuilderClient
+                    initialDocument={selectedTemplate.jsonContent || null}
+                    initialHtml={selectedTemplate.htmlContent}
+                    onExport={(html) => setSelectedTemplate({ ...selectedTemplate, htmlContent: html })}
+                  />
+                </TabsContent>
+              </Tabs>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="templateActive"
+                  checked={selectedTemplate.isActive}
+                  onCheckedChange={(checked) => setSelectedTemplate({...selectedTemplate, isActive: checked})}
+                />
+                <Label htmlFor="templateActive">Active template</Label>
               </div>
-            </div>
-  
-            <div className="space-y-2">
-              <Label htmlFor="subject">Subject</Label>
-              <Input
-                id="subject"
-                value={selectedTemplate.subject}
-                onChange={(e) => setSelectedTemplate({...selectedTemplate, subject: e.target.value})}
-                placeholder="Welcome to {{company_name}}!"
-              />
-            </div>
-  
-            <div className="space-y-2">
-              <Label htmlFor="htmlContent">HTML Content</Label>
-              <Textarea
-                id="htmlContent"
-                value={selectedTemplate.htmlContent}
-                onChange={(e) => setSelectedTemplate({...selectedTemplate, htmlContent: e.target.value})}
-                placeholder="<h1>Hello {{user_name}}</h1><p>Welcome to our platform!</p>"
-                rows={6}
-              />
-            </div>
-  
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="templateActive"
-                checked={selectedTemplate.isActive}
-                onCheckedChange={(checked) => setSelectedTemplate({...selectedTemplate, isActive: checked})}
-              />
-              <Label htmlFor="templateActive">Active template</Label>
-            </div>
-  
+
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsTemplateDialogOpen(false)}>
                   Cancel

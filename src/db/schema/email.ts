@@ -72,7 +72,8 @@ export const emailTemplates = pgTable(
     // Template Content
     htmlContent: text('html_content').notNull(),
     textContent: text('text_content'),
-    
+    jsonContent: jsonb('json_content').$type<any>(),
+
     // Template Variables (for documentation)
     variables: jsonb('variables').$type<{
       [key: string]: {
@@ -186,6 +187,7 @@ export const insertEmailTemplateSchema = createInsertSchema(emailTemplates, {
   subject: v.pipe(v.string(), v.minLength(1, 'Subject is required')),
   htmlContent: v.pipe(v.string(), v.minLength(1, 'HTML content is required')),
   textContent: v.optional(v.string()),
+  jsonContent: v.optional(v.unknown()),
   description: v.optional(v.string()),
   version: v.optional(v.string()),
 });

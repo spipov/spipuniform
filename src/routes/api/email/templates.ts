@@ -42,6 +42,7 @@ export const ServerRoute = createServerFileRoute('/api/email/templates').methods
     try {
       const body = await request.json();
       const validatedData = v.parse(insertEmailTemplateSchema, body);
+      // jsonContent is allowed by schema; pass through to service
       const newTemplate = await EmailService.createEmailTemplate(validatedData);
 
       return new Response(JSON.stringify({ data: newTemplate, success: true }), {
