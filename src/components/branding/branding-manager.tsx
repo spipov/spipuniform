@@ -7,9 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Palette, Settings, Plus, Edit, Trash2, Check, Save, X, 
-  Image, Upload, AlertCircle, Loader2, FolderOpen, Type 
+import {
+  Palette, Plus, Edit, Trash2, Check, Save, AlertCircle, Loader2, FolderOpen, Type
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
@@ -323,23 +322,45 @@ export function BrandingManager() {
     }
   };
 
-  // Handle font selection (new function)
-  const handleFontSelection = (fileOrItem: File | FileItem) => {
-    // Handle FileItem (from file chooser)
+  // Handle font selection (upload or choose) and bind to appropriate fields
+  const handleFontSelection = async (fileOrItem: File | FileItem) => {
+    // Helper to apply selected custom font to whichever field(s) currently expect a custom font
+    const applySelectedFont = (fileNameWithExt: string) => {
+      const isBodyCustom = formData.fontFamily === 'Custom Font';
+      const isHeadingCustom = formData.headingFont === 'Custom Font';
+      if (isBodyCustom) handleChange('fontFamily', fileNameWithExt);
+      if (isHeadingCustom) handleChange('headingFont', fileNameWithExt);
+      // If neither explicitly set to Custom Font, default to body font
+      if (!isBodyCustom && !isHeadingCustom) handleChange('fontFamily', fileNameWithExt);
+      const cleanName = fileNameWithExt.replace(/\.(woff2?|woff|ttf|otf)$/i, '');
+      toast.success(`Font "${cleanName}" selected`);
+    };
+
+    // Case 1: FileItem from file chooser (already uploaded)
     if ('url' in fileOrItem && fileOrItem.url) {
-      // For custom fonts, we might want to extract the font family name from filename
-      const fontName = fileOrItem.name.replace(/\.(woff2?|ttf|otf)$/i, '');
-      handleChange('fontFamily', fontName);
-      toast.success(`Font "${fontName}" selected successfully`);
+      applySelectedFont(fileOrItem.name);
       return;
     }
 
-    // Handle File (direct upload) - would need to upload first
+    // Case 2: Raw File from native input - upload it first
     const file = fileOrItem as File;
-    if (file.name) {
-      // For now, just show the file name as this requires more complex font handling
-      const fontName = file.name.replace(/\.(woff2?|ttf|otf)$/i, '');
-      toast.success(`Font "${fontName}" selected (upload implementation needed)`);
+    if (!file?.name) return;
+    try {
+      const fd = new FormData();
+      fd.append('files', file);
+      fd.append('path', '/uploads/fonts');
+      fd.append('category', 'fonts');
+      const resp = await fetch('/api/files', { method: 'POST', body: fd });
+      const result = await resp.json();
+      if (result.success && result.data?.uploadedFiles?.length > 0) {
+        const uploaded = result.data.uploadedFiles[0];
+        applySelectedFont(uploaded.name);
+      } else {
+        toast.error(result?.error || 'Failed to upload font');
+      }
+    } catch (err) {
+      console.error('Font upload error:', err);
+      toast.error('Failed to upload font');
     }
   };
 
@@ -738,6 +759,11 @@ export function BrandingManager() {
                           {FONT_OPTIONS.map(font => (
                             <SelectItem key={font} value={font}>{font}</SelectItem>
                           ))}
+                          {formData.fontFamily && !FONT_OPTIONS.includes(formData.fontFamily) && (
+                            <SelectItem key={formData.fontFamily} value={formData.fontFamily}>
+                              {formData.fontFamily} (Custom)
+                            </SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -755,6 +781,11 @@ export function BrandingManager() {
                           {FONT_OPTIONS.map(font => (
                             <SelectItem key={font} value={font}>{font}</SelectItem>
                           ))}
+                          {formData.headingFont && !FONT_OPTIONS.includes(formData.headingFont) && (
+                            <SelectItem key={formData.headingFont} value={formData.headingFont}>
+                              {formData.headingFont} (Custom)
+                            </SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>

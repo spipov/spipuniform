@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import appCss from "../app/styles/app.css?url";
 
 import Header from "../components/Header";
+import BrandingRuntime from "@/components/branding/branding-runtime";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -44,10 +45,7 @@ export const Route = createRootRoute({
       },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
     ],
   }),
 
@@ -66,6 +64,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <Header />
           {children}
           <Toaster richColors position="top-right" />
+          {/* Branding runtime applies fonts via Tailwind-safe CSS vars */}
+          <BrandingRuntime />
           {process.env.NODE_ENV === "development" && (
             <TanStackDevtools
               config={{
