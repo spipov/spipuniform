@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { ChevronDown, ChevronRight, GripVertical, MousePointerClick, Columns as ColumnsIcon, Heading as HeadingIcon, Text as TextIcon, Image as ImageIcon, Square } from 'lucide-react';
+import { Columns as ColumnsIcon, Heading as HeadingIcon, Text as TextIcon, Image as ImageIcon, Square, Copy, Plus, Minus, MoveVertical, MousePointerClick } from 'lucide-react';
 
 // Lightweight self‑hosted visual builder (no iframe). Purposefully minimal and isolated
 // under src/email. We model a linear stack of blocks inside a root Container.
@@ -130,18 +130,21 @@ function useCompiledHtml(doc: any) {
   const [html, setHtml] = React.useState('');
   React.useEffect(() => {
     try {
-      // Compile each root child with optional section gap
+      // Compile each root child with optional section gap and per-section override
       const rootChildren = doc.root?.data?.props?.childrenIds || [];
       const gap = doc.root?.data?.style?.sectionGap ?? 0;
       let compiled = '';
 
       for (let i = 0; i < rootChildren.length; i++) {
         const childId = rootChildren[i];
-        const inner = doc[childId]?.type === 'Columns'
+        const child = doc[childId];
+        const inner = child?.type === 'Columns'
           ? renderColumnsToHtml(doc, childId)
-          : renderToStaticMarkup({ root: doc[childId] }, { rootBlockId: 'root' });
-        const mb = i < rootChildren.length - 1 ? `margin-bottom:${gap}px;` : '';
-        compiled += `<div style="${mb}">${inner}</div>`;
+          : renderToStaticMarkup({ root: child }, { rootBlockId: 'root' });
+        const override = typeof child?.data?.style?.marginBottom === 'number' ? child.data.style.marginBottom : undefined;
+        const mbNum = i < rootChildren.length - 1 ? (override !== undefined ? override : gap) : 0;
+        const style = mbNum ? `margin-bottom:${mbNum}px;` : '';
+        compiled += `<div style="${style}">${inner}</div>`;
       }
 
       // Wrap in basic email structure with page background color
@@ -421,18 +424,6 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
       }, 0);
     }
   }
-  // Tree view state and utilities
-  const [treeOpen, setTreeOpen] = React.useState<Record<string, boolean>>({ root: true });
-  function nodeIcon(type?: string) {
-    switch (type) {
-      case 'Columns': return <ColumnsIcon className="h-3 w-3" />;
-      case 'Heading': return <HeadingIcon className="h-3 w-3" />;
-      case 'Text': return <TextIcon className="h-3 w-3" />;
-      case 'Image': return <ImageIcon className="h-3 w-3" />;
-      case 'Container': return <Square className="h-3 w-3" />;
-      default: return <Square className="h-3 w-3" />;
-    }
-  }
 
 
   const children: string[] = doc.root?.data?.props?.childrenIds ?? [];
@@ -575,101 +566,6 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
     dragInfo.current = null;
   }
 
-  // Tree view helpers
-  function recursiveDelete(next: any, id: string) {
-    const node = next[id];
-    if (!node) return;
-    if (node.type === 'Columns') {
-      const cols: string[] = node.data?.props?.columnIds || [];
-      for (const cid of cols) {
-        const kids: string[] = next[cid]?.data?.props?.childrenIds || [];
-        for (const k of kids) recursiveDelete(next, k);
-        delete next[cid];
-      }
-    }
-    if (node.type === 'Container') {
-      const kids: string[] = node.data?.props?.childrenIds || [];
-      for (const k of kids) recursiveDelete(next, k);
-    }
-    delete next[id];
-  }
-
-  function removeFromParent(parentId: string, index: number) {
-    setDoc((prev: any) => {
-      const p = prev[parentId];
-      if (!p) return prev;
-      const list: string[] = p.data?.props?.childrenIds ? [...p.data.props.childrenIds] : [];
-      const id = list[index];
-      if (!id) return prev;
-      list.splice(index, 1);
-      const next = { ...prev, [parentId]: { ...p, data: { ...p.data, props: { ...p.data.props, childrenIds: list } } } };
-
-
-      recursiveDelete(next, id);
-      return next;
-    });
-  }
-
-  function NodeRow({ parentId, ids }: { parentId: string; ids: string[] }) {
-    return (
-      <ul className="space-y-1">
-        {ids.map((id, index) => {
-          const node = doc[id];
-          const type = node?.type || 'Block';
-          const isColumns = type === 'Columns';
-          const isContainer = type === 'Container';
-          const columnIds: string[] = isColumns ? (node?.data?.props?.columnIds || []) : [];
-          const childrenIds: string[] = isContainer ? (node?.data?.props?.childrenIds || []) : [];
-          const open = treeOpen[id] ?? true;
-          const toggle = () => setTreeOpen((p) => ({ ...p, [id]: !open }));
-          return (
-            <li key={id}>
-              <div
-                className={`flex items-center justify-between rounded px-2 py-1 text-xs border ${selectedId===id? 'bg-muted ring-1 ring-ring': 'bg-background'}`}
-              >
-                <div className="flex items-center gap-1">
-                  {(isColumns || isContainer) ? (
-                    <button type="button" className="p-0.5" aria-label={open? 'Collapse':'Expand'} onClick={(e)=>{ e.stopPropagation(); toggle(); }}>
-                      {open ? <ChevronDown className="h-3 w-3"/> : <ChevronRight className="h-3 w-3"/>}
-                    </button>
-                  ) : <span className="w-4" />}
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    {nodeIcon(type)}<span>{type}</span>
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">{id.slice(0,6)}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button type="button" className="px-1 border rounded" aria-label="Select" onClick={(e)=>{ e.stopPropagation(); setSelectedId(id); }}>
-                    <MousePointerClick className="h-3 w-3" />
-                  </button>
-                  <button type="button" className="px-1 border rounded" aria-label="Move up" onClick={(e)=>{ e.stopPropagation(); moveWithinParent(parentId, index, index-1); }}>▲</button>
-                  <button type="button" className="px-1 border rounded" aria-label="Move down" onClick={(e)=>{ e.stopPropagation(); moveWithinParent(parentId, index, index+1); }}>▼</button>
-                  <button type="button" className="px-1 border rounded" aria-label="Delete" onClick={(e)=>{ e.stopPropagation(); removeFromParent(parentId, index); }}>✕</button>
-                  <span className="text-muted-foreground/50">•</span>
-                  <span className="cursor-grab"><GripVertical className="h-3 w-3" /></span>
-                </div>
-              </div>
-              {open && isColumns && columnIds.length>0 && (
-                <div className="pl-3 mt-1 space-y-1">
-                  {columnIds.map((cid, cidx)=> (
-                    <div key={cid}>
-                      <div className="text-[10px] text-muted-foreground mb-1">Column {cidx+1}</div>
-                      <NodeRow parentId={cid} ids={(doc[cid]?.data?.props?.childrenIds || [])} />
-                    </div>
-                  ))}
-                </div>
-              )}
-              {open && isContainer && childrenIds.length>0 && (
-                <div className="pl-3 mt-1">
-                  <NodeRow parentId={id} ids={childrenIds} />
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    );
-  }
 
   function updateSelected(updater: (b: any) => any) {
     if (!selectedId) return;
@@ -685,20 +581,27 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
         <div className="grid grid-cols-12 gap-4">
           {/* Left rail: Blocks + Variables + Actions */}
           <div className="col-span-12 md:col-span-2 space-y-3">
-            {/* Structure tree */}
-            <div className="space-y-2">
-              <div className="text-sm font-medium">Structure</div>
-              <NodeRow parentId="root" ids={children} />
-            </div>
-            <hr className="my-2 border-muted" />
 
             <div className="space-y-2">
               <div className="text-sm font-medium">Blocks</div>
-              <div className="grid grid-cols-2 gap-1">
+              <div className="grid grid-cols-4 gap-1">
                 {(['Columns2','Columns3','Section','Heading','Text','Button','Image','Divider','Spacer'] as BlockType[]).map((b) => (
-                  <Button key={b} size="sm" variant="outline" className="justify-start" onClick={() => addBlock(b, insertTarget)}>
-                    + {blockLabel(b)}
-                  </Button>
+                  <Tooltip key={b}>
+                    <TooltipTrigger asChild>
+                      <button type="button" className="h-7 w-7 flex items-center justify-center border rounded" onClick={() => addBlock(b, insertTarget)} aria-label={`Add ${blockLabel(b)}`}>
+                        {b==='Columns2' || b==='Columns3' ? <ColumnsIcon className="h-3 w-3"/>
+                          : b==='Section' ? <Square className="h-3 w-3"/>
+                          : b==='Heading' ? <HeadingIcon className="h-3 w-3"/>
+                          : b==='Text' ? <TextIcon className="h-3 w-3"/>
+                          : b==='Button' ? <MousePointerClick className="h-3 w-3"/>
+                          : b==='Image' ? <ImageIcon className="h-3 w-3"/>
+                          : b==='Divider' ? <Minus className="h-3 w-3"/>
+                          : b==='Spacer' ? <MoveVertical className="h-3 w-3"/>
+                          : <Square className="h-3 w-3"/>}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Add {blockLabel(b)}</TooltipContent>
+                  </Tooltip>
                 ))}
               </div>
               <div className="grid grid-cols-2 gap-2 items-end">
@@ -723,15 +626,30 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
               <div>
                 <div className="text-xs text-muted-foreground mb-1">Swatches</div>
                 <div className="grid grid-cols-8 gap-1">
+                  {(['primary','secondary','accent'] as const).filter(k=>brandingVars[`${k}Color`]).map((k)=>{
+                    const hex = (brandingVars as any)[`${k}Color`];
+                    return (
+                      <Tooltip key={k}>
+                        <TooltipTrigger asChild>
+                          <button type="button" className="h-6 rounded border" style={{ backgroundColor: hex }} aria-label={`${k} ${hex}`} onClick={()=>applyColor(hex)} />
+                        </TooltipTrigger>
+                        <TooltipContent>{`${k[0].toUpperCase()+k.slice(1)} • ${hex}`}</TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
                   {colorPalette().map((hex)=> (
-                    <button
-                      key={hex}
-                      type="button"
-                      className="h-6 rounded border"
-                      style={{ backgroundColor: hex }}
-                      aria-label={`Apply ${hex}`}
-                      onClick={()=>applyColor(hex)}
-                    />
+                    <Tooltip key={hex}>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          className="h-6 rounded border"
+                          style={{ backgroundColor: hex }}
+                          aria-label={`Apply ${hex}`}
+                          onClick={()=>applyColor(hex)}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>{hex}</TooltipContent>
+                    </Tooltip>
                   ))}
                 </div>
               </div>
@@ -752,10 +670,22 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
                       <TooltipContent>{`{{${v}}}`}</TooltipContent>
                     </Tooltip>
                     <div className="flex gap-1">
-                      <Button size="sm" variant="ghost" onClick={async () => {
-                        await navigator.clipboard.writeText(`{{${v}}}`);
-                      }}>Copy</Button>
-                      <Button size="sm" variant="outline" onClick={() => insertVariableToken(`{{${v}}}`)}>Insert</Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button type="button" className="p-1 border rounded" onClick={async () => { await navigator.clipboard.writeText(`{{${v}}}`); }} aria-label="Copy">
+                            <Copy className="h-3 w-3" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Copy</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button type="button" className="p-1 border rounded" onClick={() => insertVariableToken(`{{${v}}}`)} aria-label="Insert">
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Insert</TooltipContent>
+                      </Tooltip>
                     </div>
                   </div>
                 ))}
@@ -763,29 +693,32 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
             </div>
 
             <div className="pt-2 space-y-2">
-              <Button variant="secondary" className="w-full" onClick={() => onExport?.(html, doc)}>
-                Save to HTML
-              </Button>
-              <Button variant="outline" className="w-full" onClick={() => {
-                const raw = window.prompt('Paste EmailBuilder JSON');
-                if (!raw) return;
-                try { const parsed = JSON.parse(raw); setDoc(parsed); }
-                catch { alert('Invalid JSON'); }
-              }}>
-                Import JSON
-              </Button>
-              <Button variant="outline" className="w-full" onClick={async () => {
-                await navigator.clipboard.writeText(JSON.stringify(doc, null, 2));
-              }}>
-                Copy JSON
-              </Button>
-              <a
-                className="inline-block w-full"
-                href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(doc, null, 2))}`}
-                download="email.json"
-              >
-                <Button variant="outline" className="w-full">Download JSON</Button>
-              </a>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="secondary" className="w-full" onClick={() => onExport?.(html, doc)}>Save to HTML</Button>
+                </TooltipTrigger>
+                <TooltipContent>Compile and save the current HTML</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" className="w-full" onClick={() => {
+                    const raw = window.prompt('Paste EmailBuilder JSON');
+                    if (!raw) return;
+                    try { const parsed = JSON.parse(raw); setDoc(parsed); }
+                    catch { alert('Invalid JSON'); }
+                  }}>Import JSON</Button>
+                </TooltipTrigger>
+                <TooltipContent>Replace the current document with pasted JSON</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" className="w-full" onClick={async () => {
+                    await navigator.clipboard.writeText(JSON.stringify(doc, null, 2));
+                  }}>Copy JSON</Button>
+                </TooltipTrigger>
+                <TooltipContent>Copy the current document JSON to the clipboard</TooltipContent>
+              </Tooltip>
+              {/* Removed Download JSON per request; keep Download HTML */}
               <a
                 className="inline-block w-full"
                 href={`data:text/html;charset=utf-8,${encodeURIComponent(html)}`}
