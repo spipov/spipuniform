@@ -16,6 +16,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardStorageSettingsRouteImport } from './routes/dashboard/storage-settings'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardFileManagerRouteImport } from './routes/dashboard/file-manager'
 import { Route as DashboardEmailRouteImport } from './routes/dashboard/email'
 import { Route as DashboardBrandingRouteImport } from './routes/dashboard/branding'
@@ -69,6 +70,11 @@ const DashboardStorageSettingsRoute =
     path: '/storage-settings',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardFileManagerRoute = DashboardFileManagerRouteImport.update({
   id: '/file-manager',
   path: '/file-manager',
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
@@ -219,6 +226,7 @@ export interface FileRoutesByTo {
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
@@ -236,6 +244,7 @@ export interface FileRoutesById {
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
@@ -254,6 +263,7 @@ export interface FileRouteTypes {
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
+    | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/dashboard/'
     | '/dashboard/user-management/permissions'
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
+    | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/dashboard'
     | '/dashboard/user-management/permissions'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
+    | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/dashboard/'
     | '/dashboard/user-management/permissions'
@@ -453,6 +465,13 @@ declare module '@tanstack/react-router' {
       path: '/storage-settings'
       fullPath: '/dashboard/storage-settings'
       preLoaderRoute: typeof DashboardStorageSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/file-manager': {
@@ -634,6 +653,7 @@ interface DashboardRouteChildren {
   DashboardBrandingRoute: typeof DashboardBrandingRoute
   DashboardEmailRoute: typeof DashboardEmailRoute
   DashboardFileManagerRoute: typeof DashboardFileManagerRoute
+  DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardStorageSettingsRoute: typeof DashboardStorageSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardUserManagementPermissionsRoute: typeof DashboardUserManagementPermissionsRoute
@@ -645,6 +665,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardBrandingRoute: DashboardBrandingRoute,
   DashboardEmailRoute: DashboardEmailRoute,
   DashboardFileManagerRoute: DashboardFileManagerRoute,
+  DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardStorageSettingsRoute: DashboardStorageSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardUserManagementPermissionsRoute:

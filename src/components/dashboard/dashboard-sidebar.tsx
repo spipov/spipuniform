@@ -59,24 +59,9 @@ const userManagementNavigation = [
 
 const systemAdminNavigation = [
   {
-    title: "Branding",
-    url: "/dashboard/branding",
-    icon: Palette,
-  },
-  {
-    title: "Email Management",
-    url: "/dashboard/email",
-    icon: Mail,
-  },
-  {
     title: "File Manager",
     url: "/dashboard/file-manager",
     icon: FolderOpen,
-  },
-  {
-    title: "Storage Settings",
-    url: "/dashboard/storage-settings",
-    icon: HardDrive,
   },
 ];
 
