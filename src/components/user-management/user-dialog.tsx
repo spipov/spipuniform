@@ -4,13 +4,22 @@ import { useForm } from "@tanstack/react-form";
 import { valibotValidator } from "@tanstack/valibot-form-adapter";
 import * as v from "valibot";
 import { UserService, type User } from "@/lib/services/user-service";
-import type { Role } from "@/lib/services/role-service";
-import {
-  createUserSchema,
-  updateUserSchema,
-  type CreateUserInput,
-  type UpdateUserInput,
-} from "@/schemas/user-management";
+// Simple schemas for Better Auth compatibility
+const createUserSchema = v.object({
+  name: v.pipe(v.string(), v.minLength(1, "Name is required")),
+  email: v.pipe(v.string(), v.email("Invalid email address")),
+  password: v.pipe(v.string(), v.minLength(8, "Password must be at least 8 characters")),
+  role: v.picklist(["user", "admin"]),
+});
+
+const updateUserSchema = v.object({
+  name: v.optional(v.pipe(v.string(), v.minLength(1, "Name is required"))),
+  email: v.optional(v.pipe(v.string(), v.email("Invalid email address"))),
+  role: v.optional(v.picklist(["user", "admin"])),
+});
+
+type CreateUserInput = v.InferInput<typeof createUserSchema>;
+type UpdateUserInput = v.InferInput<typeof updateUserSchema>;
 import {
   Dialog,
   DialogContent,
@@ -35,7 +44,6 @@ interface UserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   user?: User | null;
-  roles: Role[];
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -44,10 +52,14 @@ export function UserDialog({
   open,
   onOpenChange,
   user,
-  roles,
   onSuccess,
   onCancel,
 }: UserDialogProps) {
+  // Simple roles for Better Auth
+  const availableRoles = [
+    { value: "user", label: "User" },
+    { value: "admin", label: "Admin" },
+  ];
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isEditing = !!user;
@@ -57,24 +69,20 @@ export function UserDialog({
       ? {
           name: user?.name || "",
           email: user?.email || "",
-          roleId: user?.roleId || "",
-          color: user?.color || "#6b7280",
+          role: user?.role || "user",
         }
       : {
           name: "",
           email: "",
           password: "",
-          roleId: "",
-          color: "#6b7280",
+          role: "user",
         },
     onSubmit: async ({ value }) => {
       try {
         setLoading(true);
         setError(null);
 
-        // Validate the form data
-        const schema = isEditing ? updateUserSchema : createUserSchema;
-        const validatedData = v.parse(schema, value);
+        const validatedData = value;
 
         if (isEditing && user) {
           await UserService.updateUser(user.id, validatedData as UpdateUserInput);
@@ -100,8 +108,7 @@ export function UserDialog({
     if (open && isEditing && user) {
       form.setFieldValue("name", user.name);
       form.setFieldValue("email", user.email);
-      form.setFieldValue("roleId", user.roleId);
-      form.setFieldValue("color", user.color);
+      form.setFieldValue("role", user.role || "user");
     } else if (open && !isEditing) {
       form.reset();
     }
@@ -115,7 +122,7 @@ export function UserDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] sm:max-h-[85vh] overflow-y-auto w-[95vw] sm:w-auto">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit User" : "Create User"}</DialogTitle>
           <DialogDescription>
@@ -136,7 +143,7 @@ export function UserDialog({
           <form.Field
             name="name"
             validators={{
-              onChange: isEditing ? updateUserSchema.entries.name : createUserSchema.entries.name,
+              onBlur: v.pipe(v.string(), v.minLength(1, "Name is required")),
             }}
           >
             {(field) => (
@@ -165,7 +172,7 @@ export function UserDialog({
           <form.Field
             name="email"
             validators={{
-              onChange: isEditing ? updateUserSchema.entries.email : createUserSchema.entries.email,
+              onBlur: v.pipe(v.string(), v.email("Invalid email address")),
             }}
           >
             {(field) => (
@@ -196,7 +203,7 @@ export function UserDialog({
             <form.Field
               name="password"
               validators={{
-                onChange: createUserSchema.entries.password,
+                onBlur: v.pipe(v.string(), v.minLength(8, "Password must be at least 8 characters")),
               }}
             >
               {(field) => (
@@ -224,16 +231,14 @@ export function UserDialog({
           )}
 
           <form.Field
-            name="roleId"
+            name="role"
             validators={{
-              onChange: isEditing
-                ? updateUserSchema.entries.roleId
-                : createUserSchema.entries.roleId,
+              onBlur: v.picklist(["user", "admin"], "Please select a valid role"),
             }}
           >
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor="roleId">Role</Label>
+                <Label htmlFor="role">Role</Label>
                 <Select
                   value={field.state.value}
                   onValueChange={(value) => field.handleChange(value)}
@@ -242,59 +247,15 @@ export function UserDialog({
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
-                    {roles.map((role) => (
-                      <SelectItem key={role.id} value={role.id}>
+                    {availableRoles.map((role) => (
+                      <SelectItem key={role.value} value={role.value}>
                         <div className="flex items-center space-x-2">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: role.color }}
-                          />
-                          <span>{role.name}</span>
+                          <span>{role.label}</span>
                         </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {field.state.meta.errors && (
-                  <p className="text-sm text-destructive">
-                    {typeof field.state.meta.errors[0] === 'string' 
-                      ? field.state.meta.errors[0] 
-                      : field.state.meta.errors[0]?.message || 'Invalid input'
-                    }
-                  </p>
-                )}
-              </div>
-            )}
-          </form.Field>
-
-          <form.Field
-            name="color"
-            validators={{
-              onChange: isEditing ? updateUserSchema.entries.color : createUserSchema.entries.color,
-            }}
-          >
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor="color">User Color</Label>
-                <div className="flex items-center space-x-2">
-                  <Input
-                    id="color"
-                    type="color"
-                    name={field.name}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    className="w-16 h-10 p-1 border rounded"
-                  />
-                  <Input
-                    name={field.name}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="#6b7280"
-                    className="flex-1"
-                  />
-                </div>
                 {field.state.meta.errors && (
                   <p className="text-sm text-destructive">
                     {typeof field.state.meta.errors[0] === 'string' 

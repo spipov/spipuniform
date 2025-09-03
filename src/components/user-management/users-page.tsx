@@ -2,7 +2,6 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { Plus, Search, MoreHorizontal, Edit, Trash2, Ban, UserCheck } from "lucide-react";
 import { UserService, type User } from "@/lib/services/user-service";
-import { RoleService, type Role } from "@/lib/services/role-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +32,6 @@ interface UsersPageProps {
 
 export function UsersPage({ className }: UsersPageProps) {
   const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,21 +63,14 @@ export function UsersPage({ className }: UsersPageProps) {
     }
   };
 
-  const fetchRoles = async () => {
-    try {
-      const allRoles = await RoleService.getAllRoles();
-      setRoles(allRoles);
-    } catch (error) {
-      console.error("Failed to fetch roles:", error);
-    }
-  };
+  // Roles are now simple and don't need to be fetched
 
   useEffect(() => {
     fetchUsers();
   }, [currentPage, searchTerm]);
 
   useEffect(() => {
-    fetchRoles();
+    // fetchRoles(); // No longer needed with simplified roles
   }, []);
 
   const handleSearch = (value: string) => {
@@ -133,14 +124,19 @@ export function UsersPage({ className }: UsersPageProps) {
     setDialogType(null);
   };
 
-  const getRoleName = (roleId: string) => {
-    const role = roles.find((r) => r.id === roleId);
-    return role?.name || "Unknown";
+  const getRoleName = (role: string) => {
+    return role || "user";
   };
 
-  const getRoleColor = (roleId: string) => {
-    const role = roles.find((r) => r.id === roleId);
-    return role?.color || "#6b7280";
+  const getRoleColor = (role: string) => {
+    // Simple color mapping for Better Auth roles
+    switch (role) {
+      case "admin":
+        return "#ef4444"; // Red for admin
+      case "user":
+      default:
+        return "#3b82f6"; // Blue for user
+    }
   };
 
   const formatDate = (date: Date) => {
@@ -221,11 +217,11 @@ export function UsersPage({ className }: UsersPageProps) {
                         <Badge
                           variant="outline"
                           style={{
-                            borderColor: getRoleColor(user.roleId),
-                            color: getRoleColor(user.roleId),
+                            borderColor: getRoleColor(user.role || "user"),
+                            color: getRoleColor(user.role || "user"),
                           }}
                         >
-                          {getRoleName(user.roleId)}
+                          {getRoleName(user.role || "user")}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -328,7 +324,6 @@ export function UsersPage({ className }: UsersPageProps) {
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
           user={selectedUser}
-          roles={roles}
           onSuccess={handleDialogSuccess}
           onCancel={handleDialogClose}
         />

@@ -50,7 +50,7 @@ export function DeleteUserDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto w-[90vw] sm:w-auto">
         <DialogHeader>
           <DialogTitle>Delete User</DialogTitle>
           <DialogDescription>

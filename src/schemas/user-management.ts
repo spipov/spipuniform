@@ -11,7 +11,7 @@ export const createUserSchema = v.object({
   password: v.optional(
     v.pipe(v.string(), v.minLength(8, "Password must be at least 8 characters"))
   ),
-  role: v.optional(v.picklist(["user", "admin"]), "user"),
+  role: v.optional(v.string(), "user"),
   image: v.optional(v.pipe(v.string(), v.url("Invalid image URL"))),
 });
 
@@ -24,7 +24,7 @@ export const updateUserSchema = v.object({
     )
   ),
   email: v.optional(v.pipe(v.string(), v.email("Invalid email address"))),
-  role: v.optional(v.picklist(["user", "admin"])),
+  role: v.optional(v.string()),
   image: v.optional(v.pipe(v.string(), v.url("Invalid image URL"))),
   banned: v.optional(v.boolean()),
   banReason: v.optional(
@@ -93,7 +93,7 @@ export const updateRoleSchema = v.object({
 // Search and pagination schemas
 export const userSearchSchema = v.object({
   search: v.optional(v.string()),
-  role: v.optional(v.picklist(["user", "admin"])),
+  role: v.optional(v.string()),
   banned: v.optional(v.boolean()),
   page: v.optional(v.pipe(v.number(), v.minValue(1)), 1),
   limit: v.optional(v.pipe(v.number(), v.minValue(1), v.maxValue(100)), 10),

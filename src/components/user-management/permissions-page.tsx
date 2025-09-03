@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Search, Shield, Users, Eye, Edit } from "lucide-react";
 import { RoleService, type Role } from "@/lib/services/role-service";
 import { UserService, type User } from "@/lib/services/user-service";
+import type { Permission } from "@/schemas/user-management";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +25,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
 
 interface PermissionsPageState {
   users: User[];
@@ -65,40 +65,68 @@ export function PermissionsPage() {
     try {
       setState((prev) => ({ ...prev, loading: true }));
 
-      // Fetch users and roles in parallel
+      // Fetch users and get available roles/permissions  
       const [usersResponse, rolesResponse, permissions] = await Promise.all([
         UserService.getUsers({
           page,
           limit: 10,
           search: search || undefined,
-          roleId: roleFilter !== "all" ? roleFilter : undefined,
+          role: roleFilter !== "all" ? roleFilter : undefined,
           sortBy: "name",
           sortOrder: "asc",
         }),
-        RoleService.getAllRoles(),
+        RoleService.getRoles({ limit: 100 }), // Get all roles from database
         RoleService.getAllPermissions(),
       ]);
+
+      const availableRoles = rolesResponse.roles;
 
       setState((prev) => ({
         ...prev,
         users: usersResponse.users,
-        roles: rolesResponse,
+        roles: availableRoles,
         currentPage: usersResponse.pagination.page,
-        totalPages: usersResponse.pagination.totalPages,
+        totalPages: usersResponse.pagination.pages,
         totalCount: usersResponse.pagination.total,
         loading: false,
       }));
 
       setAllPermissions(permissions);
 
-      // Build permission matrix
+      // Build permission matrix for hybrid role system
       const matrix: PermissionMatrix = {};
       usersResponse.users.forEach((user) => {
-        const userRole = rolesResponse.find((role) => role.id === user.roleId);
+        // Find role by name (user.role matches role.name in hybrid system)
+        const userRole = availableRoles.find((role) => role.name === user.role);
+        
+        // Convert role permissions to record format if needed
+        const getRolePermissions = (role: Role | undefined): Record<string, boolean> => {
+          if (!role || !role.permissions) return {};
+          
+          // Handle both object and array permission formats
+          if (typeof role.permissions === 'object') {
+            // If it's already an object, use it directly
+            if (!Array.isArray(role.permissions)) {
+              return role.permissions as Record<string, boolean>;
+            }
+            
+            // If it's an array, convert to object
+            const permissionObj: Record<string, boolean> = {};
+            permissions.forEach((perm) => {
+              permissionObj[perm.key] = (role.permissions as any[]).includes(perm.key);
+            });
+            return permissionObj;
+          }
+          
+          return {};
+        };
+        
+        const rolePermissions = getRolePermissions(userRole);
+        
         matrix[user.id] = {
           user,
           role: userRole || null,
-          permissions: userRole?.permissions || {},
+          permissions: rolePermissions,
         };
       });
       setPermissionMatrix(matrix);
@@ -126,6 +154,21 @@ export function PermissionsPage() {
     fetchData(page, state.searchTerm, state.selectedRole);
   };
 
+  const handleRoleChange = async (userId: string, roleName: string) => {
+    try {
+      setState((prev) => ({ ...prev, loading: true }));
+      
+      // Update user role via API
+      await UserService.updateUser(userId, { role: roleName || undefined });
+      
+      // Refresh data to show updated permissions
+      await fetchData(state.currentPage, state.searchTerm, state.selectedRole);
+    } catch (error) {
+      console.error("Failed to update user role:", error);
+      // You could add a toast notification here
+    }
+  };
+
   const toggleUserExpansion = (userId: string) => {
     setExpandedUsers((prev) => {
       const newSet = new Set(prev);
@@ -139,7 +182,7 @@ export function PermissionsPage() {
   };
 
   const getPermissionDisplayName = (permission: string) => {
-    return RoleService.getPermissionDisplayName(permission);
+    return RoleService.getPermissionDisplayName(permission as keyof Permission);
   };
 
   const groupPermissions = (permissions: Array<{ key: string; label: string }>) => {
@@ -209,7 +252,7 @@ export function PermissionsPage() {
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
                 {state.roles.map((role) => (
-                  <SelectItem key={role.id} value={role.id}>
+                  <SelectItem key={role.id} value={role.name}>
                     <div className="flex items-center gap-2">
                       {renderRoleColor(role.color)}
                       {role.name}
@@ -264,14 +307,34 @@ export function PermissionsPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            {userMatrix?.role ? (
-                              <div className="flex items-center gap-2">
-                                {renderRoleColor(userMatrix.role.color)}
-                                <span className="font-medium">{userMatrix.role.name}</span>
-                              </div>
-                            ) : (
-                              <Badge variant="outline">No Role</Badge>
-                            )}
+                            <Select 
+                              value={userMatrix?.role?.name || "no-role"} 
+                              onValueChange={(roleName) => handleRoleChange(user.id, roleName === "no-role" ? "" : roleName)}
+                            >
+                              <SelectTrigger className="w-[200px]">
+                                <SelectValue placeholder="Select role">
+                                  {userMatrix?.role ? (
+                                    <div className="flex items-center gap-2">
+                                      {renderRoleColor(userMatrix.role.color)}
+                                      <span>{userMatrix.role.name}</span>
+                                    </div>
+                                  ) : (
+                                    "No Role"
+                                  )}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="no-role">No Role</SelectItem>
+                                {state.roles.map((role) => (
+                                  <SelectItem key={role.id} value={role.name}>
+                                    <div className="flex items-center gap-2">
+                                      {renderRoleColor(role.color)}
+                                      {role.name}
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </TableCell>
                           <TableCell>
                             {userMatrix?.role ? (

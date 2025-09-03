@@ -33,6 +33,8 @@ import { ServerRoute as ApiFilesServerRouteImport } from './routes/api/files'
 import { ServerRoute as ApiEmailServerRouteImport } from './routes/api.email'
 import { ServerRoute as ApiCredentialsServerRouteImport } from './routes/api/credentials'
 import { ServerRoute as ApiBrandingServerRouteImport } from './routes/api.branding'
+import { ServerRoute as ApiUsersUserIdServerRouteImport } from './routes/api.users.$userId'
+import { ServerRoute as ApiRolesRoleIdServerRouteImport } from './routes/api.roles.$roleId'
 import { ServerRoute as ApiEmailTestServerRouteImport } from './routes/api/email/test'
 import { ServerRoute as ApiEmailTemplatesServerRouteImport } from './routes/api/email/templates'
 import { ServerRoute as ApiEmailSettingsServerRouteImport } from './routes/api/email/settings'
@@ -155,6 +157,16 @@ const ApiBrandingServerRoute = ApiBrandingServerRouteImport.update({
   id: '/api/branding',
   path: '/api/branding',
   getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiUsersUserIdServerRoute = ApiUsersUserIdServerRouteImport.update({
+  id: '/$userId',
+  path: '/$userId',
+  getParentRoute: () => ApiUsersServerRoute,
+} as any)
+const ApiRolesRoleIdServerRoute = ApiRolesRoleIdServerRouteImport.update({
+  id: '/$roleId',
+  path: '/$roleId',
+  getParentRoute: () => ApiRolesServerRoute,
 } as any)
 const ApiEmailTestServerRoute = ApiEmailTestServerRouteImport.update({
   id: '/test',
@@ -293,30 +305,34 @@ export interface FileServerRoutesByFullPath {
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/email': typeof ApiEmailServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
-  '/api/roles': typeof ApiRolesServerRoute
+  '/api/roles': typeof ApiRolesServerRouteWithChildren
   '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
-  '/api/users': typeof ApiUsersServerRoute
+  '/api/users': typeof ApiUsersServerRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatServerRoute
   '/api/email/logs': typeof ApiEmailLogsServerRoute
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
   '/api/email/templates': typeof ApiEmailTemplatesServerRoute
   '/api/email/test': typeof ApiEmailTestServerRoute
+  '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
+  '/api/users/$userId': typeof ApiUsersUserIdServerRoute
 }
 export interface FileServerRoutesByTo {
   '/api/branding': typeof ApiBrandingServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/email': typeof ApiEmailServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
-  '/api/roles': typeof ApiRolesServerRoute
+  '/api/roles': typeof ApiRolesServerRouteWithChildren
   '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
-  '/api/users': typeof ApiUsersServerRoute
+  '/api/users': typeof ApiUsersServerRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatServerRoute
   '/api/email/logs': typeof ApiEmailLogsServerRoute
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
   '/api/email/templates': typeof ApiEmailTemplatesServerRoute
   '/api/email/test': typeof ApiEmailTestServerRoute
+  '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
+  '/api/users/$userId': typeof ApiUsersUserIdServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
@@ -324,15 +340,17 @@ export interface FileServerRoutesById {
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/email': typeof ApiEmailServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
-  '/api/roles': typeof ApiRolesServerRoute
+  '/api/roles': typeof ApiRolesServerRouteWithChildren
   '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
-  '/api/users': typeof ApiUsersServerRoute
+  '/api/users': typeof ApiUsersServerRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatServerRoute
   '/api/email/logs': typeof ApiEmailLogsServerRoute
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
   '/api/email/templates': typeof ApiEmailTemplatesServerRoute
   '/api/email/test': typeof ApiEmailTestServerRoute
+  '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
+  '/api/users/$userId': typeof ApiUsersUserIdServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
@@ -350,6 +368,8 @@ export interface FileServerRouteTypes {
     | '/api/email/settings'
     | '/api/email/templates'
     | '/api/email/test'
+    | '/api/roles/$roleId'
+    | '/api/users/$userId'
   fileServerRoutesByTo: FileServerRoutesByTo
   to:
     | '/api/branding'
@@ -365,6 +385,8 @@ export interface FileServerRouteTypes {
     | '/api/email/settings'
     | '/api/email/templates'
     | '/api/email/test'
+    | '/api/roles/$roleId'
+    | '/api/users/$userId'
   id:
     | '__root__'
     | '/api/branding'
@@ -380,6 +402,8 @@ export interface FileServerRouteTypes {
     | '/api/email/settings'
     | '/api/email/templates'
     | '/api/email/test'
+    | '/api/roles/$roleId'
+    | '/api/users/$userId'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
@@ -387,10 +411,10 @@ export interface RootServerRouteChildren {
   ApiCredentialsServerRoute: typeof ApiCredentialsServerRoute
   ApiEmailServerRoute: typeof ApiEmailServerRouteWithChildren
   ApiFilesServerRoute: typeof ApiFilesServerRoute
-  ApiRolesServerRoute: typeof ApiRolesServerRoute
+  ApiRolesServerRoute: typeof ApiRolesServerRouteWithChildren
   ApiStorageSettingsServerRoute: typeof ApiStorageSettingsServerRoute
   ApiTestServerRoute: typeof ApiTestServerRoute
-  ApiUsersServerRoute: typeof ApiUsersServerRoute
+  ApiUsersServerRoute: typeof ApiUsersServerRouteWithChildren
   ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
 }
 
@@ -554,6 +578,20 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiBrandingServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/users/$userId': {
+      id: '/api/users/$userId'
+      path: '/$userId'
+      fullPath: '/api/users/$userId'
+      preLoaderRoute: typeof ApiUsersUserIdServerRouteImport
+      parentRoute: typeof ApiUsersServerRoute
+    }
+    '/api/roles/$roleId': {
+      id: '/api/roles/$roleId'
+      path: '/$roleId'
+      fullPath: '/api/roles/$roleId'
+      preLoaderRoute: typeof ApiRolesRoleIdServerRouteImport
+      parentRoute: typeof ApiRolesServerRoute
+    }
     '/api/email/test': {
       id: '/api/email/test'
       path: '/test'
@@ -637,6 +675,30 @@ const ApiEmailServerRouteWithChildren = ApiEmailServerRoute._addFileChildren(
   ApiEmailServerRouteChildren,
 )
 
+interface ApiRolesServerRouteChildren {
+  ApiRolesRoleIdServerRoute: typeof ApiRolesRoleIdServerRoute
+}
+
+const ApiRolesServerRouteChildren: ApiRolesServerRouteChildren = {
+  ApiRolesRoleIdServerRoute: ApiRolesRoleIdServerRoute,
+}
+
+const ApiRolesServerRouteWithChildren = ApiRolesServerRoute._addFileChildren(
+  ApiRolesServerRouteChildren,
+)
+
+interface ApiUsersServerRouteChildren {
+  ApiUsersUserIdServerRoute: typeof ApiUsersUserIdServerRoute
+}
+
+const ApiUsersServerRouteChildren: ApiUsersServerRouteChildren = {
+  ApiUsersUserIdServerRoute: ApiUsersUserIdServerRoute,
+}
+
+const ApiUsersServerRouteWithChildren = ApiUsersServerRoute._addFileChildren(
+  ApiUsersServerRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
@@ -653,10 +715,10 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiCredentialsServerRoute: ApiCredentialsServerRoute,
   ApiEmailServerRoute: ApiEmailServerRouteWithChildren,
   ApiFilesServerRoute: ApiFilesServerRoute,
-  ApiRolesServerRoute: ApiRolesServerRoute,
+  ApiRolesServerRoute: ApiRolesServerRouteWithChildren,
   ApiStorageSettingsServerRoute: ApiStorageSettingsServerRoute,
   ApiTestServerRoute: ApiTestServerRoute,
-  ApiUsersServerRoute: ApiUsersServerRoute,
+  ApiUsersServerRoute: ApiUsersServerRouteWithChildren,
   ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport

@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
-import { valibotValidator } from "@tanstack/valibot-form-adapter";
 import { RoleService, type Role } from "@/lib/services/role-service";
 import { createRoleSchema, updateRoleSchema } from "@/schemas/user-management";
 import type * as v from "valibot";
@@ -18,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 type CreateRoleInput = v.InferInput<typeof createRoleSchema>;
 type UpdateRoleInput = v.InferInput<typeof updateRoleSchema>;
@@ -26,10 +24,11 @@ type UpdateRoleInput = v.InferInput<typeof updateRoleSchema>;
 interface RoleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  mode: "create" | "edit";
+  mode?: "create" | "edit";
   role?: Role;
   onSuccess: () => void;
   onCancel: () => void;
+  onClose?: () => void;
 }
 
 const defaultColors = [
@@ -48,29 +47,25 @@ const defaultColors = [
 export function RoleDialog({
   open,
   onOpenChange,
-  mode,
+  mode = "create",
   role,
   onSuccess,
   onCancel,
+  onClose,
 }: RoleDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState(defaultColors[0]);
+  const [selectedColor, setSelectedColor] = useState(role?.color || defaultColors[0]);
   const [permissions, setPermissions] = useState<Record<string, boolean>>({});
   const [allPermissions, setAllPermissions] = useState<Array<{ key: string; label: string }>>([]);
 
   const isEdit = mode === "edit";
-  const schema = isEdit ? updateRoleSchema : createRoleSchema;
 
   const form = useForm({
     defaultValues: {
       name: "",
       description: "",
     } as CreateRoleInput | UpdateRoleInput,
-    validatorAdapter: valibotValidator(),
-    validators: {
-      onChange: schema,
-    },
     onSubmit: async ({ value }) => {
       try {
         setLoading(true);
@@ -136,7 +131,11 @@ export function RoleDialog({
     setError(null);
     setSelectedColor(defaultColors[0]);
     setPermissions({});
-    onCancel();
+    if (onClose) {
+      onClose();
+    } else {
+      onCancel();
+    }
   };
 
   const handlePermissionChange = (permission: string, checked: boolean) => {
@@ -155,7 +154,7 @@ export function RoleDialog({
   };
 
   const getPermissionDisplayName = (permission: string) => {
-    return RoleService.getPermissionDisplayName(permission);
+    return RoleService.getPermissionDisplayName(permission as any);
   };
 
   const groupPermissions = (permissions: Array<{ key: string; label: string }>) => {
@@ -178,11 +177,10 @@ export function RoleDialog({
   const permissionGroups = groupPermissions(allPermissions);
   const selectedCount = Object.values(permissions).filter(Boolean).length;
   const allSelected = selectedCount === allPermissions.length;
-  const someSelected = selectedCount > 0 && selectedCount < allPermissions.length;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[95vh] sm:max-h-[90vh] overflow-y-auto w-[95vw] sm:w-auto">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Role" : "Create New Role"}</DialogTitle>
           <DialogDescription>
@@ -209,16 +207,9 @@ export function RoleDialog({
                     id="name"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
                     placeholder="Enter role name"
                   />
-                  {field.state.meta.errors && (
-                    <p className="text-sm text-red-600">
-                      {typeof field.state.meta.errors[0] === 'string' 
-                        ? field.state.meta.errors[0] 
-                        : field.state.meta.errors[0]?.message || 'Invalid input'
-                      }
-                    </p>
-                  )}
                 </div>
               )}
             </form.Field>
@@ -268,16 +259,9 @@ export function RoleDialog({
                   id="description"
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
                   placeholder="Enter role description (optional)"
                 />
-                {field.state.meta.errors && (
-                  <p className="text-sm text-red-600">
-                    {typeof field.state.meta.errors[0] === 'string' 
-                      ? field.state.meta.errors[0] 
-                      : field.state.meta.errors[0]?.message || 'Invalid input'
-                    }
-                  </p>
-                )}
               </div>
             )}
           </form.Field>
