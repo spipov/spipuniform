@@ -23,9 +23,11 @@ import { Route as DashboardBrandingRouteImport } from './routes/dashboard/brandi
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthSigninRouteImport } from './routes/auth/signin'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
+import { Route as DashboardUserManagementIndexRouteImport } from './routes/dashboard/user-management/index'
 import { Route as DashboardUserManagementUsersRouteImport } from './routes/dashboard/user-management/users'
 import { Route as DashboardUserManagementRolesRouteImport } from './routes/dashboard/user-management/roles'
 import { Route as DashboardUserManagementPermissionsRouteImport } from './routes/dashboard/user-management/permissions'
+import { Route as DashboardUserManagementConsolidatedRouteImport } from './routes/dashboard/user-management/consolidated'
 import { ServerRoute as ApiUsersServerRouteImport } from './routes/api.users'
 import { ServerRoute as ApiTestServerRouteImport } from './routes/api.test'
 import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api.storage-settings'
@@ -105,6 +107,12 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   path: '/auth/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardUserManagementIndexRoute =
+  DashboardUserManagementIndexRouteImport.update({
+    id: '/user-management/',
+    path: '/user-management/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardUserManagementUsersRoute =
   DashboardUserManagementUsersRouteImport.update({
     id: '/user-management/users',
@@ -121,6 +129,12 @@ const DashboardUserManagementPermissionsRoute =
   DashboardUserManagementPermissionsRouteImport.update({
     id: '/user-management/permissions',
     path: '/user-management/permissions',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardUserManagementConsolidatedRoute =
+  DashboardUserManagementConsolidatedRouteImport.update({
+    id: '/user-management/consolidated',
+    path: '/user-management/consolidated',
     getParentRoute: () => DashboardRoute,
   } as any)
 const ApiUsersServerRoute = ApiUsersServerRouteImport.update({
@@ -213,9 +227,11 @@ export interface FileRoutesByFullPath {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
+  '/dashboard/user-management': typeof DashboardUserManagementIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -229,9 +245,11 @@ export interface FileRoutesByTo {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
+  '/dashboard/user-management': typeof DashboardUserManagementIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -247,9 +265,11 @@ export interface FileRoutesById {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
+  '/dashboard/user-management/': typeof DashboardUserManagementIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -266,9 +286,11 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/dashboard/'
+    | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
+    | '/dashboard/user-management'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -282,9 +304,11 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/dashboard'
+    | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
+    | '/dashboard/user-management'
   id:
     | '__root__'
     | '/'
@@ -299,9 +323,11 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/dashboard/'
+    | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
+    | '/dashboard/user-management/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -516,6 +542,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/user-management/': {
+      id: '/dashboard/user-management/'
+      path: '/user-management'
+      fullPath: '/dashboard/user-management'
+      preLoaderRoute: typeof DashboardUserManagementIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/user-management/users': {
       id: '/dashboard/user-management/users'
       path: '/user-management/users'
@@ -535,6 +568,13 @@ declare module '@tanstack/react-router' {
       path: '/user-management/permissions'
       fullPath: '/dashboard/user-management/permissions'
       preLoaderRoute: typeof DashboardUserManagementPermissionsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/user-management/consolidated': {
+      id: '/dashboard/user-management/consolidated'
+      path: '/user-management/consolidated'
+      fullPath: '/dashboard/user-management/consolidated'
+      preLoaderRoute: typeof DashboardUserManagementConsolidatedRouteImport
       parentRoute: typeof DashboardRoute
     }
   }
@@ -656,9 +696,11 @@ interface DashboardRouteChildren {
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardStorageSettingsRoute: typeof DashboardStorageSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardUserManagementConsolidatedRoute: typeof DashboardUserManagementConsolidatedRoute
   DashboardUserManagementPermissionsRoute: typeof DashboardUserManagementPermissionsRoute
   DashboardUserManagementRolesRoute: typeof DashboardUserManagementRolesRoute
   DashboardUserManagementUsersRoute: typeof DashboardUserManagementUsersRoute
+  DashboardUserManagementIndexRoute: typeof DashboardUserManagementIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -668,10 +710,13 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardStorageSettingsRoute: DashboardStorageSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardUserManagementConsolidatedRoute:
+    DashboardUserManagementConsolidatedRoute,
   DashboardUserManagementPermissionsRoute:
     DashboardUserManagementPermissionsRoute,
   DashboardUserManagementRolesRoute: DashboardUserManagementRolesRoute,
   DashboardUserManagementUsersRoute: DashboardUserManagementUsersRoute,
+  DashboardUserManagementIndexRoute: DashboardUserManagementIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

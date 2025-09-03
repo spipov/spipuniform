@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SidebarMenuButton } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 
 interface UserLogoutCardProps {
   userName?: string;
@@ -36,9 +36,10 @@ export function UserLogoutCard({
     <div className="user-logout-card">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <SidebarMenuButton
+          <Button
+            variant="ghost"
             size="lg"
-            className="user-logout-card__trigger data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            className="user-logout-card__trigger data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground w-full justify-start h-auto p-2"
           >
             <div className="user-logout-card__avatar-container">
               <Avatar className="user-logout-card__avatar h-8 w-8 rounded-lg">
@@ -61,7 +62,7 @@ export function UserLogoutCard({
               <span className="user-logout-card__email truncate text-xs">{userEmail}</span>
             </div>
             <ChevronsUpDown className="user-logout-card__chevron ml-auto size-4" />
-          </SidebarMenuButton>
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           className="user-logout-card__dropdown w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"

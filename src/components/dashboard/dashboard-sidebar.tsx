@@ -41,19 +41,9 @@ const dashboardNavigation = [
 
 const userManagementNavigation = [
   {
-    title: "Users",
-    url: "/dashboard/user-management/users",
+    title: "User Management",
+    url: "/dashboard/user-management/consolidated",
     icon: Users,
-  },
-  {
-    title: "Roles",
-    url: "/dashboard/user-management/roles",
-    icon: Shield,
-  },
-  {
-    title: "Permissions",
-    url: "/dashboard/user-management/permissions",
-    icon: Key,
   },
 ];
 
