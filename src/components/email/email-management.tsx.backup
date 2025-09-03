@@ -415,7 +415,7 @@ export function EmailManagement() {
 
   return (
     <>
-      <Tabs defaultValue={(typeof window!=='undefined' && (new URLSearchParams(window.location.search).get('emailTab')||localStorage.getItem('email:tab')||'settings'))||'settings'} onValueChange={(v)=>{ try { localStorage.setItem('email:tab', v); const u=new URL(window.location.href); u.searchParams.set('emailTab', v); window.history.replaceState({}, '', u.toString()); } catch {} }} className="space-y-6">
+      <Tabs defaultValue={(typeof window!=='undefined' && (new URLSearchParams(window.location.search).get('tab')||localStorage.getItem('email:tab')||'settings'))||'settings'} onValueChange={(v)=>{ try { localStorage.setItem('email:tab', v); const u=new URL(window.location.href); u.searchParams.set('tab', v); window.history.replaceState({}, '', u.toString()); } catch {} }} className="space-y-6">
       <TabsList>
         <TabsTrigger value="settings">Settings</TabsTrigger>
         <TabsTrigger value="templates">Templates</TabsTrigger>
@@ -432,7 +432,7 @@ export function EmailManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {emailSettings?.find?.(s => s.isActive)?.provider?.toUpperCase() || 'None'}
+              {emailSettings?.find?.(s => s.isActive)?.provider.toUpperCase() || 'None'}
             </div>
             <p className="text-xs text-muted-foreground">
               Current email provider
@@ -1109,7 +1109,7 @@ export function EmailManagement() {
                   <EmailBuilderClient
                     initialDocument={selectedTemplate.jsonContent || null}
                     initialHtml={selectedTemplate.htmlContent}
-                    onExport={(html, document) => setSelectedTemplate({ ...selectedTemplate, htmlContent: html, jsonContent: document })}
+                    onExport={(html) => setSelectedTemplate({ ...selectedTemplate, htmlContent: html })}
                   />
                 </TabsContent>
               </Tabs>

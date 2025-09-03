@@ -69,15 +69,23 @@ export function ColumnsPreview({ doc, rootBlockId }: { doc: any; rootBlockId: st
 export function EmailPreview({ doc }: { doc: any }) {
   const children: string[] = doc.root?.data?.props?.childrenIds || [];
   if (!children.length) return null;
+  const gap = doc.root?.data?.style?.sectionGap ?? 0;
   return (
-    <div className="space-y-4">
-      {children.map((id) => (
-        doc[id]?.type === 'Columns' ? (
-          <ColumnsPreview key={id} doc={doc} rootBlockId={id} />
-        ) : (
-          <Reader key={id} document={doc} rootBlockId={id} />
-        )
-      ))}
+    <div>
+      {children.map((id, idx) => {
+        const child = doc[id];
+        const childGap = typeof child?.data?.style?.marginBottom === 'number' ? child.data.style.marginBottom : undefined;
+        const mb = childGap !== undefined ? childGap : (idx < children.length - 1 ? gap : 0);
+        return (
+          <div key={id} style={{ marginBottom: mb }}>
+            {child?.type === 'Columns' ? (
+              <ColumnsPreview doc={doc} rootBlockId={id} />
+            ) : (
+              <Reader document={doc} rootBlockId={id} />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

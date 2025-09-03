@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { ChevronDown, ChevronRight, GripVertical, MousePointerClick, Columns as ColumnsIcon, Heading as HeadingIcon, Text as TextIcon, Image as ImageIcon, Square } from 'lucide-react';
 
 // Lightweight self‑hosted visual builder (no iframe). Purposefully minimal and isolated
 // under src/email. We model a linear stack of blocks inside a root Container.
@@ -28,6 +30,7 @@ function createInitialDoc(): any {
         style: {
           backgroundColor: '#ffffff',
           padding: { top: 24, bottom: 24, left: 24, right: 24 },
+          sectionGap: 16,
         },
         props: { childrenIds: [headingId, textId] },
       },
@@ -127,21 +130,24 @@ function useCompiledHtml(doc: any) {
   const [html, setHtml] = React.useState('');
   React.useEffect(() => {
     try {
-      // Check if root has any Columns blocks and handle them specially
+      // Compile each root child with optional section gap
       const rootChildren = doc.root?.data?.props?.childrenIds || [];
+      const gap = doc.root?.data?.style?.sectionGap ?? 0;
       let compiled = '';
 
-      for (const childId of rootChildren) {
-        if (doc[childId]?.type === 'Columns') {
-          compiled += renderColumnsToHtml(doc, childId);
-        } else {
-          compiled += renderToStaticMarkup({ root: doc[childId] }, { rootBlockId: 'root' });
-        }
+      for (let i = 0; i < rootChildren.length; i++) {
+        const childId = rootChildren[i];
+        const inner = doc[childId]?.type === 'Columns'
+          ? renderColumnsToHtml(doc, childId)
+          : renderToStaticMarkup({ root: doc[childId] }, { rootBlockId: 'root' });
+        const mb = i < rootChildren.length - 1 ? `margin-bottom:${gap}px;` : '';
+        compiled += `<div style="${mb}">${inner}</div>`;
       }
 
-      // Wrap in basic email structure
+      // Wrap in basic email structure with page background color
+      const pageBg = doc.root?.data?.style?.pageBackgroundColor || '#ffffff';
       setHtml(`
-        <div style="max-width: 640px; margin: 0 auto; font-family: system-ui, sans-serif;">
+        <div style="max-width: 640px; margin: 0 auto; font-family: system-ui, sans-serif; background:${pageBg};">
           ${compiled}
         </div>
       `);
@@ -164,6 +170,7 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
   const activeInputRef = React.useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const [focusedEditor, setFocusedEditor] = React.useState<null | { blockId: string; field: 'headingText'|'textText'|'buttonText' }>(null);
   const [insertTarget, setInsertTarget] = React.useState<string>('root');
+  const [applyTarget, setApplyTarget] = React.useState<'auto'|'background'|'text'|'border'>('auto');
 
   function blockLabel(b: BlockType): string {
     if (b === 'Columns2') return '2 Columns';
@@ -177,6 +184,28 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
       default: return 'w-[640px]';
     }
   }
+  function colorPalette(): string[] {
+    const base = [brandingVars.primaryColor, brandingVars.secondaryColor, brandingVars.accentColor].filter(Boolean) as string[];
+    const neutrals = ['#111827','#374151','#6B7280','#9CA3AF','#D1D5DB','#E5E7EB','#F3F4F6','#FFFFFF'];
+    return Array.from(new Set([...base, ...neutrals]));
+  }
+
+  function applyColor(hex: string) {
+    if (!selectedId) {
+      // Apply to page when nothing selected
+      setDoc((prev:any)=> ({ ...prev, root: { ...prev.root, data: { ...prev.root.data, style: { ...prev.root.data.style, pageBackgroundColor: hex } } } }));
+      return;
+    }
+    const sel = doc[selectedId];
+    const target = applyTarget === 'auto'
+      ? (sel?.type === 'Heading' || sel?.type === 'Text' ? 'text' : sel?.type === 'Button' ? 'background' : 'background')
+      : applyTarget;
+
+    if (target === 'background') updateSelected((b)=> ({ ...b, data: { ...b.data, style: { ...b.data.style, backgroundColor: hex } } }));
+    if (target === 'text') updateSelected((b)=> ({ ...b, data: { ...b.data, style: { ...b.data.style, color: hex } } }));
+    if (target === 'border') updateSelected((b)=> ({ ...b, data: { ...b.data, style: { ...b.data.style, borderColor: hex, borderWidth: b.data?.style?.borderWidth ?? 1 } } }));
+  }
+
   function targetOptions(): Array<{id: string; label: string}> {
     const opts: Array<{id: string; label: string}> = [{ id: 'root', label: 'Root' }];
     if (selectedId) {
@@ -207,7 +236,13 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
   // Subcomponents to reduce nesting and satisfy lints
   const ColumnItemCard: React.FC<{ parentId: string; id: string; index: number }> = ({ parentId, id, index }) => (
     <div
-      className="border rounded p-2 mb-2"
+      className="border rounded p-2 mb-2 cursor-pointer"
+      role="button"
+      tabIndex={0}
+      onPointerDownCapture={() => setSelectedId(id)}
+      onMouseDown={() => setSelectedId(id)}
+      onClick={() => setSelectedId(id)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedId(id); } }}
       draggable
       onDragStart={(e)=>onColDragStart(e, parentId, id, index)}
       onDragOver={(e)=>onColDragOver(e, parentId, index)}
@@ -228,13 +263,19 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
           >⇕</button>
         </div>
       </div>
-      <Reader document={doc} rootBlockId={id} />
+      <div className="pointer-events-none"><Reader document={doc} rootBlockId={id} /></div>
     </div>
   );
 
   const RootItemCard: React.FC<{ id: string; index: number }> = ({ id, index }) => (
     <div
-      className={`border rounded p-2 ${selectedId===id? 'ring-2 ring-blue-500':''} ${hoverIndex===index ? 'ring-2 ring-amber-500' : ''}`}
+      className={`border rounded p-2 cursor-pointer ${selectedId===id? 'ring-2 ring-blue-500':''} ${hoverIndex===index ? 'ring-2 ring-amber-500' : ''}`}
+      role="button"
+      tabIndex={0}
+      onPointerDownCapture={() => setSelectedId(id)}
+      onMouseDown={() => setSelectedId(id)}
+      onClick={() => setSelectedId(id)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedId(id); } }}
       draggable
       onDragStart={(e) => onRootDragStart(e, id, index)}
       onDragOver={(e) => onRootDragOver(e, index)}
@@ -256,9 +297,7 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
           <Button size="sm" variant="destructive" onClick={() => removeBlock(id)}>Delete</Button>
         </div>
       </div>
-      <button onClick={() => setSelectedId(id)} className="cursor-pointer w-full text-left">
-        {renderCardContent(id)}
-      </button>
+      {renderCardContent(id)}
     </div>
   );
 
@@ -278,17 +317,7 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
             >
               <AddZone parentId={cid} options={['Heading','Text','Button'] as BlockType[]} className="mb-2" />
               {(doc[cid]?.data?.props?.childrenIds||[]).map((bid: string, bindex: number) => (
-                <div
-                  key={bid}
-                  className="border rounded p-2 mb-2"
-                  draggable
-                  onDragStart={(e)=>onColDragStart(e, cid, bid, bindex)}
-                  onDragOver={(e)=>onColDragOver(e, cid, bindex)}
-                  onDrop={(e)=>onColDrop(e, cid, bindex)}
-                  onDragEnd={onRootDragEnd}
-                >
-                  <Reader document={doc} rootBlockId={bid} />
-                </div>
+                <ColumnItemCard key={bid} parentId={cid} id={bid} index={bindex} />
               ))}
               <AddZone parentId={cid} options={['Heading','Text','Button'] as BlockType[]} className="mt-2" />
             </div>
@@ -306,23 +335,13 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
         >
           <AddZone parentId={blockId} />
           {childIds.map((bid: string, bindex: number) => (
-            <div
-              key={bid}
-              className="border rounded p-2"
-              draggable
-              onDragStart={(e)=>onColDragStart(e, blockId, bid, bindex)}
-              onDragOver={(e)=>onColDragOver(e, blockId, bindex)}
-              onDrop={(e)=>onColDrop(e, blockId, bindex)}
-              onDragEnd={onRootDragEnd}
-            >
-              <Reader document={doc} rootBlockId={bid} />
-            </div>
+            <ColumnItemCard key={bid} parentId={blockId} id={bid} index={bindex} />
           ))}
           <AddZone parentId={blockId} />
         </div>
       );
     }
-    return <Reader document={doc} rootBlockId={blockId} />;
+    return <div className="pointer-events-none"><Reader document={doc} rootBlockId={blockId} /></div>;
   }
 
 
@@ -402,6 +421,19 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
       }, 0);
     }
   }
+  // Tree view state and utilities
+  const [treeOpen, setTreeOpen] = React.useState<Record<string, boolean>>({ root: true });
+  function nodeIcon(type?: string) {
+    switch (type) {
+      case 'Columns': return <ColumnsIcon className="h-3 w-3" />;
+      case 'Heading': return <HeadingIcon className="h-3 w-3" />;
+      case 'Text': return <TextIcon className="h-3 w-3" />;
+      case 'Image': return <ImageIcon className="h-3 w-3" />;
+      case 'Container': return <Square className="h-3 w-3" />;
+      default: return <Square className="h-3 w-3" />;
+    }
+  }
+
 
   const children: string[] = doc.root?.data?.props?.childrenIds ?? [];
 
@@ -537,6 +569,102 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
     const toIndex = doc[parentId]?.data?.props?.childrenIds?.length || 0;
     if (info.parentId === parentId) {
       moveWithinParent(parentId, info.index, toIndex);
+  // Tree view helpers
+  function recursiveDelete(next: any, id: string) {
+    const node = next[id];
+    if (!node) return;
+    if (node.type === 'Columns') {
+      const cols: string[] = node.data?.props?.columnIds || [];
+      for (const cid of cols) {
+        const kids: string[] = next[cid]?.data?.props?.childrenIds || [];
+        for (const k of kids) recursiveDelete(next, k);
+        delete next[cid];
+      }
+    }
+    if (node.type === 'Container') {
+      const kids: string[] = node.data?.props?.childrenIds || [];
+      for (const k of kids) recursiveDelete(next, k);
+    }
+    delete next[id];
+  }
+
+  function removeFromParent(parentId: string, index: number) {
+    setDoc((prev: any) => {
+      const p = prev[parentId];
+      if (!p) return prev;
+      const list: string[] = p.data?.props?.childrenIds ? [...p.data.props.childrenIds] : [];
+      const id = list[index];
+      if (!id) return prev;
+      list.splice(index, 1);
+      const next = { ...prev, [parentId]: { ...p, data: { ...p.data, props: { ...p.data.props, childrenIds: list } } } };
+
+
+      recursiveDelete(next, id);
+      return next;
+    });
+  }
+
+  function NodeRow({ parentId, ids }: { parentId: string; ids: string[] }) {
+    return (
+      <ul className="space-y-1">
+        {ids.map((id, index) => {
+          const node = doc[id];
+          const type = node?.type || 'Block';
+          const isColumns = type === 'Columns';
+          const isContainer = type === 'Container';
+          const columnIds: string[] = isColumns ? (node?.data?.props?.columnIds || []) : [];
+          const childrenIds: string[] = isContainer ? (node?.data?.props?.childrenIds || []) : [];
+          const open = treeOpen[id] ?? true;
+          const toggle = () => setTreeOpen((p) => ({ ...p, [id]: !open }));
+          return (
+            <li key={id}>
+              <div
+                className={`flex items-center justify-between rounded px-2 py-1 text-xs border ${selectedId===id? 'bg-muted ring-1 ring-ring': 'bg-background'}`}
+              >
+                <div className="flex items-center gap-1">
+                  {(isColumns || isContainer) ? (
+                    <button type="button" className="p-0.5" aria-label={open? 'Collapse':'Expand'} onClick={(e)=>{ e.stopPropagation(); toggle(); }}>
+                      {open ? <ChevronDown className="h-3 w-3"/> : <ChevronRight className="h-3 w-3"/>}
+                    </button>
+                  ) : <span className="w-4" />}
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    {nodeIcon(type)}<span>{type}</span>
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">{id.slice(0,6)}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button type="button" className="px-1 border rounded" aria-label="Select" onClick={(e)=>{ e.stopPropagation(); setSelectedId(id); }}>
+                    <MousePointerClick className="h-3 w-3" />
+                  </button>
+                  <button type="button" className="px-1 border rounded" aria-label="Move up" onClick={(e)=>{ e.stopPropagation(); moveWithinParent(parentId, index, index-1); }}>▲</button>
+                  <button type="button" className="px-1 border rounded" aria-label="Move down" onClick={(e)=>{ e.stopPropagation(); moveWithinParent(parentId, index, index+1); }}>▼</button>
+                  <button type="button" className="px-1 border rounded" aria-label="Delete" onClick={(e)=>{ e.stopPropagation(); removeFromParent(parentId, index); }}>✕</button>
+                  <span className="text-muted-foreground/50">•</span>
+                  <span className="cursor-grab"><GripVertical className="h-3 w-3" /></span>
+                </div>
+              </div>
+              {open && isColumns && columnIds.length>0 && (
+                <div className="pl-3 mt-1 space-y-1">
+                  {columnIds.map((cid, cidx)=> (
+                    <div key={cid}>
+                      <div className="text-[10px] text-muted-foreground mb-1">Column {cidx+1}</div>
+                      <NodeRow parentId={cid} ids={(doc[cid]?.data?.props?.childrenIds || [])} />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {open && isContainer && childrenIds.length>0 && (
+                <div className="pl-3 mt-1">
+                  <NodeRow parentId={id} ids={childrenIds} />
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
     } else {
       moveBetweenParents(info.parentId, info.index, parentId, toIndex);
     }
@@ -557,32 +685,72 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
         <div className="grid grid-cols-12 gap-4">
           {/* Left rail: Blocks + Variables + Actions */}
           <div className="col-span-12 md:col-span-2 space-y-3">
-            <div>
-              <div className="text-sm font-medium mb-1">Blocks</div>
-              <div className="mb-2">
-                <label className="text-xs">Insert into</label>
-                <select className="w-full border rounded p-1 text-xs" value={insertTarget} onChange={(e)=>setInsertTarget(e.target.value)}>
-                  {targetOptions().map((o)=> (
-                    <option key={o.id} value={o.id}>{o.label}</option>
-                  ))}
-                </select>
+            {/* Structure tree */}
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Structure</div>
+              <NodeRow parentId="root" ids={children} />
+            </div>
+            <hr className="my-2 border-muted" />
+
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Blocks</div>
+              <div className="grid grid-cols-2 gap-1">
+                {(['Columns2','Columns3','Section','Heading','Text','Button','Image','Divider','Spacer'] as BlockType[]).map((b) => (
+                  <Button key={b} size="sm" variant="outline" className="justify-start" onClick={() => addBlock(b, insertTarget)}>
+                    + {blockLabel(b)}
+                  </Button>
+                ))}
               </div>
-              {(['Columns2','Columns3','Section','Heading','Text','Button','Image','Divider','Spacer'] as BlockType[]).map((b) => (
-                <Button key={b} variant="outline" className="w-full justify-start" onClick={() => addBlock(b, insertTarget)}>
-                  + {blockLabel(b)}
-                </Button>
-              ))}
+              <div className="grid grid-cols-2 gap-2 items-end">
+                <div>
+                  <label className="text-xs" htmlFor="insertTarget">Insert into</label>
+                  <select id="insertTarget" className="w-full border rounded p-1 text-xs" value={insertTarget} onChange={(e)=>setInsertTarget(e.target.value)}>
+                    {targetOptions().map((o)=> (
+                      <option key={o.id} value={o.id}>{o.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs" htmlFor="applyTarget">Color target</label>
+                  <select id="applyTarget" className="w-full border rounded p-1 text-xs" value={applyTarget} onChange={(e)=>setApplyTarget(e.target.value as any)}>
+                    <option value="auto">Auto</option>
+                    <option value="background">Background</option>
+                    <option value="text">Text</option>
+                    <option value="border">Border</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">Swatches</div>
+                <div className="grid grid-cols-8 gap-1">
+                  {colorPalette().map((hex)=> (
+                    <button
+                      key={hex}
+                      type="button"
+                      className="h-6 rounded border"
+                      style={{ backgroundColor: hex }}
+                      aria-label={`Apply ${hex}`}
+                      onClick={()=>applyColor(hex)}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div>
               <div className="text-sm font-medium mb-1">Variables</div>
-              <div className="space-y-1 text-xs">
+              <div className="space-y-1 text-xs max-h-60 overflow-auto pr-1">
                 {Object.keys(brandingVars).length === 0 && (
                   <div className="text-muted-foreground">Loading…</div>
                 )}
                 {Object.keys(brandingVars).map((v) => (
                   <div key={v} className="flex items-center justify-between gap-2">
-                    <span className="font-mono">{`{{${v}}}`}</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="font-mono truncate max-w-[96px] block">{`{{${v}}}`}</span>
+                      </TooltipTrigger>
+                      <TooltipContent>{`{{${v}}}`}</TooltipContent>
+                    </Tooltip>
                     <div className="flex gap-1">
                       <Button size="sm" variant="ghost" onClick={async () => {
                         await navigator.clipboard.writeText(`{{${v}}}`);
@@ -635,7 +803,7 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
                 <div className="text-sm text-muted-foreground">Canvas</div>
                 <div className="text-xs text-muted-foreground">Click a block to edit</div>
               </div>
-              <div className="space-y-3">
+              <div className="flex flex-col" style={{ gap: doc.root?.data?.style?.sectionGap ?? 16 }}>
                 {children.length === 0 && (
                   <div className="text-center text-muted-foreground py-12">Add blocks from the left to start</div>
                 )}
@@ -652,7 +820,32 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
             <div className="border rounded-lg p-3 bg-white">
               <div className="text-sm font-medium mb-2">Inspector</div>
               {!selectedId && (
-                <div className="text-sm text-muted-foreground">Select a block to edit its content and styles.</div>
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Canvas</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs" htmlFor="pagebg">Page background</label>
+                      <Input id="pagebg" type="color"
+                        value={doc.root?.data?.style?.pageBackgroundColor || '#ffffff'}
+                        onChange={(e) => setDoc((prev:any)=> ({
+                          ...prev,
+                          root: { ...prev.root, data: { ...prev.root.data, style: { ...prev.root.data.style, pageBackgroundColor: e.target.value } } }
+                        }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs" htmlFor="secgap_root">Section gap</label>
+                      <Input id="secgap_root" type="number"
+                        value={doc.root?.data?.style?.sectionGap ?? 16}
+                        onChange={(e) => setDoc((prev:any)=> ({
+                          ...prev,
+                          root: { ...prev.root, data: { ...prev.root.data, style: { ...prev.root.data.style, sectionGap: Number(e.target.value) } } }
+                        }))}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">Tip: Select a section or element on the canvas to edit its styles here.</div>
+                </div>
               )}
               {selectedId && (
                 <div className="space-y-3">
@@ -685,6 +878,12 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
                               },
                             }))}
                           />
+                      <label className="text-xs" htmlFor="mb">Bottom spacing</label>
+                      <Input id="mb" type="number"
+                        value={doc[selectedId].data.style?.marginBottom ?? 0}
+                        onChange={(e) => updateSelected((b) => ({ ...b, data: { ...b.data, style: { ...b.data.style, marginBottom: Number(e.target.value) } } }))}
+                      />
+
                           <label className="text-xs" htmlFor={`cpad-${idx}`}>Padding (all sides)</label>
                           <Input id={`cpad-${idx}`} type="number"
                             value={doc[cid]?.data?.style?.padding?.top ?? 16}
@@ -718,6 +917,27 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
                         value={doc[selectedId].data.style?.backgroundColor || '#ffffff'}
                         onChange={(e) => updateSelected((b) => ({ ...b, data: { ...b.data, style: { ...b.data.style, backgroundColor: e.target.value } } }))}
                       />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-xs" htmlFor="pad">Padding (top/right/bottom/left)</label>
+                        </div>
+                        <div>
+                          <label className="text-xs" htmlFor="secgap">Section gap</label>
+                          <Input id="secgap" type="number"
+                            value={doc.root?.data?.style?.sectionGap ?? 16}
+                            onChange={(e) => setDoc((prev:any)=> ({
+                              ...prev,
+                              root: { ...prev.root, data: { ...prev.root.data, style: { ...prev.root.data.style, sectionGap: Number(e.target.value) } } }
+                            }))}
+                          />
+                        </div>
+                      <label className="text-xs" htmlFor="mb">Bottom spacing</label>
+                      <Input id="mb" type="number"
+                        value={doc[selectedId].data.style?.marginBottom ?? 0}
+                        onChange={(e) => updateSelected((b) => ({ ...b, data: { ...b.data, style: { ...b.data.style, marginBottom: Number(e.target.value) } } }))}
+                      />
+
+                      </div>
                       <label className="text-xs" htmlFor="pad">Padding (top/right/bottom/left)</label>
                       <div className="grid grid-cols-4 gap-2">
                         {(['top','right','bottom','left'] as const).map((edge) => (
@@ -1218,7 +1438,7 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
             {(() => {
               const cls = viewportClass(viewport);
               return (
-                <div className={cls} style={{ transform: `scale(${zoom/100})`, transformOrigin: 'top center' }}>
+                <div className={cls} style={{ transform: `scale(${zoom/100})`, transformOrigin: 'top center', backgroundColor: doc.root?.data?.style?.pageBackgroundColor || '#ffffff', padding: 16, borderRadius: 8 }}>
                   <EmailPreview doc={doc} />
                 </div>
               );
