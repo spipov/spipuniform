@@ -1,13 +1,17 @@
 import * as React from 'react';
 
-// Tiny runtime that applies branding fonts in a Tailwind-safe way by
+// Tiny runtime that applies branding fonts and colors in a Tailwind-safe way by
 // setting CSS variables and injecting only required font loaders.
 // - --branding-font-sans and --branding-font-heading are mapped in styles.css
+// - Primary, secondary, and accent colors are applied to Tailwind theme variables
 // - No global CSS overrides of Tailwind rules; only variables are set
 
 type ActiveBranding = {
   fontFamily?: string | null;
   headingFont?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  accentColor?: string | null;
 };
 
 function isFontFile(spec?: string | null): boolean {
@@ -100,6 +104,17 @@ export function BrandingRuntime() {
       const root = document.documentElement.style;
       root.setProperty('--branding-font-sans', computeCssFont(bodyFont));
       root.setProperty('--branding-font-heading', computeCssFont(headingFont));
+      
+      // Apply branding colors to Tailwind CSS custom properties
+      if (data?.primaryColor) {
+        root.setProperty('--primary', data.primaryColor);
+      }
+      if (data?.secondaryColor) {
+        root.setProperty('--secondary', data.secondaryColor);
+      }
+      if (data?.accentColor) {
+        root.setProperty('--accent', data.accentColor);
+      }
     })();
     return () => {
       cancelled = true;
