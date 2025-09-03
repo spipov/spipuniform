@@ -569,6 +569,12 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
     const toIndex = doc[parentId]?.data?.props?.childrenIds?.length || 0;
     if (info.parentId === parentId) {
       moveWithinParent(parentId, info.index, toIndex);
+    } else {
+      moveBetweenParents(info.parentId, info.index, parentId, toIndex);
+    }
+    dragInfo.current = null;
+  }
+
   // Tree view helpers
   function recursiveDelete(next: any, id: string) {
     const node = next[id];
@@ -663,12 +669,6 @@ export function EmailBuilderClient({ initialDocument, initialHtml, onExport }: B
         })}
       </ul>
     );
-  }
-
-    } else {
-      moveBetweenParents(info.parentId, info.index, parentId, toIndex);
-    }
-    dragInfo.current = null;
   }
 
   function updateSelected(updater: (b: any) => any) {
