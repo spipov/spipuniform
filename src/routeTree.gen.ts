@@ -20,7 +20,6 @@ import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settin
 import { Route as DashboardFileManagerRouteImport } from './routes/dashboard/file-manager'
 import { Route as DashboardEmailRouteImport } from './routes/dashboard/email'
 import { Route as DashboardBrandingRouteImport } from './routes/dashboard/branding'
-import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthSigninRouteImport } from './routes/auth/signin'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as DashboardUserManagementIndexRouteImport } from './routes/dashboard/user-management/index'
@@ -94,11 +93,6 @@ const DashboardBrandingRoute = DashboardBrandingRouteImport.update({
   id: '/branding',
   path: '/branding',
   getParentRoute: () => DashboardRoute,
-} as any)
-const AuthSignupRoute = AuthSignupRouteImport.update({
-  id: '/auth/signup',
-  path: '/auth/signup',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSigninRoute = AuthSigninRouteImport.update({
   id: '/auth/signin',
@@ -240,7 +234,6 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
-  '/auth/signup': typeof AuthSignupRoute
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
@@ -258,7 +251,6 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
-  '/auth/signup': typeof AuthSignupRoute
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
@@ -278,7 +270,6 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
-  '/auth/signup': typeof AuthSignupRoute
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
@@ -299,7 +290,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/auth/reset-password'
     | '/auth/signin'
-    | '/auth/signup'
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
@@ -317,7 +307,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth/reset-password'
     | '/auth/signin'
-    | '/auth/signup'
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
@@ -336,7 +325,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/auth/reset-password'
     | '/auth/signin'
-    | '/auth/signup'
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
@@ -356,7 +344,6 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRouteWithChildren
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSigninRoute: typeof AuthSigninRoute
-  AuthSignupRoute: typeof AuthSignupRoute
 }
 export interface FileServerRoutesByFullPath {
   '/api/branding': typeof ApiBrandingServerRoute
@@ -558,13 +545,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/branding'
       preLoaderRoute: typeof DashboardBrandingRouteImport
       parentRoute: typeof DashboardRoute
-    }
-    '/auth/signup': {
-      id: '/auth/signup'
-      path: '/auth/signup'
-      fullPath: '/auth/signup'
-      preLoaderRoute: typeof AuthSignupRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/auth/signin': {
       id: '/auth/signin'
@@ -860,7 +840,6 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRouteWithChildren,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSigninRoute: AuthSigninRoute,
-  AuthSignupRoute: AuthSignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
