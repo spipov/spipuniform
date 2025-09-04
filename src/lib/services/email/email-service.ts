@@ -7,10 +7,11 @@ import {
   type EmailSettings,
   type EmailTemplate,
   type EmailLog,
+  type NewEmailTemplate,
 } from '@/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import * as v from 'valibot';
-import { updateEmailSettingsSchema, updateEmailTemplateSchema } from '@/db/schema/email';
+import { updateEmailSettingsSchema, updateEmailTemplateSchema, insertEmailTemplateSchema } from '@/db/schema/email';
 import nodemailer from 'nodemailer';
 import { BrandingService } from '../branding/branding-service';
 
