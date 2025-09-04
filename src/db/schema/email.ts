@@ -6,17 +6,18 @@ import * as v from 'valibot';
 export const emailProviderEnum = pgEnum('email_provider', ['smtp', 'microsoft365', 'google_workspace']);
 export const emailStatusEnum = pgEnum('email_status', ['pending', 'sent', 'failed', 'delivered', 'bounced']);
 export const templateTypeEnum = pgEnum('template_type', ['welcome', 'reset_password', 'verification', 'notification', 'custom']);
+export const emailFragmentTypeEnum = pgEnum('email_fragment_type', ['base', 'header', 'footer', 'partial']);
 
 // Email Settings table - stores provider configurations
 export const emailSettings = pgTable(
   'email_settings',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    
+
     // Provider Configuration
     provider: emailProviderEnum('provider').notNull(),
     isActive: boolean('is_active').default(false),
-    
+
     // SMTP Configuration
     smtpHost: text('smtp_host'),
     smtpPort: text('smtp_port'),
@@ -30,7 +31,7 @@ export const emailSettings = pgTable(
     imapUser: text('imap_user'),
     imapPassword: text('imap_password'), // Should be encrypted
     imapSecure: boolean('imap_secure').default(true),
-    
+
     // OAuth Configuration (for Microsoft 365 / Google Workspace)
     clientId: text('client_id'),
     clientSecret: text('client_secret'), // Should be encrypted
@@ -38,16 +39,16 @@ export const emailSettings = pgTable(
     refreshToken: text('refresh_token'), // Should be encrypted
     accessToken: text('access_token'), // Should be encrypted
     tokenExpiry: timestamp('token_expiry'),
-    
+
     // Sender Information
     fromName: text('from_name').notNull(),
     fromEmail: text('from_email').notNull(),
     replyToEmail: text('reply_to_email'),
-    
+
     // Configuration Metadata
     configName: text('config_name').notNull(),
     description: text('description'),
-    
+
     // Timestamps
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -58,21 +59,61 @@ export const emailSettings = pgTable(
   })
 );
 
+// Email Fragments table - reusable header/footer/base/partials
+export const emailFragments = pgTable(
+  'email_fragments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+
+    // Fragment Info
+    name: text('name').notNull(),
+    type: emailFragmentTypeEnum('type').notNull(),
+    description: text('description'),
+
+    // Content
+    htmlContent: text('html_content').notNull(),
+    jsonContent: jsonb('json_content').$type<any>(),
+
+    // Status
+    isActive: boolean('is_active').default(true),
+    isDefault: boolean('is_default').default(false),
+
+    // Metadata
+    version: text('version').default('1.0.0'),
+
+    // Timestamps
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    typeIdx: index('email_fragments_type_idx').on(table.type),
+    activeIdx: index('email_fragments_active_idx').on(table.isActive),
+    defaultIdx: index('email_fragments_default_idx').on(table.isDefault),
+  })
+);
+
 // Email Templates table - stores reusable email templates
 export const emailTemplates = pgTable(
   'email_templates',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    
+
     // Template Information
     name: text('name').notNull(),
     type: templateTypeEnum('type').notNull(),
     subject: text('subject').notNull(),
-    
+
     // Template Content
     htmlContent: text('html_content').notNull(),
     textContent: text('text_content'),
     jsonContent: jsonb('json_content').$type<any>(),
+
+    // Composition (optional links to fragments)
+    baseFragmentId: uuid('base_fragment_id').references(() => emailFragments.id),
+    headerFragmentId: uuid('header_fragment_id').references(() => emailFragments.id),
+    footerFragmentId: uuid('footer_fragment_id').references(() => emailFragments.id),
+    includeHeader: boolean('include_header').default(true),
+    includeFooter: boolean('include_footer').default(true),
 
     // Template Variables (for documentation)
     variables: jsonb('variables').$type<{
@@ -82,18 +123,18 @@ export const emailTemplates = pgTable(
         required: boolean;
       };
     }>(),
-    
+
     // Branding Integration
     useBranding: boolean('use_branding').default(true),
-    
+
     // Status
     isActive: boolean('is_active').default(true),
     isDefault: boolean('is_default').default(false),
-    
+
     // Metadata
     description: text('description'),
     version: text('version').default('1.0.0'),
-    
+
     // Timestamps
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -110,32 +151,32 @@ export const emailLogs = pgTable(
   'email_logs',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    
+
     // Email Details
     toEmail: text('to_email').notNull(),
     fromEmail: text('from_email').notNull(),
     subject: text('subject').notNull(),
-    
+
     // Template Reference
     templateId: uuid('template_id').references(() => emailTemplates.id),
     templateName: text('template_name'),
-    
+
     // Provider Reference
     settingsId: uuid('settings_id').references(() => emailSettings.id),
     provider: emailProviderEnum('provider').notNull(),
-    
+
     // Status and Tracking
     status: emailStatusEnum('status').default('pending').notNull(),
     messageId: text('message_id'), // Provider message ID
-    
+
     // Error Information
     errorMessage: text('error_message'),
     errorCode: text('error_code'),
-    
+
     // Delivery Information
     sentAt: timestamp('sent_at'),
     deliveredAt: timestamp('delivered_at'),
-    
+
     // Metadata
     metadata: jsonb('metadata').$type<{
       variables?: Record<string, any>;
@@ -144,7 +185,7 @@ export const emailLogs = pgTable(
       userId?: string;
       [key: string]: any;
     }>(),
-    
+
     // Timestamps
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -188,8 +229,25 @@ export const insertEmailTemplateSchema = createInsertSchema(emailTemplates, {
   htmlContent: v.pipe(v.string(), v.minLength(1, 'HTML content is required')),
   textContent: v.optional(v.string()),
   jsonContent: v.optional(v.unknown()),
+  // Composition fields
+  baseFragmentId: v.optional(v.string()),
+  headerFragmentId: v.optional(v.string()),
+  footerFragmentId: v.optional(v.string()),
+  includeHeader: v.optional(v.boolean()),
+  includeFooter: v.optional(v.boolean()),
   description: v.optional(v.string()),
   version: v.optional(v.string()),
+});
+
+export const insertEmailFragmentSchema = createInsertSchema(emailFragments, {
+  name: v.pipe(v.string(), v.minLength(1, 'Fragment name is required')),
+  type: v.picklist(['base', 'header', 'footer', 'partial']),
+  htmlContent: v.pipe(v.string(), v.minLength(1, 'HTML content is required')),
+  jsonContent: v.optional(v.unknown()),
+  description: v.optional(v.string()),
+  version: v.optional(v.string()),
+  isActive: v.optional(v.boolean()),
+  isDefault: v.optional(v.boolean()),
 });
 
 export const insertEmailLogSchema = createInsertSchema(emailLogs, {
@@ -204,10 +262,13 @@ export const insertEmailLogSchema = createInsertSchema(emailLogs, {
 export const selectEmailSettingsSchema = createSelectSchema(emailSettings);
 export const selectEmailTemplateSchema = createSelectSchema(emailTemplates);
 export const selectEmailLogSchema = createSelectSchema(emailLogs);
+export const selectEmailFragmentSchema = createSelectSchema(emailFragments);
 
 // Update schemas
+export const updateEmailFragmentSchema = v.partial(insertEmailFragmentSchema);
 export const updateEmailSettingsSchema = v.partial(v.object({
   ...insertEmailSettingsSchema.entries,
+
   // Override nullable fields to handle null values from database
   imapHost: v.optional(v.union([v.string(), v.null()])),
   imapPort: v.optional(v.union([v.string(), v.null()])),

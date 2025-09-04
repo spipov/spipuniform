@@ -42,7 +42,10 @@ import { ServerRoute as ApiEmailTestServerRouteImport } from './routes/api/email
 import { ServerRoute as ApiEmailTemplatesServerRouteImport } from './routes/api/email/templates'
 import { ServerRoute as ApiEmailSettingsServerRouteImport } from './routes/api/email/settings'
 import { ServerRoute as ApiEmailLogsServerRouteImport } from './routes/api/email/logs'
+import { ServerRoute as ApiEmailFragmentsServerRouteImport } from './routes/api/email/fragments'
 import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api.auth.$'
+import { ServerRoute as ApiEmailTemplatesPreviewServerRouteImport } from './routes/api/email/templates.preview'
+import { ServerRoute as ApiEmailFragmentsDefaultServerRouteImport } from './routes/api/email/fragments.default'
 
 const rootServerRouteImport = createServerRootRoute()
 
@@ -208,11 +211,28 @@ const ApiEmailLogsServerRoute = ApiEmailLogsServerRouteImport.update({
   path: '/logs',
   getParentRoute: () => ApiEmailServerRoute,
 } as any)
+const ApiEmailFragmentsServerRoute = ApiEmailFragmentsServerRouteImport.update({
+  id: '/fragments',
+  path: '/fragments',
+  getParentRoute: () => ApiEmailServerRoute,
+} as any)
 const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiEmailTemplatesPreviewServerRoute =
+  ApiEmailTemplatesPreviewServerRouteImport.update({
+    id: '/preview',
+    path: '/preview',
+    getParentRoute: () => ApiEmailTemplatesServerRoute,
+  } as any)
+const ApiEmailFragmentsDefaultServerRoute =
+  ApiEmailFragmentsDefaultServerRouteImport.update({
+    id: '/default',
+    path: '/default',
+    getParentRoute: () => ApiEmailFragmentsServerRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -348,12 +368,15 @@ export interface FileServerRoutesByFullPath {
   '/api/test': typeof ApiTestServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/email/fragments': typeof ApiEmailFragmentsServerRouteWithChildren
   '/api/email/logs': typeof ApiEmailLogsServerRoute
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
-  '/api/email/templates': typeof ApiEmailTemplatesServerRoute
+  '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
+  '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
+  '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
 }
 export interface FileServerRoutesByTo {
   '/api/branding': typeof ApiBrandingServerRoute
@@ -365,12 +388,15 @@ export interface FileServerRoutesByTo {
   '/api/test': typeof ApiTestServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/email/fragments': typeof ApiEmailFragmentsServerRouteWithChildren
   '/api/email/logs': typeof ApiEmailLogsServerRoute
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
-  '/api/email/templates': typeof ApiEmailTemplatesServerRoute
+  '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
+  '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
+  '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
@@ -383,12 +409,15 @@ export interface FileServerRoutesById {
   '/api/test': typeof ApiTestServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/email/fragments': typeof ApiEmailFragmentsServerRouteWithChildren
   '/api/email/logs': typeof ApiEmailLogsServerRoute
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
-  '/api/email/templates': typeof ApiEmailTemplatesServerRoute
+  '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
+  '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
+  '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
@@ -402,12 +431,15 @@ export interface FileServerRouteTypes {
     | '/api/test'
     | '/api/users'
     | '/api/auth/$'
+    | '/api/email/fragments'
     | '/api/email/logs'
     | '/api/email/settings'
     | '/api/email/templates'
     | '/api/email/test'
     | '/api/roles/$roleId'
     | '/api/users/$userId'
+    | '/api/email/fragments/default'
+    | '/api/email/templates/preview'
   fileServerRoutesByTo: FileServerRoutesByTo
   to:
     | '/api/branding'
@@ -419,12 +451,15 @@ export interface FileServerRouteTypes {
     | '/api/test'
     | '/api/users'
     | '/api/auth/$'
+    | '/api/email/fragments'
     | '/api/email/logs'
     | '/api/email/settings'
     | '/api/email/templates'
     | '/api/email/test'
     | '/api/roles/$roleId'
     | '/api/users/$userId'
+    | '/api/email/fragments/default'
+    | '/api/email/templates/preview'
   id:
     | '__root__'
     | '/api/branding'
@@ -436,12 +471,15 @@ export interface FileServerRouteTypes {
     | '/api/test'
     | '/api/users'
     | '/api/auth/$'
+    | '/api/email/fragments'
     | '/api/email/logs'
     | '/api/email/settings'
     | '/api/email/templates'
     | '/api/email/test'
     | '/api/roles/$roleId'
     | '/api/users/$userId'
+    | '/api/email/fragments/default'
+    | '/api/email/templates/preview'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
@@ -679,12 +717,33 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiEmailLogsServerRouteImport
       parentRoute: typeof ApiEmailServerRoute
     }
+    '/api/email/fragments': {
+      id: '/api/email/fragments'
+      path: '/fragments'
+      fullPath: '/api/email/fragments'
+      preLoaderRoute: typeof ApiEmailFragmentsServerRouteImport
+      parentRoute: typeof ApiEmailServerRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatServerRouteImport
       parentRoute: typeof rootServerRouteImport
+    }
+    '/api/email/templates/preview': {
+      id: '/api/email/templates/preview'
+      path: '/preview'
+      fullPath: '/api/email/templates/preview'
+      preLoaderRoute: typeof ApiEmailTemplatesPreviewServerRouteImport
+      parentRoute: typeof ApiEmailTemplatesServerRoute
+    }
+    '/api/email/fragments/default': {
+      id: '/api/email/fragments/default'
+      path: '/default'
+      fullPath: '/api/email/fragments/default'
+      preLoaderRoute: typeof ApiEmailFragmentsDefaultServerRouteImport
+      parentRoute: typeof ApiEmailFragmentsServerRoute
     }
   }
 }
@@ -723,17 +782,47 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
   DashboardRouteChildren,
 )
 
+interface ApiEmailFragmentsServerRouteChildren {
+  ApiEmailFragmentsDefaultServerRoute: typeof ApiEmailFragmentsDefaultServerRoute
+}
+
+const ApiEmailFragmentsServerRouteChildren: ApiEmailFragmentsServerRouteChildren =
+  {
+    ApiEmailFragmentsDefaultServerRoute: ApiEmailFragmentsDefaultServerRoute,
+  }
+
+const ApiEmailFragmentsServerRouteWithChildren =
+  ApiEmailFragmentsServerRoute._addFileChildren(
+    ApiEmailFragmentsServerRouteChildren,
+  )
+
+interface ApiEmailTemplatesServerRouteChildren {
+  ApiEmailTemplatesPreviewServerRoute: typeof ApiEmailTemplatesPreviewServerRoute
+}
+
+const ApiEmailTemplatesServerRouteChildren: ApiEmailTemplatesServerRouteChildren =
+  {
+    ApiEmailTemplatesPreviewServerRoute: ApiEmailTemplatesPreviewServerRoute,
+  }
+
+const ApiEmailTemplatesServerRouteWithChildren =
+  ApiEmailTemplatesServerRoute._addFileChildren(
+    ApiEmailTemplatesServerRouteChildren,
+  )
+
 interface ApiEmailServerRouteChildren {
+  ApiEmailFragmentsServerRoute: typeof ApiEmailFragmentsServerRouteWithChildren
   ApiEmailLogsServerRoute: typeof ApiEmailLogsServerRoute
   ApiEmailSettingsServerRoute: typeof ApiEmailSettingsServerRoute
-  ApiEmailTemplatesServerRoute: typeof ApiEmailTemplatesServerRoute
+  ApiEmailTemplatesServerRoute: typeof ApiEmailTemplatesServerRouteWithChildren
   ApiEmailTestServerRoute: typeof ApiEmailTestServerRoute
 }
 
 const ApiEmailServerRouteChildren: ApiEmailServerRouteChildren = {
+  ApiEmailFragmentsServerRoute: ApiEmailFragmentsServerRouteWithChildren,
   ApiEmailLogsServerRoute: ApiEmailLogsServerRoute,
   ApiEmailSettingsServerRoute: ApiEmailSettingsServerRoute,
-  ApiEmailTemplatesServerRoute: ApiEmailTemplatesServerRoute,
+  ApiEmailTemplatesServerRoute: ApiEmailTemplatesServerRouteWithChildren,
   ApiEmailTestServerRoute: ApiEmailTestServerRoute,
 }
 

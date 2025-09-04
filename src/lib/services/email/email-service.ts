@@ -1,22 +1,16 @@
 import { db } from '@/db';
-import { 
-  emailSettings, 
-  emailTemplates, 
+import {
+  emailSettings,
+  emailTemplates,
   emailLogs,
+  emailFragments,
   type EmailSettings,
   type EmailTemplate,
   type EmailLog,
-  type NewEmailSettings,
-  type NewEmailTemplate,
-  type NewEmailLog,
-  type UpdateEmailSettings,
-  type UpdateEmailTemplate,
-  type EmailProvider,
-  type EmailStatus
 } from '@/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import * as v from 'valibot';
-import { insertEmailSettingsSchema, insertEmailTemplateSchema, insertEmailLogSchema, updateEmailSettingsSchema, updateEmailTemplateSchema } from '@/db/schema/email';
+import { updateEmailSettingsSchema, updateEmailTemplateSchema } from '@/db/schema/email';
 import nodemailer from 'nodemailer';
 import { BrandingService } from '../branding/branding-service';
 
@@ -51,7 +45,7 @@ export class EmailService {
         .where(eq(emailSettings.isActive, true))
         .orderBy(desc(emailSettings.createdAt))
         .limit(1);
-      
+
       return result[0] || null;
     } catch (error) {
       console.error('Error fetching active email settings:', error);
@@ -84,7 +78,7 @@ export class EmailService {
         .from(emailSettings)
         .where(eq(emailSettings.id, id))
         .limit(1);
-      
+
       return result[0] || null;
     } catch (error) {
       console.error('Error fetching email setting:', error);
@@ -99,12 +93,12 @@ export class EmailService {
     try {
       // Data is already validated and cleaned at the API route level
       const validatedData = data;
-      
+
       // If this is being set as active, deactivate all others first
       if (validatedData.isActive) {
         await this.deactivateAllEmailSettings();
       }
-      
+
       const result = await db
         .insert(emailSettings)
         .values({
@@ -112,7 +106,7 @@ export class EmailService {
           updatedAt: new Date(),
         })
         .returning();
-      
+
       return result[0];
     } catch (error) {
       if (error instanceof v.ValiError) {
@@ -129,12 +123,12 @@ export class EmailService {
   static async updateEmailSetting(id: string, data: UpdateEmailSettings): Promise<EmailSettings> {
     try {
       const validatedData = v.parse(updateEmailSettingsSchema, data);
-      
+
       // If this is being set as active, deactivate all others first
       if (validatedData.isActive) {
         await this.deactivateAllEmailSettings();
       }
-      
+
       const result = await db
         .update(emailSettings)
         .set({
@@ -143,7 +137,7 @@ export class EmailService {
         })
         .where(eq(emailSettings.id, id))
         .returning();
-      
+
       return result[0];
     } catch (error) {
       if (error instanceof v.ValiError) {
@@ -161,7 +155,7 @@ export class EmailService {
     try {
       // First deactivate all settings
       await this.deactivateAllEmailSettings();
-      
+
       // Then activate the specified setting
       const result = await db
         .update(emailSettings)
@@ -171,11 +165,11 @@ export class EmailService {
         })
         .where(eq(emailSettings.id, id))
         .returning();
-      
+
       if (!result[0]) {
         throw new Error('Email setting not found');
       }
-      
+
       return result[0];
     } catch (error) {
       console.error('Error activating email setting:', error);
@@ -192,22 +186,59 @@ export class EmailService {
       await db
         .delete(emailLogs)
         .where(eq(emailLogs.settingsId, id));
-      
+
       // Then delete the email setting
       const result = await db
         .delete(emailSettings)
         .where(eq(emailSettings.id, id))
         .returning();
-      
+
       if (!result[0]) {
         throw new Error('Email setting not found');
       }
-      
       return result[0];
     } catch (error) {
       console.error('Error deleting email setting:', error);
       throw new Error('Failed to delete email setting');
     }
+  }
+
+  /**
+   * Fragments CRUD
+   */
+  static async getEmailFragmentById(id: string) {
+    const rows = await db.select().from(emailFragments).where(eq(emailFragments.id, id)).limit(1);
+    return rows[0] || null;
+  }
+
+  static async getAllEmailFragments() {
+    return await db.select().from(emailFragments).orderBy(desc(emailFragments.createdAt));
+  }
+
+  static async getEmailFragmentsByType(type?: 'base' | 'header' | 'footer' | 'partial') {
+    if (!type) return this.getAllEmailFragments();
+    // Simple filter client-side after fetch to avoid enum helpers
+    const all = await this.getAllEmailFragments();
+    return all.filter((f: any) => f.type === type);
+  }
+
+  static async createEmailFragment(data: any) {
+    const res = await db.insert(emailFragments).values({ ...data, updatedAt: new Date() }).returning();
+    return res[0];
+  }
+
+  static async updateEmailFragment(id: string, data: any) {
+    const res = await db
+      .update(emailFragments)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(emailFragments.id, id))
+      .returning();
+    return res[0];
+  }
+
+  static async deleteEmailFragment(id: string) {
+    const res = await db.delete(emailFragments).where(eq(emailFragments.id, id)).returning();
+    return res[0];
   }
 
   /**
@@ -237,7 +268,7 @@ export class EmailService {
         .from(emailTemplates)
         .where(eq(emailTemplates.id, id))
         .limit(1);
-      
+
       return result[0] || null;
     } catch (error) {
       console.error('Error fetching email template:', error);
@@ -258,7 +289,7 @@ export class EmailService {
           eq(emailTemplates.isActive, true)
         ))
         .limit(1);
-      
+
       return result[0] || null;
     } catch (error) {
       console.error('Error fetching email template by name:', error);
@@ -287,7 +318,7 @@ export class EmailService {
   static async createEmailTemplate(data: NewEmailTemplate): Promise<EmailTemplate> {
     try {
       const validatedData = v.parse(insertEmailTemplateSchema, data);
-      
+
       const result = await db
         .insert(emailTemplates)
         .values({
@@ -295,7 +326,7 @@ export class EmailService {
           updatedAt: new Date(),
         })
         .returning();
-      
+
       return result[0];
     } catch (error) {
       if (error instanceof v.ValiError) {
@@ -312,7 +343,7 @@ export class EmailService {
   static async updateEmailTemplate(id: string, data: UpdateEmailTemplate): Promise<EmailTemplate> {
     try {
       const validatedData = v.parse(updateEmailTemplateSchema, data);
-      
+
       const result = await db
         .update(emailTemplates)
         .set({
@@ -321,7 +352,7 @@ export class EmailService {
         })
         .where(eq(emailTemplates.id, id))
         .returning();
-      
+
       return result[0];
     } catch (error) {
       if (error instanceof v.ValiError) {
@@ -333,17 +364,75 @@ export class EmailService {
   }
 
   /**
+   * Compose final HTML from base/header/footer fragments and body
+   */
+  static async composeHtmlFromFragments(
+    bodyHtml: string,
+    opts: {
+      baseFragmentId?: string | null;
+      headerFragmentId?: string | null;
+      footerFragmentId?: string | null;
+      includeHeader?: boolean;
+      includeFooter?: boolean;
+      variables?: Record<string, any>;
+    } = {}
+  ): Promise<string> {
+    const { baseFragmentId, headerFragmentId, footerFragmentId, includeHeader = true, includeFooter = true } = opts;
+
+    // Fetch fragments if provided
+    async function getFragmentHtml(id?: string | null): Promise<string | null> {
+      if (!id) return null;
+      const rows = await db.select().from(emailFragments).where(eq(emailFragments.id, id)).limit(1);
+      const frag = rows[0] as any;
+      return frag?.htmlContent || null;
+    }
+
+    const [baseHtml, headerHtml, footerHtml] = await Promise.all([
+      getFragmentHtml(baseFragmentId || undefined),
+      includeHeader ? getFragmentHtml(headerFragmentId || undefined) : Promise.resolve(null),
+      includeFooter ? getFragmentHtml(footerFragmentId || undefined) : Promise.resolve(null),
+    ]);
+
+    // Simple placeholder replacement
+    function applyVars(html: string): string {
+      let out = html;
+      if (!opts.variables) return out;
+      for (const [key, value] of Object.entries(opts.variables)) {
+        const re = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
+        out = out.replace(re, String(value ?? ''));
+      }
+      return out;
+    }
+
+    const h = headerHtml ? applyVars(headerHtml) : '';
+    const f = footerHtml ? applyVars(footerHtml) : '';
+    const b = applyVars(bodyHtml);
+
+    if (baseHtml) {
+      // Replace slots in base: {{header}}, {{content}}, {{footer}}
+      let composed = baseHtml;
+      composed = composed.replace(/{{\s*header\s*}}/g, h);
+      composed = composed.replace(/{{\s*content\s*}}/g, b);
+      composed = composed.replace(/{{\s*footer\s*}}/g, f);
+      return composed;
+    }
+
+    // Fallback: header + body + footer
+    return `${h}${b}${f}`;
+  }
+
+  /**
    * Render template with variables and branding
    */
   static async renderTemplate(
-    template: EmailTemplate, 
+    template: EmailTemplate,
     variables: Record<string, any> = {}
   ): Promise<{ html: string; text: string; subject: string }> {
     try {
       let htmlContent = template.htmlContent;
       let textContent = template.textContent || '';
       let subject = template.subject;
-      
+
       // Apply branding if enabled
       if (template.useBranding) {
         const branding = await BrandingService.getActiveBranding();
@@ -357,7 +446,7 @@ export class EmailService {
           variables.accentColor = branding.accentColor;
         }
       }
-      
+
       // Replace variables in content
       for (const [key, value] of Object.entries(variables)) {
         const placeholder = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
@@ -365,9 +454,19 @@ export class EmailService {
         textContent = textContent.replace(placeholder, String(value || ''));
         subject = subject.replace(placeholder, String(value || ''));
       }
-      
+
+      // Compose with base/header/footer if set
+      const composedHtml = await this.composeHtmlFromFragments(htmlContent, {
+        baseFragmentId: (template as any).baseFragmentId,
+        headerFragmentId: (template as any).headerFragmentId,
+        footerFragmentId: (template as any).footerFragmentId,
+        includeHeader: (template as any).includeHeader ?? true,
+        includeFooter: (template as any).includeFooter ?? true,
+        variables,
+      });
+
       return {
-        html: htmlContent,
+        html: composedHtml,
         text: textContent,
         subject,
       };
@@ -436,40 +535,40 @@ export class EmailService {
    */
   static async sendEmail(options: SendEmailOptions): Promise<EmailResult> {
     let logId: string | undefined;
-    
+
     try {
       // Get active email settings
       const settings = await this.getActiveSettings();
       if (!settings) {
         throw new Error('No active email settings found');
       }
-      
+
       let htmlContent = options.htmlContent || '';
       let textContent = options.textContent || '';
       let subject = options.subject;
       let templateName = '';
-      
+
       // If template is specified, render it
       if (options.templateId || options.template) {
         let template: EmailTemplate | null = null;
-        
+
         if (options.templateId) {
           template = await this.getEmailTemplateById(options.templateId);
         } else if (options.template) {
           template = await this.getTemplateByName(options.template);
         }
-        
+
         if (!template) {
           throw new Error('Email template not found');
         }
-        
+
         const rendered = await this.renderTemplate(template, options.variables);
         htmlContent = rendered.html;
         textContent = rendered.text;
         subject = rendered.subject;
         templateName = template.name;
       }
-      
+
       // Create email log entry
       const logData: NewEmailLog = {
         toEmail: Array.isArray(options.to) ? options.to.join(', ') : options.to,
@@ -484,17 +583,17 @@ export class EmailService {
           variables: options.variables,
         },
       };
-      
+
       const logResult = await db
         .insert(emailLogs)
         .values(logData)
         .returning();
-      
+
       logId = logResult[0].id;
-      
+
       // Create transporter
       const transporter = await this.createTransporter(settings);
-      
+
       // Send email
       const mailOptions: any = {
         from: `${settings.fromName} <${settings.fromEmail}>`,
@@ -510,9 +609,9 @@ export class EmailService {
       } else if (settings.replyToEmail && settings.replyToEmail.trim()) {
         mailOptions.replyTo = settings.replyToEmail;
       }
-      
+
       const info = await transporter.sendMail(mailOptions);
-      
+
       // Update log with success
       await db
         .update(emailLogs)
@@ -523,16 +622,16 @@ export class EmailService {
           updatedAt: new Date(),
         })
         .where(eq(emailLogs.id, logId));
-      
+
       return {
         success: true,
         messageId: info.messageId,
         logId,
       };
-      
+
     } catch (error) {
       console.error('Error sending email:', error);
-      
+
       // Update log with error if log was created
       if (logId) {
         await db
@@ -544,7 +643,7 @@ export class EmailService {
           })
           .where(eq(emailLogs.id, logId));
       }
-      
+
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -562,11 +661,11 @@ export class EmailService {
         .delete(emailTemplates)
         .where(eq(emailTemplates.id, id))
         .returning();
-      
+
       if (!result[0]) {
         throw new Error('Email template not found');
       }
-      
+
       return result[0];
     } catch (error) {
       console.error('Error deleting email template:', error);
@@ -584,7 +683,7 @@ export class EmailService {
         .from(emailLogs)
         .where(eq(emailLogs.id, id))
         .limit(1);
-      
+
       return result[0] || null;
     } catch (error) {
       console.error('Error fetching email log:', error);
@@ -595,14 +694,14 @@ export class EmailService {
   /**
    * Get email logs with pagination and filters
    */
-  static async getAllEmailLogs(options: { 
-    limit?: number; 
-    offset?: number; 
+  static async getAllEmailLogs(options: {
+    limit?: number;
+    offset?: number;
     status?: EmailStatus;
   } = {}): Promise<EmailLog[]> {
     try {
       const { limit = 50, offset = 0, status } = options;
-      
+
       if (status) {
         return await db
           .select()
@@ -612,7 +711,7 @@ export class EmailService {
           .limit(limit)
           .offset(offset);
       }
-      
+
       return await db
         .select()
         .from(emailLogs)
@@ -652,16 +751,16 @@ export class EmailService {
         .from(emailSettings)
         .where(eq(emailSettings.id, settingsId))
         .limit(1);
-      
+
       if (!settings[0]) {
         throw new Error('Email settings not found');
       }
-      
+
       const transporter = await this.createTransporter(settings[0]);
-      
+
       // Verify connection
       await transporter.verify();
-      
+
       // Send test email
       return await this.sendEmail({
         to: settings[0].fromEmail,
@@ -669,7 +768,7 @@ export class EmailService {
         htmlContent: '<h1>Test Email</h1><p>Your email configuration is working correctly!</p>',
         textContent: 'Test Email\n\nYour email configuration is working correctly!',
       });
-      
+
     } catch (error) {
       console.error('Error testing email configuration:', error);
       return {

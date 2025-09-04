@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Mail, Send, FileText, Activity, Plus, Edit, Trash2, TestTube, Loader2, Eye, EyeOff, Palette } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Mail, Send, FileText, Activity, Plus, Edit, Trash2, TestTube, Loader2, Eye, EyeOff, Palette, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import EmailBuilderClient from "@/email/builder/EmailBuilderClient";
 
@@ -41,10 +42,16 @@ interface EmailTemplate {
   name: string;
   subject: string;
   htmlContent: string;
-  jsonContent?: any; // Waypoint builder JSON (optional until DB migration)
+  jsonContent?: any; // Waypoint builder JSON
   textContent?: string;
   type: 'welcome' | 'reset_password' | 'verification' | 'notification' | 'custom';
   variables?: Record<string, any>;
+  // Composition
+  baseFragmentId?: string | null;
+  headerFragmentId?: string | null;
+  footerFragmentId?: string | null;
+  includeHeader?: boolean;
+  includeFooter?: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -67,17 +74,216 @@ export function EmailManagement() {
   const [credentials, setCredentials] = useState<any[]>([]);
   const [selectedSetting, setSelectedSetting] = useState<EmailSetting | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
-  const [isEditingSetting, setIsEditingSetting] = useState(false);
-  const [isEditingTemplate, setIsEditingTemplate] = useState(false);
   const [isSettingDialogOpen, setIsSettingDialogOpen] = useState(false);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [isTestEmailDialogOpen, setIsTestEmailDialogOpen] = useState(false);
   const [testEmailTo, setTestEmailTo] = useState('');
   const [testEmailSubject, setTestEmailSubject] = useState('Test Email');
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('email:previewDevice');
+      if (stored === 'mobile' || stored === 'tablet' || stored === 'desktop') return stored as any;
+    }
+    return 'desktop';
+  });
+  const [composeWithFragments, setComposeWithFragments] = useState(true);
+  const [previewHtml, setPreviewHtml] = useState<string>('');
+
+  useEffect(() => {
+    if (!selectedTemplate) return;
+    const run = async () => {
+      try {
+        if (composeWithFragments) {
+          const res = await fetch('/api/email/templates/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              html: selectedTemplate.htmlContent,
+              variables: selectedTemplate.variables || {},
+              baseFragmentId: selectedTemplate.baseFragmentId,
+              headerFragmentId: selectedTemplate.headerFragmentId,
+              footerFragmentId: selectedTemplate.footerFragmentId,
+              includeHeader: selectedTemplate.includeHeader ?? true,
+              includeFooter: selectedTemplate.includeFooter ?? true,
+            })
+          });
+          const payload = await res.json();
+  useEffect(() => {
+    try { if (typeof window !== 'undefined') localStorage.setItem('email:previewDevice', previewDevice); } catch {}
+  }, [previewDevice]);
+
+          if (res.ok) setPreviewHtml(payload.html || '');
+        } else {
+          setPreviewHtml(selectedTemplate.htmlContent || '');
+        }
+      } catch {}
+    };
+    run();
+  }, [selectedTemplate?.htmlContent, selectedTemplate?.baseFragmentId, selectedTemplate?.headerFragmentId, selectedTemplate?.footerFragmentId, selectedTemplate?.includeHeader, selectedTemplate?.includeFooter, composeWithFragments]);
+
   const [testEmailBody, setTestEmailBody] = useState('This is a test email to verify your email configuration.');
   const [loading, setLoading] = useState(true);
+  // Fragments state & helpers
+  type FragType = 'base' | 'header' | 'footer' | 'partial';
+  interface FragmentRow { id: string; name: string; type: FragType; description?: string; isActive?: boolean; isDefault?: boolean; htmlContent: string; jsonContent?: any; createdAt?: string; updatedAt?: string; }
+  const [fragments, setFragments] = useState<FragmentRow[]>([]);
+  const [fragmentDialogOpen, setFragmentDialogOpen] = useState(false);
+  const [editingFragment, setEditingFragment] = useState<FragmentRow | null>(null);
+  const [fragmentTypeFilter, setFragmentTypeFilter] = useState<FragType | 'all'>('all');
+  const [fragmentEditorTab, setFragmentEditorTab] = useState<'html'|'visual'>('html');
+
+  const loadFragmentsAll = async () => {
+    try {
+      const res = await fetch('/api/email/fragments');
+      if (res.ok) {
+        const payload = await res.json();
+        setFragments(payload.data || []);
+      }
+    } catch (e) {
+      console.error('Failed to load fragments', e);
+    }
+  };
+
+  useEffect(() => {
+    loadFragmentsAll();
+  }, []);
+
+  function openFragmentDialog(type: FragType) {
+    setEditingFragment({ id: '', name: '', type, htmlContent: '', description: '', isActive: true } as FragmentRow);
+    setFragmentEditorTab('html');
+    setFragmentDialogOpen(true);
+  }
+
+  function editFragment(f: FragmentRow) {
+    setEditingFragment({ ...f });
+    setFragmentEditorTab('html');
+    setFragmentDialogOpen(true);
+  }
+
+  async function saveFragment() {
+    if (!editingFragment) return;
+    const isUpdate = !!editingFragment.id;
+    const url = isUpdate ? `/api/email/fragments/${editingFragment.id}` : '/api/email/fragments';
+    const method = isUpdate ? 'PUT' : 'POST';
+    const body = { ...editingFragment } as any;
+    if (body.jsonContent === undefined && (window as any).__emailBuilderDoc) {
+      body.jsonContent = (window as any).__emailBuilderDoc;
+    }
+    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (res.ok) {
+      toast.success(isUpdate ? 'Fragment updated' : 'Fragment created');
+      setFragmentDialogOpen(false);
+      setEditingFragment(null);
+      loadFragmentsAll();
+      // refresh template fragment options cache
+      try {
+        const [baseRes, headerRes, footerRes] = await Promise.all([
+          fetch('/api/email/fragments/base'),
+          fetch('/api/email/fragments/header'),
+          fetch('/api/email/fragments/footer'),
+        ]);
+        ;(window as any).__emailFragmentsBase = baseRes.ok ? (await baseRes.json()).data : [];
+        ;(window as any).__emailFragmentsHeader = headerRes.ok ? (await headerRes.json()).data : [];
+        ;(window as any).__emailFragmentsFooter = footerRes.ok ? (await footerRes.json()).data : [];
+      } catch {}
+    } else {
+      const err = await res.json().catch(() => ({}));
+      toast.error(err.error || 'Failed to save fragment');
+    }
+  }
+
+  async function deleteFragment(id: string) {
+    const res = await fetch(`/api/email/fragments/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      toast.success('Fragment deleted');
+      setFragments(prev => prev.filter(f => f.id !== id));
+    } else {
+      const err = await res.json().catch(() => ({}));
+      toast.error(err.error || 'Failed to delete fragment');
+    }
+  }
+
+  async function setDefaultFragment(id: string, type: FragType) {
+    const itemsSameType = fragments.filter(f => f.type === type);
+    await Promise.all(itemsSameType.map(async f => {
+      if (f.id === id) {
+        await fetch(`/api/email/fragments/${f.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isDefault: true }) });
+      } else if (f.isDefault) {
+        await fetch(`/api/email/fragments/${f.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isDefault: false }) });
+      }
+    }));
+    toast.success('Default updated');
+    loadFragmentsAll();
+  }
+
+  function renderFragmentsList() {
+    const filtered = fragmentTypeFilter === 'all' ? fragments : fragments.filter(f => f.type === fragmentTypeFilter);
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Label>Filter</Label>
+          <Select value={fragmentTypeFilter} onValueChange={(v:any)=> setFragmentTypeFilter(v)}>
+            <SelectTrigger className="w-48"><SelectValue placeholder="All"/></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="base">Base</SelectItem>
+              <SelectItem value="header">Header</SelectItem>
+              <SelectItem value="footer">Footer</SelectItem>
+              <SelectItem value="partial">Partial</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {filtered.map(f => (
+            <Card key={f.id}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">{f.name}</CardTitle>
+                  {f.isDefault ? <Badge>Default</Badge> : null}
+                </div>
+                <CardDescription className="flex items-center gap-2">
+                  <Badge variant="secondary">{f.type}</Badge>
+                  {f.isActive === false ? <Badge variant="destructive">Inactive</Badge> : null}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex items-center justify-between gap-3">
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={()=> editFragment(f)}><Edit className="h-4 w-4 mr-1"/> Edit</Button>
+                  <Button size="sm" variant="outline" onClick={()=> deleteFragment(f.id)}><Trash2 className="h-4 w-4 mr-1"/> Delete</Button>
+                </div>
+                <Button size="sm" onClick={async()=>{ await fetch(`/api/email/fragments/default`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: f.id }) }); toast.success('Default updated'); loadFragmentsAll(); }}><Star className="h-4 w-4 mr-1"/> Make Default</Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const [saving, setSaving] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
+  // Load reusable fragments for composition selectors
+  useEffect(() => {
+    async function loadFragments() {
+      try {
+        const [baseRes, headerRes, footerRes] = await Promise.all([
+          fetch('/api/email/fragments/base'),
+          fetch('/api/email/fragments/header'),
+          fetch('/api/email/fragments/footer'),
+        ]);
+        const base = baseRes.ok ? (await baseRes.json()).data : [];
+        const header = headerRes.ok ? (await headerRes.json()).data : [];
+        const footer = footerRes.ok ? (await footerRes.json()).data : [];
+        (window as any).__emailFragmentsBase = base || [];
+        (window as any).__emailFragmentsHeader = header || [];
+        (window as any).__emailFragmentsFooter = footer || [];
+      } catch (e) {
+        console.warn('Failed to load email fragments', e);
+      }
+    }
+    loadFragments();
+  }, []);
+
   const [showPasswords, setShowPasswords] = useState({
     oauthPassword: false,
     clientSecret: false,
@@ -134,6 +340,7 @@ export function EmailManagement() {
   };
 
   const handleSaveSetting = async () => {
+
     if (!selectedSetting) return;
 
     // Validate required fields
@@ -207,7 +414,7 @@ export function EmailManagement() {
       });
 
       if (response.ok) {
-        setEmailSettings(settings => 
+        setEmailSettings(settings =>
           settings.map(setting => ({
             ...setting,
             isActive: setting.id === id
@@ -269,7 +476,7 @@ export function EmailManagement() {
         const apiResponse = await response.json();
         const savedTemplate = apiResponse.data;
         if (selectedTemplate.id) {
-          setEmailTemplates(templates => 
+          setEmailTemplates(templates =>
             templates.map(t => t.id === savedTemplate.id ? savedTemplate : t)
           );
         } else {
@@ -329,7 +536,7 @@ export function EmailManagement() {
       });
 
       if (response.ok) {
-        const result = await response.json();
+        await response.json();
         toast.success('Test email sent successfully!');
         setIsTestEmailDialogOpen(false);
         setTestEmailTo('');
@@ -419,6 +626,7 @@ export function EmailManagement() {
       <TabsList>
         <TabsTrigger value="settings">Settings</TabsTrigger>
         <TabsTrigger value="templates">Templates</TabsTrigger>
+        <TabsTrigger value="fragments">Fragments</TabsTrigger>
         <TabsTrigger value="logs">Logs</TabsTrigger>
       </TabsList>
 
@@ -647,6 +855,29 @@ export function EmailManagement() {
         </CardContent>
       </Card>
       </TabsContent>
+
+      {/* Fragments Management */}
+      <TabsContent value="fragments" className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Fragments</CardTitle>
+                <CardDescription>Manage reusable Base/Header/Footer/Partials</CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={() => openFragmentDialog('base')}><Plus className="h-4 w-4 mr-2"/> New Base</Button>
+                <Button onClick={() => openFragmentDialog('header')}><Plus className="h-4 w-4 mr-2"/> New Header</Button>
+                <Button onClick={() => openFragmentDialog('footer')}><Plus className="h-4 w-4 mr-2"/> New Footer</Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {renderFragmentsList()}
+          </CardContent>
+        </Card>
+      </TabsContent>
+
 
       <TabsContent value="logs" className="space-y-6">
         {/* Email Logs */}
@@ -1006,6 +1237,9 @@ export function EmailManagement() {
               checked={selectedSetting.isActive}
               onCheckedChange={(checked) => setSelectedSetting({...selectedSetting, isActive: checked})}
             />
+
+                  {/* Removed legacy preview toggles within settings dialog */}
+
             <Label htmlFor="isActive">Set as active provider</Label>
           </div>
 
@@ -1022,6 +1256,75 @@ export function EmailManagement() {
         )}
       </DialogContent>
     </Dialog>
+
+
+      {/* Fragment Editor Dialog */}
+      <Dialog open={fragmentDialogOpen} onOpenChange={setFragmentDialogOpen}>
+        <DialogContent className="max-w-[95vw] lg:max-w-[1280px] max-h-[92vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingFragment?.id ? 'Edit' : 'Create'} Fragment</DialogTitle>
+            <DialogDescription>Reusable Base/Header/Footer/partials for consistent emails</DialogDescription>
+          </DialogHeader>
+
+          {editingFragment && (
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+              <Alert className="text-xs">
+                <AlertDescription>
+                  <span className="font-medium">Tip:</span> The Visual Builder here is generic, same as the Template editor. When editing a <span className="font-semibold">Base/Header/Footer</span>, only include that section’s content. The full email structure comes from composing these in a Template.
+                </AlertDescription>
+              </Alert>
+
+                  <Label>Name</Label>
+                  <Input value={editingFragment.name} onChange={(e)=> setEditingFragment({...editingFragment, name: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Type</Label>
+                  <Select value={editingFragment.type} onValueChange={(v: any)=> setEditingFragment({...editingFragment, type: v})}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="base">Base</SelectItem>
+                      <SelectItem value="header">Header</SelectItem>
+                      <SelectItem value="footer">Footer</SelectItem>
+                      <SelectItem value="partial">Partial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Input value={editingFragment.description || ''} onChange={(e)=> setEditingFragment({...editingFragment, description: e.target.value})} />
+                </div>
+              </div>
+
+              <Tabs value={fragmentEditorTab} onValueChange={(v:any)=> setFragmentEditorTab(v)}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="html" className="flex items-center gap-2"><FileText className="h-4 w-4"/> HTML Editor</TabsTrigger>
+                  <TabsTrigger value="visual" className="flex items-center gap-2"><Palette className="h-4 w-4"/> Visual Builder</TabsTrigger>
+                </TabsList>
+                <TabsContent value="html" className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>HTML Content</Label>
+                    <Textarea value={editingFragment.htmlContent} onChange={(e)=> setEditingFragment({...editingFragment, htmlContent: e.target.value})} rows={8} className="font-mono text-sm"/>
+                  </div>
+                </TabsContent>
+                <TabsContent value="visual" className="space-y-4">
+                  <EmailBuilderClient
+                    initialDocument={editingFragment.jsonContent || null}
+                    initialHtml={editingFragment.htmlContent}
+                    onExport={(html, document) => setEditingFragment({ ...editingFragment, htmlContent: html, jsonContent: document })}
+                  />
+                </TabsContent>
+              </Tabs>
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={()=> setFragmentDialogOpen(false)}>Cancel</Button>
+                <Button onClick={saveFragment}>Save</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Template Dialog */}
       <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
@@ -1051,8 +1354,8 @@ export function EmailManagement() {
                   <Label htmlFor="templateType">Template Type</Label>
                   <Select
                     value={selectedTemplate.type}
-                    onValueChange={(value: 'welcome' | 'reset_password' | 'verification' | 'notification' | 'custom') =>
-                      setSelectedTemplate({...selectedTemplate, type: value})
+                    onValueChange={(value: any) =>
+                      setSelectedTemplate({...selectedTemplate, type: value as any})
                     }
                   >
                     <SelectTrigger>
@@ -1068,6 +1371,73 @@ export function EmailManagement() {
                   </Select>
                 </div>
               </div>
+
+	              {/* Composition Controls */}
+	              <div className="grid gap-4 md:grid-cols-3">
+	                <div className="space-y-2">
+	                  <Label>Base Template</Label>
+	                  <Select
+	                    value={selectedTemplate.baseFragmentId || ''}
+	                    onValueChange={(value) => setSelectedTemplate({ ...selectedTemplate, baseFragmentId: (value==='__none__'? null : value) })}
+	                  >
+	                    <SelectTrigger>
+	                      <SelectValue placeholder="Select base fragment" />
+	                    </SelectTrigger>
+	                    <SelectContent>
+	                      <SelectItem value="__none__">(None)</SelectItem>
+	                      {(window as any).__emailFragmentsBase?.map((f: any) => (
+	                        <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+	                      ))}
+	                    </SelectContent>
+	                  </Select>
+	                </div>
+	                <div className="space-y-2">
+	                  <Label>Header</Label>
+	                  <Select
+	                    value={selectedTemplate.headerFragmentId || ''}
+	                    onValueChange={(value) => setSelectedTemplate({ ...selectedTemplate, headerFragmentId: (value==='__none__'? null : value) })}
+	                  >
+	                    <SelectTrigger>
+	                      <SelectValue placeholder="Select header fragment" />
+	                    </SelectTrigger>
+	                    <SelectContent>
+	                      <SelectItem value="__none__">(None)</SelectItem>
+	                      {(window as any).__emailFragmentsHeader?.map((f: any) => (
+	                        <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+	                      ))}
+	                    </SelectContent>
+	                  </Select>
+	                  <div className="flex items-center gap-2">
+	                    <Switch id="includeHeader" checked={selectedTemplate.includeHeader ?? true} onCheckedChange={(checked)=> setSelectedTemplate({ ...selectedTemplate, includeHeader: checked })} />
+	                    <Label htmlFor="includeHeader">Include header</Label>
+	                  </div>
+	                </div>
+	                <div className="space-y-2">
+	                  <Label>Footer</Label>
+	                  <Select
+	                    value={selectedTemplate.footerFragmentId || ''}
+	                    onValueChange={(value) => setSelectedTemplate({ ...selectedTemplate, footerFragmentId: (value==='__none__'? null : value) })}
+	                  >
+	                    <SelectTrigger>
+	                      <SelectValue placeholder="Select footer fragment" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">(None)</SelectItem>
+                      {(window as any).__emailFragmentsFooter?.map((f: any) => (
+                        <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+						  <div className="flex items-center gap-2">
+							<Switch id="includeFooter" checked={selectedTemplate.includeFooter ?? true} onCheckedChange={(checked)=> setSelectedTemplate({ ...selectedTemplate, includeFooter: checked })} />
+							<Label htmlFor="includeFooter">Include footer</Label>
+						  </div>
+						</div>
+					  </div>
+
+
+
+
 
               <div className="space-y-2">
                 <Label htmlFor="subject">Subject</Label>
@@ -1111,6 +1481,25 @@ export function EmailManagement() {
                     initialHtml={selectedTemplate.htmlContent}
                     onExport={(html, document) => setSelectedTemplate({ ...selectedTemplate, htmlContent: html, jsonContent: document })}
                   />
+
+                  {/* Live preview directly under the visual builder */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">Preview</Badge>
+                      <Button size="sm" variant={previewDevice==='desktop'?'default':'outline'} onClick={()=> setPreviewDevice('desktop')}>Desktop</Button>
+                      <Button size="sm" variant={previewDevice==='tablet'?'default':'outline'} onClick={()=> setPreviewDevice('tablet')}>Tablet</Button>
+                      <Button size="sm" variant={previewDevice==='mobile'?'default':'outline'} onClick={()=> setPreviewDevice('mobile')}>Mobile</Button>
+                      <div className="ml-auto flex items-center gap-2">
+                        <Switch id="composeWithFragments" checked={composeWithFragments} onCheckedChange={(c)=> setComposeWithFragments(c)} />
+                        <Label htmlFor="composeWithFragments">Compose with Base/Header/Footer</Label>
+                      </div>
+                    </div>
+                    <div className="w-full flex justify-center">
+                      <div className="border rounded-lg p-3 bg-background" style={{ width: previewDevice==='mobile' ? '40%' : previewDevice==='tablet' ? '70%' : '95%' }}>
+                        <iframe title="email-preview" className="w-full rounded bg-white" style={{ height: '60svh' }} srcDoc={previewHtml}></iframe>
+                      </div>
+                    </div>
+                  </div>
                 </TabsContent>
               </Tabs>
 
