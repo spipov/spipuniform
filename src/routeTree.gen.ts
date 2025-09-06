@@ -20,13 +20,16 @@ import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settin
 import { Route as DashboardFileManagerRouteImport } from './routes/dashboard/file-manager'
 import { Route as DashboardEmailRouteImport } from './routes/dashboard/email'
 import { Route as DashboardBrandingRouteImport } from './routes/dashboard/branding'
+import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthSigninRouteImport } from './routes/auth/signin'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
+import { Route as AuthPendingRouteImport } from './routes/auth/pending'
 import { Route as DashboardUserManagementIndexRouteImport } from './routes/dashboard/user-management/index'
 import { Route as DashboardUserManagementUsersRouteImport } from './routes/dashboard/user-management/users'
 import { Route as DashboardUserManagementRolesRouteImport } from './routes/dashboard/user-management/roles'
 import { Route as DashboardUserManagementPermissionsRouteImport } from './routes/dashboard/user-management/permissions'
 import { Route as DashboardUserManagementConsolidatedRouteImport } from './routes/dashboard/user-management/consolidated'
+import { ServerRoute as ApiUsersApprovalServerRouteImport } from './routes/api/users-approval'
 import { ServerRoute as ApiUsersServerRouteImport } from './routes/api.users'
 import { ServerRoute as ApiTestServerRouteImport } from './routes/api.test'
 import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api.storage-settings'
@@ -35,6 +38,7 @@ import { ServerRoute as ApiFilesServerRouteImport } from './routes/api/files'
 import { ServerRoute as ApiEmailServerRouteImport } from './routes/api.email'
 import { ServerRoute as ApiCredentialsServerRouteImport } from './routes/api/credentials'
 import { ServerRoute as ApiBrandingServerRouteImport } from './routes/api.branding'
+import { ServerRoute as ApiAuthSettingsServerRouteImport } from './routes/api/auth-settings'
 import { ServerRoute as ApiUsersUserIdServerRouteImport } from './routes/api.users.$userId'
 import { ServerRoute as ApiRolesRoleIdServerRouteImport } from './routes/api.roles.$roleId'
 import { ServerRoute as ApiEmailTestServerRouteImport } from './routes/api/email/test'
@@ -42,7 +46,10 @@ import { ServerRoute as ApiEmailTemplatesServerRouteImport } from './routes/api/
 import { ServerRoute as ApiEmailSettingsServerRouteImport } from './routes/api/email/settings'
 import { ServerRoute as ApiEmailLogsServerRouteImport } from './routes/api/email/logs'
 import { ServerRoute as ApiEmailFragmentsServerRouteImport } from './routes/api/email/fragments'
+import { ServerRoute as ApiAuthSignupPostHookServerRouteImport } from './routes/api/auth/signup-post-hook'
 import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api.auth.$'
+import { ServerRoute as ApiAuthSettingsFlagServerRouteImport } from './routes/api/auth-settings.flag'
+import { ServerRoute as ApiEmailTemplatesSeedApprovalServerRouteImport } from './routes/api/email/templates.seed-approval'
 import { ServerRoute as ApiEmailTemplatesPreviewServerRouteImport } from './routes/api/email/templates.preview'
 import { ServerRoute as ApiEmailFragmentsDefaultServerRouteImport } from './routes/api/email/fragments.default'
 
@@ -94,6 +101,11 @@ const DashboardBrandingRoute = DashboardBrandingRouteImport.update({
   path: '/branding',
   getParentRoute: () => DashboardRoute,
 } as any)
+const AuthSignupRoute = AuthSignupRouteImport.update({
+  id: '/auth/signup',
+  path: '/auth/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthSigninRoute = AuthSigninRouteImport.update({
   id: '/auth/signin',
   path: '/auth/signin',
@@ -102,6 +114,11 @@ const AuthSigninRoute = AuthSigninRouteImport.update({
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   id: '/auth/reset-password',
   path: '/auth/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthPendingRoute = AuthPendingRouteImport.update({
+  id: '/auth/pending',
+  path: '/auth/pending',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardUserManagementIndexRoute =
@@ -134,6 +151,11 @@ const DashboardUserManagementConsolidatedRoute =
     path: '/user-management/consolidated',
     getParentRoute: () => DashboardRoute,
   } as any)
+const ApiUsersApprovalServerRoute = ApiUsersApprovalServerRouteImport.update({
+  id: '/api/users-approval',
+  path: '/api/users-approval',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
 const ApiUsersServerRoute = ApiUsersServerRouteImport.update({
   id: '/api/users',
   path: '/api/users',
@@ -175,6 +197,11 @@ const ApiBrandingServerRoute = ApiBrandingServerRouteImport.update({
   path: '/api/branding',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiAuthSettingsServerRoute = ApiAuthSettingsServerRouteImport.update({
+  id: '/api/auth-settings',
+  path: '/api/auth-settings',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
 const ApiUsersUserIdServerRoute = ApiUsersUserIdServerRouteImport.update({
   id: '/$userId',
   path: '/$userId',
@@ -210,11 +237,29 @@ const ApiEmailFragmentsServerRoute = ApiEmailFragmentsServerRouteImport.update({
   path: '/fragments',
   getParentRoute: () => ApiEmailServerRoute,
 } as any)
+const ApiAuthSignupPostHookServerRoute =
+  ApiAuthSignupPostHookServerRouteImport.update({
+    id: '/api/auth/signup-post-hook',
+    path: '/api/auth/signup-post-hook',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiAuthSettingsFlagServerRoute =
+  ApiAuthSettingsFlagServerRouteImport.update({
+    id: '/flag',
+    path: '/flag',
+    getParentRoute: () => ApiAuthSettingsServerRoute,
+  } as any)
+const ApiEmailTemplatesSeedApprovalServerRoute =
+  ApiEmailTemplatesSeedApprovalServerRouteImport.update({
+    id: '/seed-approval',
+    path: '/seed-approval',
+    getParentRoute: () => ApiEmailTemplatesServerRoute,
+  } as any)
 const ApiEmailTemplatesPreviewServerRoute =
   ApiEmailTemplatesPreviewServerRouteImport.update({
     id: '/preview',
@@ -232,8 +277,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/auth/pending': typeof AuthPendingRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
+  '/auth/signup': typeof AuthSignupRoute
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
@@ -249,8 +296,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/auth/pending': typeof AuthPendingRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
+  '/auth/signup': typeof AuthSignupRoute
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
@@ -268,8 +317,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/auth/pending': typeof AuthPendingRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
+  '/auth/signup': typeof AuthSignupRoute
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
@@ -288,8 +339,10 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
+    | '/auth/pending'
     | '/auth/reset-password'
     | '/auth/signin'
+    | '/auth/signup'
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
@@ -305,8 +358,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/auth/pending'
     | '/auth/reset-password'
     | '/auth/signin'
+    | '/auth/signup'
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
@@ -323,8 +378,10 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
+    | '/auth/pending'
     | '/auth/reset-password'
     | '/auth/signin'
+    | '/auth/signup'
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
@@ -342,10 +399,13 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   DashboardRoute: typeof DashboardRouteWithChildren
+  AuthPendingRoute: typeof AuthPendingRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSigninRoute: typeof AuthSigninRoute
+  AuthSignupRoute: typeof AuthSignupRoute
 }
 export interface FileServerRoutesByFullPath {
+  '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/branding': typeof ApiBrandingServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/email': typeof ApiEmailServerRouteWithChildren
@@ -354,7 +414,10 @@ export interface FileServerRoutesByFullPath {
   '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
+  '/api/users-approval': typeof ApiUsersApprovalServerRoute
+  '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/auth/signup-post-hook': typeof ApiAuthSignupPostHookServerRoute
   '/api/email/fragments': typeof ApiEmailFragmentsServerRouteWithChildren
   '/api/email/logs': typeof ApiEmailLogsServerRoute
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
@@ -364,8 +427,10 @@ export interface FileServerRoutesByFullPath {
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
+  '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
 }
 export interface FileServerRoutesByTo {
+  '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/branding': typeof ApiBrandingServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/email': typeof ApiEmailServerRouteWithChildren
@@ -374,7 +439,10 @@ export interface FileServerRoutesByTo {
   '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
+  '/api/users-approval': typeof ApiUsersApprovalServerRoute
+  '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/auth/signup-post-hook': typeof ApiAuthSignupPostHookServerRoute
   '/api/email/fragments': typeof ApiEmailFragmentsServerRouteWithChildren
   '/api/email/logs': typeof ApiEmailLogsServerRoute
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
@@ -384,9 +452,11 @@ export interface FileServerRoutesByTo {
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
+  '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
+  '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/branding': typeof ApiBrandingServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/email': typeof ApiEmailServerRouteWithChildren
@@ -395,7 +465,10 @@ export interface FileServerRoutesById {
   '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
+  '/api/users-approval': typeof ApiUsersApprovalServerRoute
+  '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/auth/signup-post-hook': typeof ApiAuthSignupPostHookServerRoute
   '/api/email/fragments': typeof ApiEmailFragmentsServerRouteWithChildren
   '/api/email/logs': typeof ApiEmailLogsServerRoute
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
@@ -405,10 +478,12 @@ export interface FileServerRoutesById {
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
+  '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
   fullPaths:
+    | '/api/auth-settings'
     | '/api/branding'
     | '/api/credentials'
     | '/api/email'
@@ -417,7 +492,10 @@ export interface FileServerRouteTypes {
     | '/api/storage-settings'
     | '/api/test'
     | '/api/users'
+    | '/api/users-approval'
+    | '/api/auth-settings/flag'
     | '/api/auth/$'
+    | '/api/auth/signup-post-hook'
     | '/api/email/fragments'
     | '/api/email/logs'
     | '/api/email/settings'
@@ -427,8 +505,10 @@ export interface FileServerRouteTypes {
     | '/api/users/$userId'
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
+    | '/api/email/templates/seed-approval'
   fileServerRoutesByTo: FileServerRoutesByTo
   to:
+    | '/api/auth-settings'
     | '/api/branding'
     | '/api/credentials'
     | '/api/email'
@@ -437,7 +517,10 @@ export interface FileServerRouteTypes {
     | '/api/storage-settings'
     | '/api/test'
     | '/api/users'
+    | '/api/users-approval'
+    | '/api/auth-settings/flag'
     | '/api/auth/$'
+    | '/api/auth/signup-post-hook'
     | '/api/email/fragments'
     | '/api/email/logs'
     | '/api/email/settings'
@@ -447,8 +530,10 @@ export interface FileServerRouteTypes {
     | '/api/users/$userId'
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
+    | '/api/email/templates/seed-approval'
   id:
     | '__root__'
+    | '/api/auth-settings'
     | '/api/branding'
     | '/api/credentials'
     | '/api/email'
@@ -457,7 +542,10 @@ export interface FileServerRouteTypes {
     | '/api/storage-settings'
     | '/api/test'
     | '/api/users'
+    | '/api/users-approval'
+    | '/api/auth-settings/flag'
     | '/api/auth/$'
+    | '/api/auth/signup-post-hook'
     | '/api/email/fragments'
     | '/api/email/logs'
     | '/api/email/settings'
@@ -467,9 +555,11 @@ export interface FileServerRouteTypes {
     | '/api/users/$userId'
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
+    | '/api/email/templates/seed-approval'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
+  ApiAuthSettingsServerRoute: typeof ApiAuthSettingsServerRouteWithChildren
   ApiBrandingServerRoute: typeof ApiBrandingServerRoute
   ApiCredentialsServerRoute: typeof ApiCredentialsServerRoute
   ApiEmailServerRoute: typeof ApiEmailServerRouteWithChildren
@@ -478,7 +568,9 @@ export interface RootServerRouteChildren {
   ApiStorageSettingsServerRoute: typeof ApiStorageSettingsServerRoute
   ApiTestServerRoute: typeof ApiTestServerRoute
   ApiUsersServerRoute: typeof ApiUsersServerRouteWithChildren
+  ApiUsersApprovalServerRoute: typeof ApiUsersApprovalServerRoute
   ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
+  ApiAuthSignupPostHookServerRoute: typeof ApiAuthSignupPostHookServerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -546,6 +638,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBrandingRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/auth/signup': {
+      id: '/auth/signup'
+      path: '/auth/signup'
+      fullPath: '/auth/signup'
+      preLoaderRoute: typeof AuthSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/signin': {
       id: '/auth/signin'
       path: '/auth/signin'
@@ -558,6 +657,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/reset-password'
       fullPath: '/auth/reset-password'
       preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/pending': {
+      id: '/auth/pending'
+      path: '/auth/pending'
+      fullPath: '/auth/pending'
+      preLoaderRoute: typeof AuthPendingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/user-management/': {
@@ -599,6 +705,13 @@ declare module '@tanstack/react-router' {
 }
 declare module '@tanstack/react-start/server' {
   interface ServerFileRoutesByPath {
+    '/api/users-approval': {
+      id: '/api/users-approval'
+      path: '/api/users-approval'
+      fullPath: '/api/users-approval'
+      preLoaderRoute: typeof ApiUsersApprovalServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/users': {
       id: '/api/users'
       path: '/api/users'
@@ -655,6 +768,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiBrandingServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/auth-settings': {
+      id: '/api/auth-settings'
+      path: '/api/auth-settings'
+      fullPath: '/api/auth-settings'
+      preLoaderRoute: typeof ApiAuthSettingsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/users/$userId': {
       id: '/api/users/$userId'
       path: '/$userId'
@@ -704,12 +824,33 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiEmailFragmentsServerRouteImport
       parentRoute: typeof ApiEmailServerRoute
     }
+    '/api/auth/signup-post-hook': {
+      id: '/api/auth/signup-post-hook'
+      path: '/api/auth/signup-post-hook'
+      fullPath: '/api/auth/signup-post-hook'
+      preLoaderRoute: typeof ApiAuthSignupPostHookServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatServerRouteImport
       parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth-settings/flag': {
+      id: '/api/auth-settings/flag'
+      path: '/flag'
+      fullPath: '/api/auth-settings/flag'
+      preLoaderRoute: typeof ApiAuthSettingsFlagServerRouteImport
+      parentRoute: typeof ApiAuthSettingsServerRoute
+    }
+    '/api/email/templates/seed-approval': {
+      id: '/api/email/templates/seed-approval'
+      path: '/seed-approval'
+      fullPath: '/api/email/templates/seed-approval'
+      preLoaderRoute: typeof ApiEmailTemplatesSeedApprovalServerRouteImport
+      parentRoute: typeof ApiEmailTemplatesServerRoute
     }
     '/api/email/templates/preview': {
       id: '/api/email/templates/preview'
@@ -762,6 +903,19 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
   DashboardRouteChildren,
 )
 
+interface ApiAuthSettingsServerRouteChildren {
+  ApiAuthSettingsFlagServerRoute: typeof ApiAuthSettingsFlagServerRoute
+}
+
+const ApiAuthSettingsServerRouteChildren: ApiAuthSettingsServerRouteChildren = {
+  ApiAuthSettingsFlagServerRoute: ApiAuthSettingsFlagServerRoute,
+}
+
+const ApiAuthSettingsServerRouteWithChildren =
+  ApiAuthSettingsServerRoute._addFileChildren(
+    ApiAuthSettingsServerRouteChildren,
+  )
+
 interface ApiEmailFragmentsServerRouteChildren {
   ApiEmailFragmentsDefaultServerRoute: typeof ApiEmailFragmentsDefaultServerRoute
 }
@@ -778,11 +932,14 @@ const ApiEmailFragmentsServerRouteWithChildren =
 
 interface ApiEmailTemplatesServerRouteChildren {
   ApiEmailTemplatesPreviewServerRoute: typeof ApiEmailTemplatesPreviewServerRoute
+  ApiEmailTemplatesSeedApprovalServerRoute: typeof ApiEmailTemplatesSeedApprovalServerRoute
 }
 
 const ApiEmailTemplatesServerRouteChildren: ApiEmailTemplatesServerRouteChildren =
   {
     ApiEmailTemplatesPreviewServerRoute: ApiEmailTemplatesPreviewServerRoute,
+    ApiEmailTemplatesSeedApprovalServerRoute:
+      ApiEmailTemplatesSeedApprovalServerRoute,
   }
 
 const ApiEmailTemplatesServerRouteWithChildren =
@@ -838,13 +995,16 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   DashboardRoute: DashboardRouteWithChildren,
+  AuthPendingRoute: AuthPendingRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSigninRoute: AuthSigninRoute,
+  AuthSignupRoute: AuthSignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
+  ApiAuthSettingsServerRoute: ApiAuthSettingsServerRouteWithChildren,
   ApiBrandingServerRoute: ApiBrandingServerRoute,
   ApiCredentialsServerRoute: ApiCredentialsServerRoute,
   ApiEmailServerRoute: ApiEmailServerRouteWithChildren,
@@ -853,7 +1013,9 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiStorageSettingsServerRoute: ApiStorageSettingsServerRoute,
   ApiTestServerRoute: ApiTestServerRoute,
   ApiUsersServerRoute: ApiUsersServerRouteWithChildren,
+  ApiUsersApprovalServerRoute: ApiUsersApprovalServerRoute,
   ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
+  ApiAuthSignupPostHookServerRoute: ApiAuthSignupPostHookServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)

@@ -1,6 +1,6 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { db } from '@/db';
-import { user } from '@/db/schema';
+import { user, account as accountTable, session as sessionTable, verification as verificationTable } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import * as v from 'valibot';
@@ -10,8 +10,8 @@ export const ServerRoute = createServerFileRoute('/api/users/$userId').methods({
   PUT: async ({ request, params }) => {
     try {
       // Check authentication
-      const session = await auth.api.getSession({ headers: request.headers });
-      if (!session) {
+      const authSession = await auth.api.getSession({ headers: request.headers });
+      if (!authSession) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), {
           status: 401,
           headers: { 'Content-Type': 'application/json' },
@@ -118,7 +118,7 @@ export const ServerRoute = createServerFileRoute('/api/users/$userId').methods({
       const currentUser = await db
         .select({ role: user.role })
         .from(user)
-        .where(eq(user.id, session.user.id))
+        .where(eq(user.id, authSession.user.id))
         .limit(1);
 
       if (!currentUser[0] || currentUser[0].role !== 'admin') {
@@ -143,6 +143,11 @@ export const ServerRoute = createServerFileRoute('/api/users/$userId').methods({
           headers: { 'Content-Type': 'application/json' },
         });
       }
+
+      // Delete related Better Auth rows first to satisfy FKs
+      await db.delete(sessionTable).where(eq(sessionTable.userId, userId));
+      await db.delete(accountTable).where(eq(accountTable.userId, userId));
+      await db.delete(verificationTable).where(eq(verificationTable.identifier, userId));
 
       // Delete user
       await db.delete(user).where(eq(user.id, userId));

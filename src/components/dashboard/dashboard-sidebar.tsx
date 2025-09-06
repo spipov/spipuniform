@@ -1,4 +1,5 @@
 import type * as React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { UserLogoutCard } from "./user-logout-card";
@@ -15,6 +16,24 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+
+function PendingUsersBadge() {
+  const { data } = useQuery({
+    queryKey: ["pending-users"],
+    queryFn: async () => {
+      const res = await fetch('/api/users-approval');
+      if (!res.ok) return { data: { pending: 0 } };
+      return res.json();
+    },
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
+  });
+  const count = Number(data?.data?.pending || 0);
+  if (!count) return null;
+  return (
+    <span className="absolute -top-1 -right-1 text-xs rounded-full bg-amber-500 text-white px-1.5 py-0.5">{count}</span>
+  );
+}
 
 const dashboardNavigation = [
   {
@@ -107,10 +126,11 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
                   <SidebarMenuButton asChild className="dashboard-sidebar__user-management-button">
                     <Link
                       to={item.url}
-                      className="dashboard-sidebar__user-management-link font-medium"
+                      className="dashboard-sidebar__user-management-link font-medium relative"
                     >
                       <Icon className="dashboard-sidebar__user-management-icon size-4" />
                       <span className="dashboard-sidebar__user-management-text">{item.title}</span>
+                      <PendingUsersBadge />
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

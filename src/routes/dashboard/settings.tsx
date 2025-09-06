@@ -3,6 +3,7 @@ import { BrandingManager } from "@/components/branding/branding-manager";
 import { EmailManagement } from "@/components/email/email-management";
 import { StorageSettingsManagement } from "@/components/file-system/storage-settings-management";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { AuthSettingsPanel } from "@/components/settings/auth-settings";
 
 export const Route = createFileRoute("/dashboard/settings")({
   component: SettingsPage,
@@ -32,10 +33,11 @@ function SettingsPage() {
       </div>
 
       <Tabs value={tab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="branding">Branding</TabsTrigger>
           <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="storage">Storage</TabsTrigger>
+          <TabsTrigger value="auth">Auth</TabsTrigger>
         </TabsList>
 
         <TabsContent value="branding" className="space-y-6">
@@ -48,6 +50,10 @@ function SettingsPage() {
 
         <TabsContent value="storage" className="space-y-6">
           <StorageSettingsManagement />
+        </TabsContent>
+
+        <TabsContent value="auth" className="space-y-6">
+          <AuthSettingsPanel />
         </TabsContent>
       </Tabs>
     </div>

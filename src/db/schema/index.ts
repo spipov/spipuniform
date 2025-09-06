@@ -15,6 +15,9 @@ export * from './email';
 // Credentials System tables
 export * from './credentials';
 
+// Auth Settings
+export * from './auth-settings';
+
 // File System tables
 export * from './file-system';
 

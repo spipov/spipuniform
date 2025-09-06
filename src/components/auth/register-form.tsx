@@ -30,8 +30,33 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
       if (result.error) {
         toast.error(result.error.message || "Failed to create account");
       } else {
-        toast.success("Account created successfully! Please sign in.");
-        router.navigate({ to: "/auth/signin" });
+        toast.success("Account created! Check your email for verification.");
+
+        // Check approval flag, then optionally call post-hook and choose redirect
+        let requireApproval = false;
+        try {
+          const flagRes = await fetch('/api/auth-settings/flag');
+          if (flagRes.ok) {
+            const flag = await flagRes.json();
+            requireApproval = Boolean(flag?.requireAdminApproval);
+          }
+        } catch {}
+
+        if (requireApproval) {
+          try {
+            const userId = result?.data?.user?.id;
+            if (userId) {
+              await fetch('/api/auth/signup-post-hook', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId }),
+              });
+            }
+          } catch {}
+          router.navigate({ to: "/auth/pending" });
+        } else {
+          router.navigate({ to: "/auth/signin" });
+        }
       }
     } catch (error) {
       toast.error("An unexpected error occurred");

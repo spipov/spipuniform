@@ -226,7 +226,11 @@ export function UsersPage({ className }: UsersPageProps) {
                       </TableCell>
                       <TableCell>
                         {user.banned ? (
-                          <Badge variant="destructive">Banned</Badge>
+                          user.banReason === 'PENDING_APPROVAL' ? (
+                            <Badge variant="outline">Pending</Badge>
+                          ) : (
+                            <Badge variant="destructive">Banned</Badge>
+                          )
                         ) : (
                           <Badge variant="success">Active</Badge>
                         )}
@@ -242,28 +246,53 @@ export function UsersPage({ className }: UsersPageProps) {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditUser(user)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            {user.banned ? (
-                              <DropdownMenuItem onClick={() => handleUnbanUser(user)}>
-                                <UserCheck className="mr-2 h-4 w-4" />
-                                Unban
-                              </DropdownMenuItem>
+                            {user.banned && user.banReason === 'PENDING_APPROVAL' ? (
+                              <>
+                                <DropdownMenuItem onClick={async () => {
+                                  try {
+                                    await fetch('/api/users-approval', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user.id, action: 'approve' }) });
+                                    fetchUsers();
+                                  } catch (e) { console.error(e); }
+                                }}>
+                                  <UserCheck className="mr-2 h-4 w-4" />
+                                  Approve
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={async () => {
+                                  try {
+                                    await fetch('/api/users-approval', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user.id, action: 'reject' }) });
+                                    fetchUsers();
+                                  } catch (e) { console.error(e); }
+                                }}>
+                                  <Ban className="mr-2 h-4 w-4" />
+                                  Reject
+                                </DropdownMenuItem>
+                              </>
                             ) : (
-                              <DropdownMenuItem onClick={() => handleBanUser(user)}>
-                                <Ban className="mr-2 h-4 w-4" />
-                                Ban
-                              </DropdownMenuItem>
+                              <>
+                                <DropdownMenuItem onClick={() => handleEditUser(user)}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit
+                                </DropdownMenuItem>
+                                {user.banned ? (
+                                  <DropdownMenuItem onClick={() => handleUnbanUser(user)}>
+                                    <UserCheck className="mr-2 h-4 w-4" />
+                                    Unban
+                                  </DropdownMenuItem>
+                                ) : (
+                                  <DropdownMenuItem onClick={() => handleBanUser(user)}>
+                                    <Ban className="mr-2 h-4 w-4" />
+                                    Ban
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteUser(user)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </>
                             )}
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteUser(user)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
