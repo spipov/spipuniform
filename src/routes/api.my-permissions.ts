@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { user, roles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { RoleService } from "@/lib/services/role-service";
 
 export const ServerRoute = createServerFileRoute("/api/my-permissions").methods({
   GET: async ({ request }) => {
@@ -23,6 +24,18 @@ export const ServerRoute = createServerFileRoute("/api/my-permissions").methods(
         .limit(1);
 
       const roleName = current?.role || null;
+      const normalizedRole = roleName?.toLowerCase();
+
+      // ADMIN OVERRIDE: admin has all permissions (case-insensitive)
+      if (normalizedRole === "admin") {
+        const allPerms = RoleService.getAllPermissions();
+        const permissions: Record<string, boolean> = {};
+        for (const p of allPerms) permissions[p.key] = true;
+        return new Response(
+          JSON.stringify({ role: roleName, permissions }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      }
 
       // Default minimal permissions: allow viewing dashboard
       let permissions: Record<string, boolean> = { viewDashboard: true } as Record<string, boolean>;

@@ -20,8 +20,11 @@ export const ServerRoute = createServerFileRoute('/api/users-actions').methods({
 
       // Only admins can trigger this
       const [current] = await db.select({ role: userTable.role }).from(userTable).where(eq(userTable.id, session.user.id)).limit(1);
-      if (!current || current.role !== 'admin') {
-        return new Response(JSON.stringify({ error: 'Insufficient permissions' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+      if (!current || (current.role || '').toLowerCase() !== 'admin') {
+        return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
       }
 
       // Lookup the target user

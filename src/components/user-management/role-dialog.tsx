@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { useForm } from "@tanstack/react-form";
 import { RoleService, type Role } from "@/lib/services/role-service";
 import { createRoleSchema, updateRoleSchema } from "@/schemas/user-management";
@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 
 type CreateRoleInput = v.InferInput<typeof createRoleSchema>;
 type UpdateRoleInput = v.InferInput<typeof updateRoleSchema>;
@@ -58,6 +59,7 @@ export function RoleDialog({
   const [selectedColor, setSelectedColor] = useState(role?.color || defaultColors[0]);
   const [permissions, setPermissions] = useState<Record<string, boolean>>({});
   const [allPermissions, setAllPermissions] = useState<Array<{ key: string; label: string }>>([]);
+  const formUid = useId();
 
   const form = useForm({
     defaultValues: {
@@ -127,8 +129,8 @@ export function RoleDialog({
     };
   
     loadPermissions();
-    // depend on role id and mode to avoid stale defaults
-  }, [role?.id, mode]);
+    // depend on role to capture permission changes correctly
+  }, [role]);
 
   const handleSelectAllPermissions = (checked: boolean) => {
     const updatedPermissions: Record<string, boolean> = {};
@@ -165,7 +167,7 @@ export function RoleDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[95vh] sm:max-h-[90vh] overflow-y-auto w-[95vw] sm:w-auto">
+      <DialogContent className="sm:max-w-[900px] max-h-[85vh] overflow-y-auto w-[95vw] sm:w-auto">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Role" : "Create New Role"}</DialogTitle>
           <DialogDescription>
@@ -187,9 +189,9 @@ export function RoleDialog({
             <form.Field name="name">
               {(field) => (
                 <div className="space-y-2">
-                  <Label htmlFor="name">Role Name</Label>
+                  <Label htmlFor={`name-${formUid}`}>Role Name</Label>
                   <Input
-                    id="name"
+                    id={`name-${formUid}`}
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
@@ -239,9 +241,9 @@ export function RoleDialog({
           <form.Field name="description">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor={`description-${formUid}`}>Description</Label>
                 <Input
-                  id="description"
+                  id={`description-${formUid}`}
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
@@ -256,34 +258,48 @@ export function RoleDialog({
               <Label className="text-base font-medium">Permissions</Label>
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="select-all"
+                  id={`select-all-${formUid}`}
                   checked={allSelected}
                   onCheckedChange={handleSelectAllPermissions}
                 />
-                <Label htmlFor="select-all" className="text-sm">
+                <Label htmlFor={`select-all-${formUid}`} className="text-sm">
                   Select All ({selectedCount}/{allPermissions.length})
                 </Label>
               </div>
             </div>
 
-            <div className="space-y-4 max-h-60 overflow-y-auto">
-              {Object.entries(permissionGroups).map(([category, perms]) => (
-                <Card key={category}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium capitalize">{category}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {Object.entries(permissionGroups).map(([group, permissionsInGroup]) => (
-                        <div key={group} className="border rounded-md p-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-semibold capitalize">{group}</h4>
-                          </div>
-                          <div className="space-y-2">
-                            {permissionsInGroup.map((permission) => (
-                              <div key={permission.key} className="flex items-center space-x-2">
+            {/* permissions table remains, only ids updated */}
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader className="sticky top-0 bg-background z-10">
+                      <TableRow>
+                        <TableHead className="w-[30%]">Category</TableHead>
+                        <TableHead>Permission</TableHead>
+                        <TableHead className="w-[120px]">Enabled</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {Object.entries(permissionGroups).map(([category, perms]) => (
+                        <React.Fragment key={category}>
+                          <TableRow className="bg-muted/30">
+                            <TableCell colSpan={3} className="font-medium capitalize">
+                              {category}
+                            </TableCell>
+                          </TableRow>
+                          {perms.map((permission) => (
+                            <TableRow key={permission.key}>
+                              <TableCell className="capitalize">{category}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm">{permission.label}</span>
+                                  <span className="text-xs text-muted-foreground">({permission.key})</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
                                 <Checkbox
-                                  id={permission.key}
+                                  id={`${permission.key}-${formUid}`}
                                   checked={permissions[permission.key] || false}
                                   onCheckedChange={(checked) => {
                                     setPermissions((prev) => ({
@@ -292,21 +308,17 @@ export function RoleDialog({
                                     }));
                                   }}
                                 />
-                                <label htmlFor={permission.key} className="text-sm">
-                                  {permission.label}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </React.Fragment>
                       ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-
           {error && (
             <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
               {error}
