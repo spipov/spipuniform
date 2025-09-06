@@ -1,13 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useSession, signOut } from "@/lib/auth-client";
+import { useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 export default function Header() {
   const { data: session } = useSession();
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
+  const router = useRouter();
 
   return (
     <header className="p-2 flex gap-2 bg-white text-black justify-between">
@@ -31,7 +29,15 @@ export default function Header() {
             <span className="text-sm text-gray-600">
               Welcome, {session.user.name || session.user.email}
             </span>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
+            <Button variant="outline" size="sm" onClick={async () => {
+              try {
+                await signOut();
+              } finally {
+                // Always navigate to home after sign out
+                router.navigate({ to: "/" });
+              }
+            }}
+            >
               Sign Out
             </Button>
           </>

@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -10,41 +10,45 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { getSession } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/dashboard")({
+  beforeLoad: async () => {
+    const session = await getSession();
+    if (!session) {
+      throw redirect({ to: "/" });
+    }
+    return { session };
+  },
   component: DashboardLayout,
 });
 
 function DashboardLayout() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <SidebarProvider className="dashboard">
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
         <DashboardSidebar />
-        <SidebarInset className="dashboard__main">
-          <header className="dashboard__header flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-            <div className="dashboard__header-content flex items-center gap-2 px-4">
-              <SidebarTrigger className="dashboard__sidebar-trigger -ml-1" />
-              <Separator orientation="vertical" className="dashboard__separator mr-2 h-4" />
-              <Breadcrumb className="dashboard__breadcrumb">
-                <BreadcrumbList className="dashboard__breadcrumb-list">
-                  <BreadcrumbItem className="dashboard__breadcrumb-item hidden md:block">
-                    <BreadcrumbLink href="#" className="dashboard__breadcrumb-link">
-                      Dashboard
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator className="dashboard__breadcrumb-separator hidden md:block" />
-                  <BreadcrumbItem className="dashboard__breadcrumb-item">
-                    <BreadcrumbPage className="dashboard__breadcrumb-page">Overview</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
-            </div>
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+            <SidebarTrigger />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Overview</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
           </header>
-          <div className="dashboard__content flex flex-1 flex-col gap-4 p-4 pt-0">
+          <main className="flex-1 p-4">
             <Outlet />
-          </div>
+          </main>
         </SidebarInset>
-      </SidebarProvider>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 }

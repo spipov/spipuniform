@@ -16,6 +16,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useSession } from "@/lib/auth-client";
 
 function PendingUsersBadge() {
   const { data } = useQuery({
@@ -75,7 +76,11 @@ const systemAdminNavigation = [
 ];
 
 export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  
+  const { data: session } = useSession();
+  const role = (session?.user as any)?.role || null;
+  const isSignedIn = !!session?.user;
+  const isAdmin = role === "admin";
+
   return (
     <BrandingProvider>
       <Sidebar variant="inset" className="dashboard-sidebar" {...props}>
@@ -93,87 +98,98 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
-      <SidebarContent className="dashboard-sidebar__content">
-        <SidebarGroup className="dashboard-sidebar__nav-group">
-          <SidebarMenu className="dashboard-sidebar__nav-menu">
-            {dashboardNavigation.map((item) => {
-              const Icon = item.icon;
-              return (
-                <SidebarMenuItem key={item.title} className="dashboard-sidebar__nav-item">
-                  <SidebarMenuButton asChild className="dashboard-sidebar__nav-button">
-                    <Link to={item.url} className="dashboard-sidebar__nav-link font-medium">
-                      <Icon className="dashboard-sidebar__nav-icon size-4" />
-                      <span className="dashboard-sidebar__nav-text">{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
-        <SidebarGroup className="dashboard-sidebar__user-management-group">
-          <SidebarGroupLabel className="dashboard-sidebar__group-label">
-            User Management
-          </SidebarGroupLabel>
-          <SidebarMenu className="dashboard-sidebar__user-management-menu">
-            {userManagementNavigation.map((item) => {
-              const Icon = item.icon;
-              return (
-                <SidebarMenuItem
-                  key={item.title}
-                  className="dashboard-sidebar__user-management-item"
-                >
-                  <SidebarMenuButton asChild className="dashboard-sidebar__user-management-button">
-                    <Link
-                      to={item.url}
-                      className="dashboard-sidebar__user-management-link font-medium relative"
+        <SidebarContent className="dashboard-sidebar__content">
+          {isSignedIn && (
+            <SidebarGroup className="dashboard-sidebar__nav-group">
+              <SidebarMenu className="dashboard-sidebar__nav-menu">
+                {dashboardNavigation.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <SidebarMenuItem key={item.title} className="dashboard-sidebar__nav-item">
+                      <SidebarMenuButton asChild className="dashboard-sidebar__nav-button">
+                        <Link to={item.url} className="dashboard-sidebar__nav-link font-medium">
+                          <Icon className="dashboard-sidebar__nav-icon size-4" />
+                          <span className="dashboard-sidebar__nav-text">{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroup>
+          )}
+
+          {isAdmin && (
+            <SidebarGroup className="dashboard-sidebar__user-management-group">
+              <SidebarGroupLabel className="dashboard-sidebar__group-label">
+                User Management
+              </SidebarGroupLabel>
+              <SidebarMenu className="dashboard-sidebar__user-management-menu">
+                {userManagementNavigation.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <SidebarMenuItem
+                      key={item.title}
+                      className="dashboard-sidebar__user-management-item"
                     >
-                      <Icon className="dashboard-sidebar__user-management-icon size-4" />
-                      <span className="dashboard-sidebar__user-management-text">{item.title}</span>
-                      <PendingUsersBadge />
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
-        <SidebarGroup className="dashboard-sidebar__system-admin-group">
-          <SidebarGroupLabel className="dashboard-sidebar__group-label">
-            System Administration
-          </SidebarGroupLabel>
-          <SidebarMenu className="dashboard-sidebar__system-admin-menu">
-            {systemAdminNavigation.map((item) => {
-              const Icon = item.icon;
-              return (
-                <SidebarMenuItem
-                  key={item.title}
-                  className="dashboard-sidebar__system-admin-item"
-                >
-                  <SidebarMenuButton asChild className="dashboard-sidebar__system-admin-button">
-                    <Link
-                      to={item.url}
-                      className="dashboard-sidebar__system-admin-link font-medium"
+                      <SidebarMenuButton asChild className="dashboard-sidebar__user-management-button">
+                        <Link
+                          to={item.url}
+                          className="dashboard-sidebar__user-management-link font-medium relative"
+                        >
+                          <Icon className="dashboard-sidebar__user-management-icon size-4" />
+                          <span className="dashboard-sidebar__user-management-text">{item.title}</span>
+                          <PendingUsersBadge />
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroup>
+          )}
+
+          {isAdmin && (
+            <SidebarGroup className="dashboard-sidebar__system-admin-group">
+              <SidebarGroupLabel className="dashboard-sidebar__group-label">
+                System Administration
+              </SidebarGroupLabel>
+              <SidebarMenu className="dashboard-sidebar__system-admin-menu">
+                {systemAdminNavigation.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <SidebarMenuItem
+                      key={item.title}
+                      className="dashboard-sidebar__system-admin-item"
                     >
-                      <Icon className="dashboard-sidebar__system-admin-icon size-4" />
-                      <span className="dashboard-sidebar__system-admin-text">{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter className="dashboard-sidebar__footer">
-        <SidebarMenu className="dashboard-sidebar__footer-menu">
-          <SidebarMenuItem className="dashboard-sidebar__footer-menu-item">
-            <UserLogoutCard />
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-      <SidebarRail className="dashboard-sidebar__rail" />
-    </Sidebar>
+                      <SidebarMenuButton asChild className="dashboard-sidebar__system-admin-button">
+                        <Link
+                          to={item.url}
+                          className="dashboard-sidebar__system-admin-link font-medium"
+                        >
+                          <Icon className="dashboard-sidebar__system-admin-icon size-4" />
+                          <span className="dashboard-sidebar__system-admin-text">{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroup>
+          )}
+        </SidebarContent>
+
+        <SidebarFooter className="dashboard-sidebar__footer">
+          {isSignedIn && (
+            <SidebarMenu className="dashboard-sidebar__footer-menu">
+              <SidebarMenuItem className="dashboard-sidebar__footer-menu-item">
+                <UserLogoutCard />
+              </SidebarMenuItem>
+            </SidebarMenu>
+          )}
+        </SidebarFooter>
+        <SidebarRail className="dashboard-sidebar__rail" />
+      </Sidebar>
     </BrandingProvider>
   );
 }

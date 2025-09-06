@@ -137,8 +137,15 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Minimal pre-paint branding & transition guard */}
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: `(() => { try { var d = document.documentElement; d.classList.add('no-theme-transitions'); var raw = localStorage.getItem('branding:active'); if (!raw) return; var b = JSON.parse(raw); var r = d.style; if (b.primaryColor) r.setProperty('--primary', b.primaryColor); if (b.secondaryColor) r.setProperty('--secondary', b.secondaryColor); if (b.accentColor) r.setProperty('--accent', b.accentColor); } catch(e){} })();`,
+          }}
+        />
         <HeadContent />
       </head>
       <body>
