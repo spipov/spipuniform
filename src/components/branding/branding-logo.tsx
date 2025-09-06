@@ -1,6 +1,16 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
+interface BrandingData {
+  siteName?: string;
+  logoUrl?: string;
+  logoAlt?: string;
+  logoDisplayMode?: 'logo-only' | 'logo-with-name' | 'name-only';
+  primaryColor?: string;
+  secondaryColor?: string;
+  [key: string]: unknown;
+}
+
 interface BrandingLogoProps {
   siteName?: string;
   logoUrl?: string;
@@ -152,7 +162,7 @@ export function BrandingLogo({
 
 // Hook to use branding data
 export function useBranding() {
-  const [branding, setBranding] = React.useState<any>(null);
+  const [branding, setBranding] = React.useState<BrandingData | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -188,7 +198,7 @@ interface BrandingProviderProps {
 }
 
 const BrandingContext = React.createContext<{
-  branding: any;
+  branding: BrandingData | null;
   loading: boolean;
   error: string | null;
 }>({

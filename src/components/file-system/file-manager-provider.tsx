@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useReducer, useCallback, ReactNode, useEffect } from 'react';
+import type React from 'react';
+import { createContext, useContext, useReducer, useCallback, type ReactNode, useEffect } from 'react'
 import type { FileItem, FileListResponse } from '@/db/schema';
 
 interface FileManagerState {
@@ -48,7 +49,7 @@ function fileManagerReducer(state: FileManagerState, action: FileManagerAction):
       };
     case 'SET_SELECTED_FILES':
       return { ...state, selectedFiles: action.payload };
-    case 'TOGGLE_FILE_SELECTION':
+    case 'TOGGLE_FILE_SELECTION': {
       const isSelected = state.selectedFiles.includes(action.payload);
       return {
         ...state,
@@ -56,6 +57,7 @@ function fileManagerReducer(state: FileManagerState, action: FileManagerAction):
           ? state.selectedFiles.filter(id => id !== action.payload)
           : [...state.selectedFiles, action.payload],
       };
+    }
     case 'CLEAR_SELECTION':
       return { ...state, selectedFiles: [] };
     case 'SET_VIEW_MODE':

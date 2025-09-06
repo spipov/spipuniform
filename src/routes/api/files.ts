@@ -2,6 +2,7 @@ import { createServerFileRoute } from '@tanstack/react-start/server';
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
+import type { Stats } from 'fs';
 
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
@@ -258,7 +259,7 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
       }
 
       // Check if file exists and get its type
-      let stats;
+      let stats: Stats;
       try {
         stats = await stat(resolvedPath);
       } catch (accessError) {

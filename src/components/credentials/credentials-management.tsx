@@ -43,7 +43,7 @@ interface Credential {
   projectId?: string;
   region?: string;
   endpoint?: string;
-  config?: any;
+  config?: Record<string, unknown>;
   isActive: boolean;
   isDefault: boolean;
   description?: string;
@@ -54,7 +54,6 @@ interface Credential {
 export function CredentialsManagement() {
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [selectedCredential, setSelectedCredential] = useState<Credential | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -440,7 +439,7 @@ export function CredentialsManagement() {
                   <Label htmlFor="credType">Type</Label>
                   <Select
                     value={selectedCredential.type}
-                    onValueChange={(value: any) =>
+                    onValueChange={(value: Credential['type']) =>
                       setSelectedCredential({...selectedCredential, type: value})
                     }
                   >
@@ -466,7 +465,7 @@ export function CredentialsManagement() {
                   <Label htmlFor="credProvider">Provider</Label>
                   <Select
                     value={selectedCredential.provider}
-                    onValueChange={(value: any) =>
+                    onValueChange={(value: Credential['provider']) =>
                       setSelectedCredential({...selectedCredential, provider: value})
                     }
                   >

@@ -32,7 +32,7 @@ export function SigninForm({ className, ...props }: React.ComponentProps<"div">)
         toast.success("Successfully signed in!");
         router.navigate({ to: "/dashboard" });
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
@@ -85,8 +85,8 @@ export function SigninForm({ className, ...props }: React.ComponentProps<"div">)
                     {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-red-600">
                         {field.state.meta.errors
-                          .map((error: any) =>
-                            typeof error === "string" ? error : error.message || error
+                          .map((error: string | { message?: string }) =>
+                            typeof error === "string" ? error : error.message || String(error)
                           )
                           .join(", ")}
                       </p>
@@ -116,8 +116,8 @@ export function SigninForm({ className, ...props }: React.ComponentProps<"div">)
                     {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-red-600">
                         {field.state.meta.errors
-                          .map((error: any) =>
-                            typeof error === "string" ? error : error.message || error
+                          .map((error: string | { message?: string }) =>
+                            typeof error === "string" ? error : error.message || String(error)
                           )
                           .join(", ")}
                       </p>

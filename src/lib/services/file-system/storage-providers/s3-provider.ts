@@ -1,4 +1,4 @@
-import { BaseStorageProvider, FileUpload, UploadResult } from './base-provider';
+import { BaseStorageProvider, type FileUpload, type UploadResult } from './base-provider';
 
 // S3 Provider - placeholder for now, would need AWS SDK implementation
 export class S3StorageProvider extends BaseStorageProvider {

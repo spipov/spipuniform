@@ -196,7 +196,7 @@ export class CredentialsService {
   static async setDefaultCredential(id: string): Promise<Credential> {
     try {
       // First, get the credential to know its type
-      const credential = await this.getCredentialById(id);
+      const credential = await CredentialsService.getCredentialById(id);
       if (!credential) {
         throw new Error('Credential not found');
       }
@@ -232,7 +232,7 @@ export class CredentialsService {
    */
   static async validateCredential(id: string): Promise<{ valid: boolean; errors?: string[] }> {
     try {
-      const credential = await this.getCredentialById(id);
+      const credential = await CredentialsService.getCredentialById(id);
       if (!credential) {
         return { valid: false, errors: ['Credential not found'] };
       }

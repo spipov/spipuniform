@@ -83,7 +83,7 @@ export function RolesPage() {
     loadRoles();
   };
 
-  const getPermissionCount = (permissions: any) => {
+  const getPermissionCount = (permissions: Record<string, boolean> | null | undefined) => {
     if (!permissions) return 0;
     if (typeof permissions === 'object') {
       return Object.values(permissions).filter(Boolean).length;

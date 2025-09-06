@@ -1,4 +1,4 @@
-import { BaseStorageProvider, FileUpload, UploadResult } from './base-provider';
+import { BaseStorageProvider, type FileUpload, type UploadResult } from './base-provider';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 

@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState, useEffect, useId } from "react";
 import { useForm } from "@tanstack/react-form";
 import { RoleService, type Role } from "@/lib/services/role-service";
-import { createRoleSchema, updateRoleSchema } from "@/schemas/user-management";
+import type { createRoleSchema, updateRoleSchema } from "@/schemas/user-management";
 import type * as v from "valibot";
 import {
   Dialog,
@@ -140,9 +140,7 @@ export function RoleDialog({
     setPermissions(updatedPermissions);
   };
 
-  const getPermissionDisplayName = (permission: string) => {
-    return RoleService.getPermissionDisplayName(permission as any);
-  };
+
 
   const groupPermissions = (permissions: Array<{ key: string; label: string }>) => {
     const groups: Record<string, Array<{ key: string; label: string }>> = {};

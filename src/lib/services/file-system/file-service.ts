@@ -3,7 +3,7 @@ import { files, storageSettings, filePermissions } from '@/db/schema';
 import { eq, and, desc, isNull, like } from 'drizzle-orm';
 import * as v from 'valibot';
 import { insertFileSchema, updateFileSchema, type FileItem, type NewFile, type UpdateFile, type FileWithPermissions, type FileListResponse, type UploadResponse, type UploadError } from '@/db/schema';
-import { StorageProviderFactory, BaseStorageProvider, FileUpload } from './storage-providers';
+import { StorageProviderFactory, type BaseStorageProvider, type FileUpload } from './storage-providers';
 
 export class FileService {
   private static async getActiveStorageProvider(): Promise<{ provider: BaseStorageProvider; settings: any }> {
@@ -34,7 +34,7 @@ export class FileService {
       const { page = 1, limit = 50, type, userId } = options;
       const offset = (page - 1) * limit;
 
-      let query = db
+      const query = db
         .select()
         .from(files)
         .where(
@@ -127,12 +127,12 @@ export class FileService {
     const errors: UploadError[] = [];
 
     try {
-      const { provider, settings } = await this.getActiveStorageProvider();
+      const { provider, settings } = await FileService.getActiveStorageProvider();
 
       for (const fileUpload of fileUploads) {
         try {
           // Generate unique filename
-          const safeName = this.generateSafeName(fileUpload.name);
+          const safeName = FileService.generateSafeName(fileUpload.name);
           
           const filePath = `${path}/${safeName}`.replace(/\/+/g, '/');
 
@@ -182,14 +182,14 @@ export class FileService {
   static async deleteFile(id: string, userId?: string): Promise<boolean> {
     try {
       // Get file first to check permissions and get storage info
-      const file = await this.getFileById(id, userId);
+      const file = await FileService.getFileById(id, userId);
       if (!file) {
         throw new Error('File not found');
       }
 
       // If it's a folder, recursively delete all contents first
       if (file.type === 'folder') {
-        await this.deleteFolderContents(file.path + '/' + file.name, userId);
+        await FileService.deleteFolderContents(file.path + '/' + file.name, userId);
       }
 
       // Soft delete in database first
@@ -205,7 +205,7 @@ export class FileService {
       // Delete from storage provider (only for files, not folders)
       if (file.type === 'file') {
         try {
-          const { provider } = await this.getActiveStorageProvider();
+          const { provider } = await FileService.getActiveStorageProvider();
           await provider.delete(file.url || '');
         } catch (error) {
           console.error('Error deleting from storage provider:', error);
@@ -238,11 +238,11 @@ export class FileService {
       for (const item of contents) {
         if (item.type === 'folder') {
           // Recursively delete subfolder contents
-          await this.deleteFolderContents(folderPath + '/' + item.name, userId);
+          await FileService.deleteFolderContents(folderPath + '/' + item.name, userId);
         } else {
           // Delete file from storage
           try {
-            const { provider } = await this.getActiveStorageProvider();
+            const { provider } = await FileService.getActiveStorageProvider();
             await provider.delete(item.url || '');
           } catch (error) {
             console.error(`Error deleting file ${item.name} from storage:`, error);
@@ -272,7 +272,7 @@ export class FileService {
       const validatedData = v.parse(updateFileSchema, data);
 
       // Check if file exists and user has permission
-      const existing = await this.getFileById(id, userId);
+      const existing = await FileService.getFileById(id, userId);
       if (!existing) {
         throw new Error('File not found');
       }
@@ -329,7 +329,7 @@ export class FileService {
   static async moveFile(id: string, newPath: string, userId?: string): Promise<FileItem> {
     try {
       // Get file first
-      const file = await this.getFileById(id, userId);
+      const file = await FileService.getFileById(id, userId);
       if (!file) {
         throw new Error('File not found');
       }
@@ -337,7 +337,7 @@ export class FileService {
       // If it's a file (not folder), update storage provider
       if (file.type === 'file' && file.url) {
         try {
-          const { provider } = await this.getActiveStorageProvider();
+          const { provider } = await FileService.getActiveStorageProvider();
           const oldPath = file.url;
           const newStoragePath = `${newPath}/${file.name}`.replace(/\/+/g, '/');
           await provider.move(oldPath, newStoragePath);

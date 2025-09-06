@@ -157,7 +157,7 @@ function FileManagerContent({ className }: FileManagerProps) {
 
   // File update mutation
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: { name?: string; [key: string]: unknown } }) => {
       console.log('FileManager: Starting rename for id:', id, 'data:', data);
       
       const response = await fetch('/api/files', {

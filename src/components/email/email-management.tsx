@@ -42,10 +42,10 @@ interface EmailTemplate {
   name: string;
   subject: string;
   htmlContent: string;
-  jsonContent?: any; // Waypoint builder JSON
+  jsonContent?: Record<string, unknown>; // Waypoint builder JSON
   textContent?: string;
   type: 'welcome' | 'reset_password' | 'verification' | 'notification' | 'custom';
-  variables?: Record<string, any>;
+  variables?: Record<string, string | number | boolean>;
   // Composition
   baseFragmentId?: string | null;
   headerFragmentId?: string | null;

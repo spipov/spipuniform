@@ -13,7 +13,7 @@ export class AuthSettingsService {
   }
 
   static async setRequireApproval(value: boolean): Promise<AuthSettings> {
-    const current = await this.get();
+    const current = await AuthSettingsService.get();
     if (current) {
       const updated = await db
         .update(authSettings)

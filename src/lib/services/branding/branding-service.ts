@@ -67,7 +67,7 @@ export class BrandingService {
       
       // If this is being set as active, deactivate all others first
       if (validatedData.isActive) {
-        await this.deactivateAllBranding();
+        await BrandingService.deactivateAllBranding();
       }
       
       const result = await db
@@ -97,14 +97,14 @@ export class BrandingService {
       const validatedData = v.parse(updateBrandingSchema, data);
       
       // Check if branding exists
-      const existing = await this.getBrandingById(id);
+      const existing = await BrandingService.getBrandingById(id);
       if (!existing) {
         throw new Error('Branding configuration not found');
       }
       
       // If this is being set as active, deactivate all others first
       if (validatedData.isActive) {
-        await this.deactivateAllBranding();
+        await BrandingService.deactivateAllBranding();
       }
       
       const result = await db
@@ -132,7 +132,7 @@ export class BrandingService {
   static async deleteBranding(id: string): Promise<boolean> {
     try {
       // Check if branding exists
-      const existing = await this.getBrandingById(id);
+      const existing = await BrandingService.getBrandingById(id);
       if (!existing) {
         throw new Error('Branding configuration not found');
       }
@@ -159,13 +159,13 @@ export class BrandingService {
   static async activateBranding(id: string): Promise<Branding> {
     try {
       // Check if branding exists
-      const existing = await this.getBrandingById(id);
+      const existing = await BrandingService.getBrandingById(id);
       if (!existing) {
         throw new Error('Branding configuration not found');
       }
       
       // Deactivate all branding configurations
-      await this.deactivateAllBranding();
+      await BrandingService.deactivateAllBranding();
       
       // Activate the specified one
       const result = await db
@@ -206,7 +206,7 @@ export class BrandingService {
    */
   static async ensureDefaultBranding(): Promise<Branding> {
     try {
-      const activeBranding = await this.getActiveBranding();
+      const activeBranding = await BrandingService.getActiveBranding();
       
       if (!activeBranding) {
         const defaultBranding: NewBranding = {
@@ -224,7 +224,7 @@ export class BrandingService {
           version: '1.0.0',
         };
         
-        return await this.createBranding(defaultBranding);
+        return await BrandingService.createBranding(defaultBranding);
       }
       
       return activeBranding;
@@ -239,7 +239,7 @@ export class BrandingService {
    */
   static async getBrandingCSSVariables(): Promise<Record<string, string>> {
     try {
-      const activeBranding = await this.getActiveBranding();
+      const activeBranding = await BrandingService.getActiveBranding();
       
       if (!activeBranding) {
         // Return default CSS variables if no branding is active
@@ -261,8 +261,8 @@ export class BrandingService {
         '--accent-color': activeBranding.accentColor || '#f59e0b',
         '--background-color': activeBranding.backgroundColor || '#ffffff',
         '--text-color': activeBranding.textColor || '#1f2937',
-        '--font-family': this.getFontFamilyForCSS(activeBranding.fontFamily) || 'Inter, sans-serif',
-        '--heading-font': this.getFontFamilyForCSS(activeBranding.headingFont) || this.getFontFamilyForCSS(activeBranding.fontFamily) || 'Inter, sans-serif',
+        '--font-family': BrandingService.getFontFamilyForCSS(activeBranding.fontFamily) || 'Inter, sans-serif',
+        '--heading-font': BrandingService.getFontFamilyForCSS(activeBranding.headingFont) || BrandingService.getFontFamilyForCSS(activeBranding.fontFamily) || 'Inter, sans-serif',
         '--border-radius': activeBranding.borderRadius || '0.5rem',
         '--spacing': activeBranding.spacing || '1rem',
       };
@@ -287,8 +287,8 @@ export class BrandingService {
    */
   static async generateBrandingCSS(): Promise<string> {
     try {
-      const activeBranding = await this.getActiveBranding();
-      const cssVariables = await this.getBrandingCSSVariables();
+      const activeBranding = await BrandingService.getActiveBranding();
+      const cssVariables = await BrandingService.getBrandingCSSVariables();
       
       // Extend variables to directly drive Tailwind token variables and branding font vars
       const overrides: Record<string, string> = {};
@@ -299,11 +299,11 @@ export class BrandingService {
       if ((activeBranding as any)?.textColor) overrides['--foreground'] = (activeBranding as any).textColor as string;
 
       if (activeBranding?.fontFamily) {
-        const body = this.getFontFamilyForCSS(activeBranding.fontFamily) || 'Inter, sans-serif';
+        const body = BrandingService.getFontFamilyForCSS(activeBranding.fontFamily) || 'Inter, sans-serif';
         overrides['--branding-font-sans'] = body;
       }
       const heading = activeBranding?.headingFont
-        ? this.getFontFamilyForCSS(activeBranding.headingFont)
+        ? BrandingService.getFontFamilyForCSS(activeBranding.headingFont)
         : undefined;
       if (heading) {
         overrides['--branding-font-heading'] = heading;
@@ -324,24 +324,24 @@ export class BrandingService {
       
       // Add font imports/declarations
       if (activeBranding?.fontFamily) {
-        if (this.isWebFont(activeBranding.fontFamily)) {
-          css += `@import url('${this.generateFontImportUrl(activeBranding.fontFamily)}');\n\n`;
-        } else if (this.isCustomFontFile(activeBranding.fontFamily)) {
-          css += this.generateCustomFontFace(activeBranding.fontFamily, 'body-font');
+        if (BrandingService.isWebFont(activeBranding.fontFamily)) {
+          css += `@import url('${BrandingService.generateFontImportUrl(activeBranding.fontFamily)}');\n\n`;
+        } else if (BrandingService.isCustomFontFile(activeBranding.fontFamily)) {
+          css += BrandingService.generateCustomFontFace(activeBranding.fontFamily, 'body-font');
         }
       }
       
       if (activeBranding?.headingFont && 
           activeBranding.headingFont !== activeBranding.fontFamily) {
-        if (this.isWebFont(activeBranding.headingFont)) {
-          css += `@import url('${this.generateFontImportUrl(activeBranding.headingFont)}');\n\n`;
-        } else if (this.isCustomFontFile(activeBranding.headingFont)) {
-          css += this.generateCustomFontFace(activeBranding.headingFont, 'heading-font');
+        if (BrandingService.isWebFont(activeBranding.headingFont)) {
+          css += `@import url('${BrandingService.generateFontImportUrl(activeBranding.headingFont)}');\n\n`;
+        } else if (BrandingService.isCustomFontFile(activeBranding.headingFont)) {
+          css += BrandingService.generateCustomFontFace(activeBranding.headingFont, 'heading-font');
         }
       }
       
       // Add ONLY font application - no extra layout changes
-      css += `\n/* Apply branding fonts only - minimal and safe */\nbody {\n  font-family: var(--font-family), -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Roboto\", \"Oxygen\", \"Ubuntu\", \"Cantarell\", \"Fira Sans\", \"Droid Sans\", \"Helvetica Neue\", sans-serif;\n}\n\nh1, h2, h3, h4, h5, h6 {\n  font-family: var(--heading-font), var(--font-family), -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Roboto\", \"Oxygen\", \"Ubuntu\", \"Cantarell\", \"Fira Sans\", \"Droid Sans\", \"Helvetica Neue\", sans-serif;\n}`;
+      css += `\n/* Apply branding fonts only - minimal and safe */\nbody {\n  font-family: var(--font-family), -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;\n}\n\nh1, h2, h3, h4, h5, h6 {\n  font-family: var(--heading-font), var(--font-family), -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;\n}`;
 
       return css;
     } catch (error) {
@@ -378,7 +378,7 @@ export class BrandingService {
    */
   private static isCustomFontFile(fontFamily: string): boolean {
     // Check if it looks like a file name (contains numbers, underscores, or file extensions)
-    return /\d|_|-/.test(fontFamily) && !this.isWebFont(fontFamily);
+    return /\d|_|-/.test(fontFamily) && !BrandingService.isWebFont(fontFamily);
   }
 
   /**
@@ -435,12 +435,12 @@ export class BrandingService {
     if (!fontFamily) return null;
     
     // If it's a web font, return as-is
-    if (this.isWebFont(fontFamily)) {
+    if (BrandingService.isWebFont(fontFamily)) {
       return fontFamily;
     }
     
     // If it's a custom font file, return the cleaned name with quotes
-    if (this.isCustomFontFile(fontFamily)) {
+    if (BrandingService.isCustomFontFile(fontFamily)) {
       const cleanFontName = fontFamily
         .replace(/^\d+_/, '') // Remove timestamp prefix
         .replace(/\.(woff2|woff|otf|ttf)$/, '') // Remove extension
@@ -457,7 +457,7 @@ export class BrandingService {
    * Generate CSS for custom fonts (legacy method)
    */
   static async generateCustomFontCSS(): Promise<string> {
-    const css = await this.generateBrandingCSS();
+    const css = await BrandingService.generateBrandingCSS();
     // Extract only the font-face declarations
     const fontFaceRegex = /@font-face\s*{[^}]+}/g;
     const fontFaces = css.match(fontFaceRegex);

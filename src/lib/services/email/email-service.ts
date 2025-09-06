@@ -97,7 +97,7 @@ export class EmailService {
 
       // If this is being set as active, deactivate all others first
       if (validatedData.isActive) {
-        await this.deactivateAllEmailSettings();
+        await EmailService.deactivateAllEmailSettings();
       }
 
       const result = await db
@@ -127,7 +127,7 @@ export class EmailService {
 
       // If this is being set as active, deactivate all others first
       if (validatedData.isActive) {
-        await this.deactivateAllEmailSettings();
+        await EmailService.deactivateAllEmailSettings();
       }
 
       const result = await db
@@ -155,7 +155,7 @@ export class EmailService {
   static async activateEmailSetting(id: string): Promise<EmailSettings> {
     try {
       // First deactivate all settings
-      await this.deactivateAllEmailSettings();
+      await EmailService.deactivateAllEmailSettings();
 
       // Then activate the specified setting
       const result = await db
@@ -217,9 +217,9 @@ export class EmailService {
   }
 
   static async getEmailFragmentsByType(type?: 'base' | 'header' | 'footer' | 'partial') {
-    if (!type) return this.getAllEmailFragments();
+    if (!type) return EmailService.getAllEmailFragments();
     // Simple filter client-side after fetch to avoid enum helpers
-    const all = await this.getAllEmailFragments();
+    const all = await EmailService.getAllEmailFragments();
     return all.filter((f: any) => f.type === type);
   }
 
@@ -457,7 +457,7 @@ export class EmailService {
       }
 
       // Compose with base/header/footer if set
-      const composedHtml = await this.composeHtmlFromFragments(htmlContent, {
+      const composedHtml = await EmailService.composeHtmlFromFragments(htmlContent, {
         baseFragmentId: (template as any).baseFragmentId,
         headerFragmentId: (template as any).headerFragmentId,
         footerFragmentId: (template as any).footerFragmentId,
@@ -539,7 +539,7 @@ export class EmailService {
 
     try {
       // Get active email settings
-      const settings = await this.getActiveSettings();
+      const settings = await EmailService.getActiveSettings();
       if (!settings) {
         throw new Error('No active email settings found');
       }
@@ -554,16 +554,16 @@ export class EmailService {
         let template: EmailTemplate | null = null;
 
         if (options.templateId) {
-          template = await this.getEmailTemplateById(options.templateId);
+          template = await EmailService.getEmailTemplateById(options.templateId);
         } else if (options.template) {
-          template = await this.getTemplateByName(options.template);
+          template = await EmailService.getTemplateByName(options.template);
         }
 
         if (!template) {
           throw new Error('Email template not found');
         }
 
-        const rendered = await this.renderTemplate(template, options.variables);
+        const rendered = await EmailService.renderTemplate(template, options.variables);
         htmlContent = rendered.html;
         textContent = rendered.text;
         subject = rendered.subject;
@@ -593,7 +593,7 @@ export class EmailService {
       logId = logResult[0].id;
 
       // Create transporter
-      const transporter = await this.createTransporter(settings);
+      const transporter = await EmailService.createTransporter(settings);
 
       // Send email
       const mailOptions: any = {
@@ -757,13 +757,13 @@ export class EmailService {
         throw new Error('Email settings not found');
       }
 
-      const transporter = await this.createTransporter(settings[0]);
+      const transporter = await EmailService.createTransporter(settings[0]);
 
       // Verify connection
       await transporter.verify();
 
       // Send test email
-      return await this.sendEmail({
+      return await EmailService.sendEmail({
         to: settings[0].fromEmail,
         subject: 'Test Email Configuration',
         htmlContent: '<h1>Test Email</h1><p>Your email configuration is working correctly!</p>',

@@ -1,4 +1,4 @@
-import { BaseStorageProvider, StorageProviderConfig } from './base-provider';
+import type { BaseStorageProvider, StorageProviderConfig } from './base-provider';
 import { LocalStorageProvider } from './local-provider';
 import { S3StorageProvider } from './s3-provider';
 import { PCloudStorageProvider } from './pcloud-provider';

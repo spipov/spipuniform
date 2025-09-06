@@ -55,7 +55,7 @@ export class StorageService {
       
       // If this is being set as active, deactivate all others first
       if (validatedData.isActive) {
-        await this.deactivateAllStorageSettings();
+        await StorageService.deactivateAllStorageSettings();
       }
       
       const result = await db
@@ -82,14 +82,14 @@ export class StorageService {
       const validatedData = v.parse(updateStorageSettingsSchema, data);
       
       // Check if settings exist
-      const existing = await this.getStorageSettingsById(id);
+      const existing = await StorageService.getStorageSettingsById(id);
       if (!existing) {
         throw new Error('Storage settings not found');
       }
       
       // If this is being set as active, deactivate all others first
       if (validatedData.isActive) {
-        await this.deactivateAllStorageSettings();
+        await StorageService.deactivateAllStorageSettings();
       }
       
       const result = await db
@@ -114,7 +114,7 @@ export class StorageService {
   static async deleteStorageSettings(id: string): Promise<boolean> {
     try {
       // Check if settings exist
-      const existing = await this.getStorageSettingsById(id);
+      const existing = await StorageService.getStorageSettingsById(id);
       if (!existing) {
         throw new Error('Storage settings not found');
       }
@@ -138,13 +138,13 @@ export class StorageService {
   static async activateStorageSettings(id: string): Promise<StorageSettings> {
     try {
       // Check if settings exist
-      const existing = await this.getStorageSettingsById(id);
+      const existing = await StorageService.getStorageSettingsById(id);
       if (!existing) {
         throw new Error('Storage settings not found');
       }
       
       // Deactivate all storage settings
-      await this.deactivateAllStorageSettings();
+      await StorageService.deactivateAllStorageSettings();
       
       // Activate the specified one
       const result = await db
@@ -179,7 +179,7 @@ export class StorageService {
 
   static async testStorageConnection(id: string): Promise<{ success: boolean; message: string }> {
     try {
-      const settings = await this.getStorageSettingsById(id);
+      const settings = await StorageService.getStorageSettingsById(id);
       if (!settings) {
         return { success: false, message: 'Storage settings not found' };
       }
@@ -187,11 +187,11 @@ export class StorageService {
       // TODO: Implement actual connection testing based on provider
       switch (settings.provider) {
         case 'local':
-          return this.testLocalStorage(settings.config);
+          return StorageService.testLocalStorage(settings.config);
         case 's3':
-          return this.testS3Storage(settings.config);
+          return StorageService.testS3Storage(settings.config);
         case 'pcloud':
-          return this.testPCloudStorage(settings.config);
+          return StorageService.testPCloudStorage(settings.config);
         default:
           return { success: false, message: 'Unsupported storage provider' };
       }
@@ -239,7 +239,7 @@ export class StorageService {
 
   static async ensureDefaultStorageSettings(): Promise<StorageSettings> {
     try {
-      const activeSettings = await this.getActiveStorageSettings();
+      const activeSettings = await StorageService.getActiveStorageSettings();
       
       if (!activeSettings) {
         const defaultSettings: NewStorageSettings = {
@@ -264,7 +264,7 @@ export class StorageService {
           isActive: true,
         };
         
-        return await this.createStorageSettings(defaultSettings);
+        return await StorageService.createStorageSettings(defaultSettings);
       }
       
       return activeSettings;

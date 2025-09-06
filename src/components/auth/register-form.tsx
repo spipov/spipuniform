@@ -58,7 +58,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
           router.navigate({ to: "/auth/signin" });
         }
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
@@ -113,8 +113,8 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                     {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-red-600">
                         {field.state.meta.errors
-                          .map((error: any) =>
-                            typeof error === "string" ? error : error.message || error
+                          .map((error: string | { message?: string }) =>
+                            typeof error === "string" ? error : error.message || String(error)
                           )
                           .join(", ")}
                       </p>
@@ -138,8 +138,8 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                     {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-red-600">
                         {field.state.meta.errors
-                          .map((error: any) =>
-                            typeof error === "string" ? error : error.message || error
+                          .map((error: string | { message?: string }) =>
+                            typeof error === "string" ? error : error.message || String(error)
                           )
                           .join(", ")}
                       </p>
@@ -161,8 +161,8 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                     {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-red-600">
                         {field.state.meta.errors
-                          .map((error: any) =>
-                            typeof error === "string" ? error : error.message || error
+                          .map((error: string | { message?: string }) =>
+                            typeof error === "string" ? error : error.message || String(error)
                           )
                           .join(", ")}
                       </p>
@@ -184,8 +184,8 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                     {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-red-600">
                         {field.state.meta.errors
-                          .map((error: any) =>
-                            typeof error === "string" ? error : error.message || error
+                          .map((error: string | { message?: string }) =>
+                            typeof error === "string" ? error : error.message || String(error)
                           )
                           .join(", ")}
                       </p>

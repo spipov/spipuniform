@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { File, Folder, MoreHorizontal, Download, Edit, Trash2, Move } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -42,7 +42,7 @@ function FileItemComponent({
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   const handleClick = (e: React.MouseEvent) => {

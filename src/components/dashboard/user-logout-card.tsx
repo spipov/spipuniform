@@ -10,6 +10,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useSession, signOut } from "@/lib/auth-client";
+import { useRouter } from "@tanstack/react-router";
 
 interface UserLogoutCardProps {
   userName?: string;
@@ -18,18 +20,28 @@ interface UserLogoutCardProps {
 }
 
 export function UserLogoutCard({
-  userName = "Admin User",
-  userEmail = "admin@example.com",
+  userName,
+  userEmail,
   userAvatar,
 }: UserLogoutCardProps) {
-  const handleLogout = () => {
-    // Add logout logic here
-    console.log("Logout clicked");
+  const { data: session } = useSession();
+  const router = useRouter();
+  
+  // Use session data if available, otherwise fall back to props
+  const displayName = userName || session?.user?.name || "User";
+  const displayEmail = userEmail || session?.user?.email || "";
+  const displayAvatar = userAvatar || session?.user?.image;
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      router.navigate({ to: "/" });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const handleSettings = () => {
-    // Add settings navigation logic here
-    console.log("Settings clicked");
+    router.navigate({ to: "/dashboard/settings" });
   };
 
   return (
@@ -44,12 +56,12 @@ export function UserLogoutCard({
             <div className="user-logout-card__avatar-container">
               <Avatar className="user-logout-card__avatar h-8 w-8 rounded-lg">
                 <AvatarImage
-                  src={userAvatar}
-                  alt={userName}
+                  src={displayAvatar}
+                  alt={displayName}
                   className="user-logout-card__avatar-image"
                 />
                 <AvatarFallback className="user-logout-card__avatar-fallback rounded-lg">
-                  {userName
+                  {displayName
                     .split(" ")
                     .map((n) => n[0])
                     .join("")
@@ -58,8 +70,8 @@ export function UserLogoutCard({
               </Avatar>
             </div>
             <div className="user-logout-card__info grid flex-1 text-left text-sm leading-tight">
-              <span className="user-logout-card__name truncate font-semibold">{userName}</span>
-              <span className="user-logout-card__email truncate text-xs">{userEmail}</span>
+              <span className="user-logout-card__name truncate font-semibold">{displayName}</span>
+              <span className="user-logout-card__email truncate text-xs">{displayEmail}</span>
             </div>
             <ChevronsUpDown className="user-logout-card__chevron ml-auto size-4" />
           </Button>
@@ -74,12 +86,12 @@ export function UserLogoutCard({
             <div className="user-logout-card__dropdown-header flex items-center gap-2 px-1 py-1.5 text-left text-sm">
               <Avatar className="user-logout-card__dropdown-avatar h-8 w-8 rounded-lg">
                 <AvatarImage
-                  src={userAvatar}
-                  alt={userName}
+                  src={displayAvatar}
+                  alt={displayName}
                   className="user-logout-card__dropdown-avatar-image"
                 />
                 <AvatarFallback className="user-logout-card__dropdown-avatar-fallback rounded-lg">
-                  {userName
+                  {displayName
                     .split(" ")
                     .map((n) => n[0])
                     .join("")
@@ -88,10 +100,10 @@ export function UserLogoutCard({
               </Avatar>
               <div className="user-logout-card__dropdown-info grid flex-1 text-left text-sm leading-tight">
                 <span className="user-logout-card__dropdown-name truncate font-semibold">
-                  {userName}
+                  {displayName}
                 </span>
                 <span className="user-logout-card__dropdown-email truncate text-xs">
-                  {userEmail}
+                  {displayEmail}
                 </span>
               </div>
             </div>

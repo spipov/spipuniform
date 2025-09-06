@@ -1,4 +1,4 @@
-import { BaseStorageProvider, FileUpload, UploadResult } from './base-provider';
+import { BaseStorageProvider, type FileUpload, type UploadResult } from './base-provider';
 
 // pCloud Provider - placeholder for now, would need pCloud SDK implementation
 export class PCloudStorageProvider extends BaseStorageProvider {

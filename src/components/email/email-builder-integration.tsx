@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import DOMPurify from 'dompurify';
 
 interface EmailBuilderIntegrationProps {
   initialHtml?: string;
@@ -13,7 +14,7 @@ interface EmailBuilderIntegrationProps {
 }
 
 export function EmailBuilderIntegration({ initialHtml = '', onHtmlChange }: EmailBuilderIntegrationProps) {
-  const [jsonData, setJsonData] = useState<any>(null);
+  const [jsonData, setJsonData] = useState<Record<string, unknown> | null>(null);
   const [htmlOutput, setHtmlOutput] = useState(initialHtml);
   const [activeTab, setActiveTab] = useState('html');
 
@@ -180,7 +181,7 @@ export function EmailTemplateCreator() {
         <CardContent>
           <div
             className="border rounded p-4 max-w-md mx-auto"
-            dangerouslySetInnerHTML={{ __html: templateHtml }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(templateHtml) }}
           />
         </CardContent>
       </Card>

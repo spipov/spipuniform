@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useMutation, QueryClient } from "@tanstack/react-query";
 
 // Safe useMutation hook that handles SSR
-function useSafeMutation(options: any) {
+function useSafeMutation(options: Parameters<typeof useMutation>[0]) {
   try {
     return useMutation(options);
   } catch (error) {
@@ -106,7 +106,7 @@ function FileUploadWidgetClient({
               } else {
                 reject(new Error(response.error || 'Upload failed'));
               }
-            } catch (error) {
+            } catch (_error) {
               reject(new Error('Invalid response format'));
             }
           } else {
@@ -214,7 +214,7 @@ function FileUploadWidgetClient({
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   return (

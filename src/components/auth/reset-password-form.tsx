@@ -94,7 +94,7 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
         setEmailSent(true);
         toast.success("Password reset email sent! Check your inbox.");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
@@ -120,7 +120,7 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
         toast.success("Password reset successfully! Please sign in.");
         router.navigate({ to: "/auth/signin" });
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
@@ -187,8 +187,8 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
                       {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                         <p className="text-sm text-red-600">
                           {field.state.meta.errors
-                            .map((error: any) =>
-                              typeof error === "string" ? error : error.message || error
+                            .map((error: string | { message?: string }) =>
+                              typeof error === "string" ? error : error.message || String(error)
                             )
                             .join(", ")}
                         </p>
@@ -210,8 +210,8 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
                       {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                         <p className="text-sm text-red-600">
                           {field.state.meta.errors
-                            .map((error: any) =>
-                              typeof error === "string" ? error : error.message || error
+                            .map((error: string | { message?: string }) =>
+                              typeof error === "string" ? error : error.message || String(error)
                             )
                             .join(", ")}
                         </p>
@@ -249,8 +249,8 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
                       {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                         <p className="text-sm text-red-600">
                           {field.state.meta.errors
-                            .map((error: any) =>
-                              typeof error === "string" ? error : error.message || error
+                            .map((error: string | { message?: string }) =>
+                              typeof error === "string" ? error : error.message || String(error)
                             )
                             .join(", ")}
                         </p>

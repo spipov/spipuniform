@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 export function AdminTest() {
   const { data: session } = useSession();
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<Array<{id: string; email: string; name?: string; role?: string}>>([]);
   const [loading, setLoading] = useState(false);
 
   const listUsers = async () => {
@@ -74,7 +74,7 @@ export function AdminTest() {
             <strong>Name:</strong> {session.user?.name}
           </p>
           <p>
-            <strong>Role:</strong> {(session.user as any)?.role || "Not set"}
+            <strong>Role:</strong> {(session.user as {role?: string})?.role || "Not set"}
           </p>
           <p>
             <strong>User ID:</strong> {session.user?.id}

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import type React from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -720,38 +721,7 @@ export function BrandingManagement() {
     setFilePickerType(null);
   };
 
-  const handleNativeFileSelect = async (file: File, type: 'logo' | 'favicon' | 'font') => {
-    try {
-      // Create a data URL for the file
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        const fileUrl = e.target?.result as string;
-        
-        if (type === 'logo') {
-          setLogoPreview(fileUrl);
-          setFormData(prev => ({ ...prev, logoUrl: fileUrl }));
-          toast.success('Logo uploaded successfully');
-        } else if (type === 'favicon') {
-          setFormData(prev => ({ ...prev, faviconUrl: fileUrl }));
-          toast.success('Favicon uploaded successfully');
-        } else if (type === 'font') {
-          // For fonts, we'll just show a success message since custom fonts need more complex handling
-          toast.success(`Font "${file.name}" uploaded successfully`);
-          // You could extend this to handle font uploads more sophisticatedly
-        }
-      };
-      
-      reader.onerror = () => {
-        toast.error('Failed to read file');
-      };
-      
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Error handling file:', error);
-      toast.error('Failed to process file');
-    }
-  };
+
 
 
   if (isLoading) {

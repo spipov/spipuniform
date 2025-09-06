@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -256,7 +257,7 @@ export function BrandingManager() {
   };
 
   // Handle form changes
-  const handleChange = (field: keyof BrandingConfig, value: any) => {
+  const handleChange = (field: keyof BrandingConfig, value: BrandingConfig[keyof BrandingConfig]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -423,7 +424,7 @@ export function BrandingManager() {
       setIsSaving(true);
       
       // Clean data - remove empty strings and undefined values
-      const cleanData: any = {
+      const cleanData: Partial<BrandingConfig> = {
         siteName: formData.siteName.trim(),
         ...DEFAULT_CONFIG,
         ...formData
@@ -438,7 +439,7 @@ export function BrandingManager() {
 
       // Clean social links
       if (cleanData.socialLinks) {
-        const cleanedSocialLinks: any = {};
+        const cleanedSocialLinks: Record<string, string> = {};
         Object.entries(cleanData.socialLinks).forEach(([key, value]) => {
           if (value && typeof value === 'string' && value.trim()) {
             cleanedSocialLinks[key] = value.trim();
@@ -468,11 +469,11 @@ export function BrandingManager() {
         setFormData({ siteName: '' });
         await loadConfigurations();
       } else {
-        const serverIssues = result?.details as any[] | undefined;
+        const serverIssues = result?.details as Array<{path?: unknown[]; message?: string; key?: string}> | undefined;
         if (Array.isArray(serverIssues) && serverIssues.length > 0) {
           // Map valibot issues to readable messages
           const msgs = serverIssues.map((i) => {
-            const path = Array.isArray(i.path) ? i.path.map((p: any) => (p.key ?? p)).join('.') : '';
+            const path = Array.isArray(i.path) ? i.path.map((p: unknown) => ((p as {key?: string})?.key ?? String(p))).join('.') : '';
             return path ? `${path}: ${i.message}` : i.message || 'Validation error';
           });
           setErrors(msgs);
