@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -10,20 +10,28 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { getSession } from "@/lib/auth-client";
+import { useEffect } from "react";
+import { useRouter } from "@tanstack/react-router";
+import { useSession } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/dashboard")({
-  beforeLoad: async () => {
-    const session = await getSession();
-    if (!session) {
-      throw redirect({ to: "/" });
-    }
-    return { session };
-  },
   component: DashboardLayout,
 });
 
 function DashboardLayout() {
+  const { data: session, isPending } = useSession();
+  const router = useRouter();
+
+  // Always register hooks in the same order; perform navigation inside the effect
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.navigate({ to: "/" });
+    }
+  }, [isPending, session, router]);
+
+  // While session is loading OR unauthenticated, render nothing (prevents flicker and hook order issues)
+  if (isPending || !session) return null;
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">

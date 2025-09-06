@@ -49,32 +49,42 @@ function applyBrandingVars(b: any) {
   setFont('--branding-font-heading', b.headingFont || b.fontFamily);
 }
 
-function ensureGoogleLink(family: string) {
-  const name = family.split(',')[0].trim().replace(/["']/g, '');
-  if (!name) return;
-  const id = `branding-google-${name.replace(/\s+/g, '-')}`;
-  if (document.getElementById(id)) return;
-  const link = document.createElement('link');
-  link.id = id;
-  link.rel = 'stylesheet';
-  const encoded = name.replace(/\s+/g, '+');
-  link.href = `https://fonts.googleapis.com/css2?family=${encoded}:wght@300;400;500;600;700&display=swap`;
-  document.head.appendChild(link);
-}
-
 function applyFontHints(b: any) {
-  if (!b) return;
-  if (b.fontFamily && !/\.(woff2?|ttf|otf)$/i.test(b.fontFamily)) ensureGoogleLink(b.fontFamily);
-  if (b.headingFont && !/\.(woff2?|ttf|otf)$/i.test(b.headingFont)) ensureGoogleLink(b.headingFont);
+  // Keep as a no-op for now; early font CSS injection worsened FOUT in this app.
+  return;
 }
 
 function AppBootstrap({ children }: { children: React.ReactNode }) {
-  const [ready, setReady] = React.useState(false);
+  const [cssReady, setCssReady] = React.useState(false);
 
   React.useLayoutEffect(() => {
     const html = document.documentElement;
     html.classList.add('no-theme-transitions');
 
+    // 0) Wait for main stylesheet to be loaded to avoid FOUC
+    const link: HTMLLinkElement | null = document.querySelector(
+      `link[rel="stylesheet"][href="${appCss}"]`
+    );
+    if (link) {
+      if ((link as any).sheet) {
+        setCssReady(true);
+      } else {
+        const onLoad = () => setCssReady(true);
+        link.addEventListener('load', onLoad, { once: true });
+        // Fallback safety timer
+        const t = window.setTimeout(() => setCssReady(true), 2000);
+        return () => {
+          link.removeEventListener('load', onLoad);
+          window.clearTimeout(t);
+        };
+      }
+    } else {
+      // If not found, assume ready next frame (dev/HMR edge cases)
+      requestAnimationFrame(() => setCssReady(true));
+    }
+  }, []);
+
+  React.useLayoutEffect(() => {
     // 1) Apply cached branding immediately to avoid FOUC
     try {
       const raw = localStorage.getItem('branding:active');
@@ -85,10 +95,7 @@ function AppBootstrap({ children }: { children: React.ReactNode }) {
       }
     } catch {}
 
-    // 2) Reveal UI using cached values right away
-    setReady(true);
-
-    // 3) Fetch latest branding in background and update if needed
+    // 2) Fetch latest branding in background and update if needed
     (async () => {
       try {
         const res = await fetch('/api/branding/active');
@@ -103,12 +110,12 @@ function AppBootstrap({ children }: { children: React.ReactNode }) {
       } catch {}
       // Re-enable transitions next frame to prevent jank
       requestAnimationFrame(() => {
-        html.classList.remove('no-theme-transitions');
+        document.documentElement.classList.remove('no-theme-transitions');
       });
     })();
   }, []);
 
-  if (!ready) return null;
+  if (!cssReady) return null;
   return <>{children}</>;
 }
 
@@ -127,6 +134,9 @@ export const Route = createRootRoute({
       },
     ],
     links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "preload", href: appCss, as: "style" },
       { rel: "stylesheet", href: appCss },
     ],
   }),
@@ -143,7 +153,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
-            __html: `(() => { try { var d = document.documentElement; d.classList.add('no-theme-transitions'); var raw = localStorage.getItem('branding:active'); if (!raw) return; var b = JSON.parse(raw); var r = d.style; if (b.primaryColor) r.setProperty('--primary', b.primaryColor); if (b.secondaryColor) r.setProperty('--secondary', b.secondaryColor); if (b.accentColor) r.setProperty('--accent', b.accentColor); } catch(e){} })();`,
+            __html: `(() => { try { var d = document.documentElement; d.classList.add('no-theme-transitions'); var raw = localStorage.getItem('branding:active'); if (!raw) return; var b = JSON.parse(raw); var r = d.style; if (b.primaryColor) r.setProperty('--primary', b.primaryColor); if (b.secondaryColor) r.setProperty('--secondary', b.secondaryColor); if (b.accentColor) r.setProperty('--accent', b.accentColor); if (b.backgroundColor) r.setProperty('--background', b.backgroundColor); if (b.textColor) r.setProperty('--foreground', b.textColor); } catch(e){} })();`,
           }}
         />
         <HeadContent />

@@ -4,7 +4,7 @@ import { useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 export default function Header() {
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
   const router = useRouter();
 
   return (
@@ -23,20 +23,29 @@ export default function Header() {
         </div>
       </nav>
 
-      <div className="flex items-center gap-2">
-        {session?.user ? (
+      <div className="flex items-center gap-2 min-h-9">
+        {isPending ? (
+          // Stable placeholders while session status is loading to avoid wording flicker
+          <div className="flex items-center gap-2 animate-pulse">
+            <span className="h-6 w-40 bg-gray-200 rounded" />
+            <span className="h-9 w-24 bg-gray-200 rounded" />
+          </div>
+        ) : session?.user ? (
           <>
             <span className="text-sm text-gray-600">
               Welcome, {session.user.name || session.user.email}
             </span>
-            <Button variant="outline" size="sm" onClick={async () => {
-              try {
-                await signOut();
-              } finally {
-                // Always navigate to home after sign out
-                router.navigate({ to: "/" });
-              }
-            }}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                try {
+                  await signOut();
+                } finally {
+                  // Always navigate to home after sign out
+                  router.navigate({ to: "/" });
+                }
+              }}
             >
               Sign Out
             </Button>
