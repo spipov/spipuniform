@@ -30,6 +30,7 @@ import { Route as DashboardUserManagementRolesRouteImport } from './routes/dashb
 import { Route as DashboardUserManagementPermissionsRouteImport } from './routes/dashboard/user-management/permissions'
 import { Route as DashboardUserManagementConsolidatedRouteImport } from './routes/dashboard/user-management/consolidated'
 import { ServerRoute as ApiUsersApprovalServerRouteImport } from './routes/api/users-approval'
+import { ServerRoute as ApiUsersActionsServerRouteImport } from './routes/api.users-actions'
 import { ServerRoute as ApiUsersServerRouteImport } from './routes/api.users'
 import { ServerRoute as ApiTestServerRouteImport } from './routes/api.test'
 import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api.storage-settings'
@@ -154,6 +155,11 @@ const DashboardUserManagementConsolidatedRoute =
 const ApiUsersApprovalServerRoute = ApiUsersApprovalServerRouteImport.update({
   id: '/api/users-approval',
   path: '/api/users-approval',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiUsersActionsServerRoute = ApiUsersActionsServerRouteImport.update({
+  id: '/api/users-actions',
+  path: '/api/users-actions',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiUsersServerRoute = ApiUsersServerRouteImport.update({
@@ -414,6 +420,7 @@ export interface FileServerRoutesByFullPath {
   '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
+  '/api/users-actions': typeof ApiUsersActionsServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
@@ -439,6 +446,7 @@ export interface FileServerRoutesByTo {
   '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
+  '/api/users-actions': typeof ApiUsersActionsServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
@@ -465,6 +473,7 @@ export interface FileServerRoutesById {
   '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
+  '/api/users-actions': typeof ApiUsersActionsServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
@@ -492,6 +501,7 @@ export interface FileServerRouteTypes {
     | '/api/storage-settings'
     | '/api/test'
     | '/api/users'
+    | '/api/users-actions'
     | '/api/users-approval'
     | '/api/auth-settings/flag'
     | '/api/auth/$'
@@ -517,6 +527,7 @@ export interface FileServerRouteTypes {
     | '/api/storage-settings'
     | '/api/test'
     | '/api/users'
+    | '/api/users-actions'
     | '/api/users-approval'
     | '/api/auth-settings/flag'
     | '/api/auth/$'
@@ -542,6 +553,7 @@ export interface FileServerRouteTypes {
     | '/api/storage-settings'
     | '/api/test'
     | '/api/users'
+    | '/api/users-actions'
     | '/api/users-approval'
     | '/api/auth-settings/flag'
     | '/api/auth/$'
@@ -568,6 +580,7 @@ export interface RootServerRouteChildren {
   ApiStorageSettingsServerRoute: typeof ApiStorageSettingsServerRoute
   ApiTestServerRoute: typeof ApiTestServerRoute
   ApiUsersServerRoute: typeof ApiUsersServerRouteWithChildren
+  ApiUsersActionsServerRoute: typeof ApiUsersActionsServerRoute
   ApiUsersApprovalServerRoute: typeof ApiUsersApprovalServerRoute
   ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
   ApiAuthSignupPostHookServerRoute: typeof ApiAuthSignupPostHookServerRoute
@@ -710,6 +723,13 @@ declare module '@tanstack/react-start/server' {
       path: '/api/users-approval'
       fullPath: '/api/users-approval'
       preLoaderRoute: typeof ApiUsersApprovalServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/users-actions': {
+      id: '/api/users-actions'
+      path: '/api/users-actions'
+      fullPath: '/api/users-actions'
+      preLoaderRoute: typeof ApiUsersActionsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/users': {
@@ -1013,6 +1033,7 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiStorageSettingsServerRoute: ApiStorageSettingsServerRoute,
   ApiTestServerRoute: ApiTestServerRoute,
   ApiUsersServerRoute: ApiUsersServerRouteWithChildren,
+  ApiUsersActionsServerRoute: ApiUsersActionsServerRoute,
   ApiUsersApprovalServerRoute: ApiUsersApprovalServerRoute,
   ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
   ApiAuthSignupPostHookServerRoute: ApiAuthSignupPostHookServerRoute,

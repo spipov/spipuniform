@@ -32,12 +32,23 @@ export const ServerRoute = createServerFileRoute('/api/auth/signup-post-hook').m
 
       try {
         if (admins.length > 0) {
-          await EmailService.sendEmail({
-            to: admins.map(a => a.email),
-            template: 'Approval Pending',
-            subject: 'New user awaiting approval',
-            variables: { user_name: pendingUser?.name || '', user_email: pendingUser?.email || '' },
-          });
+          // Use template if it exists; otherwise fallback to a simple branded email to avoid hard failures
+          const template = await EmailService.getTemplateByName('Approval Pending');
+          if (template) {
+            await EmailService.sendEmail({
+              to: admins.map(a => a.email),
+              template: 'Approval Pending',
+              subject: 'New user awaiting approval',
+              variables: { user_name: pendingUser?.name || '', user_email: pendingUser?.email || '' },
+            });
+          } else {
+            await EmailService.sendEmail({
+              to: admins.map(a => a.email),
+              subject: 'New user awaiting approval',
+              htmlContent: `<h2>New user pending approval</h2><p>Name: ${pendingUser?.name || ''}</p><p>Email: ${pendingUser?.email || ''}</p><p>Please visit the admin dashboard to approve or reject.</p>`,
+              textContent: `New user pending approval\nName: ${pendingUser?.name || ''}\nEmail: ${pendingUser?.email || ''}\nPlease visit the admin dashboard to approve or reject.`,
+            });
+          }
         }
       } catch {}
 

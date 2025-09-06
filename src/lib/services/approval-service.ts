@@ -22,11 +22,13 @@ export class ApprovalService {
     if (!u) return false;
     // Try using the configured Welcome template first
     try {
+      const baseUrl = (process.env.BETTER_AUTH_URL || '').replace(/\/$/, '');
+      const signInUrl = baseUrl ? `${baseUrl}/auth/signin` : '';
       const result = await EmailService.sendEmail({
         to: u.email,
         template: 'Welcome & Registration Email',
         subject: 'Welcome! Your account is approved',
-        variables: { user_name: u.name },
+        variables: { user_name: u.name, signin_url: signInUrl },
       });
       if (result.success) return true;
       console.error('Approval email failed:', result.error || 'unknown error, trying fallback.');
@@ -38,13 +40,14 @@ export class ApprovalService {
     try {
       const branding = await BrandingService.getActiveBranding();
       const siteName = branding?.siteName || 'our site';
-      const siteUrl = branding?.siteUrl || '';
+      const baseUrl = (process.env.BETTER_AUTH_URL || branding?.siteUrl || '').replace(/\/$/, '');
+      const signInUrl = baseUrl ? `${baseUrl}/auth/signin` : '';
       const supportEmail = branding?.supportEmail || '';
       const res2 = await EmailService.sendEmail({
         to: u.email,
         subject: 'Your account is approved',
-        htmlContent: `<p>Hi ${u.name || ''},</p><p>Your account at ${siteName} has been approved. You can now sign in${siteUrl ? ` at <a href="${siteUrl}">${siteUrl}</a>` : ''}.</p>${supportEmail ? `<p>If you need help, contact ${supportEmail}.</p>` : ''}`,
-        textContent: `Hi ${u.name || ''}, Your account at ${siteName} has been approved. You can now sign in${siteUrl ? ` at ${siteUrl}` : ''}.${supportEmail ? ` If you need help, contact ${supportEmail}.` : ''}`,
+        htmlContent: `<p>Hi ${u.name || ''},</p><p>Your account at ${siteName} has been approved.</p><p>You can now sign in${signInUrl ? ` at <a href="${signInUrl}">${signInUrl}</a>` : ''}.</p>${supportEmail ? `<p>If you need help, contact ${supportEmail}.</p>` : ''}`,
+        textContent: `Hi ${u.name || ''}, Your account at ${siteName} has been approved. You can now sign in${signInUrl ? ` at ${signInUrl}` : ''}.${supportEmail ? ` If you need help, contact ${supportEmail}.` : ''}`,
       });
       if (!res2.success) {
         console.error('Approval fallback email failed:', res2.error || 'unknown error');

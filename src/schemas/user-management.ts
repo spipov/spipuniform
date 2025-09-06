@@ -95,6 +95,8 @@ export const userSearchSchema = v.object({
   search: v.optional(v.string()),
   role: v.optional(v.string()),
   banned: v.optional(v.boolean()),
+  emailVerified: v.optional(v.boolean()),
+  moderation: v.optional(v.picklist(["pending", "banned", "active"])),
   page: v.optional(v.pipe(v.number(), v.minValue(1)), 1),
   limit: v.optional(v.pipe(v.number(), v.minValue(1), v.maxValue(100)), 10),
   sortBy: v.optional(v.picklist(["name", "email", "createdAt", "updatedAt"]), "createdAt"),

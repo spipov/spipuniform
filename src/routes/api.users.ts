@@ -1,8 +1,8 @@
 import { createServerFileRoute } from "@tanstack/react-start/server";
 import { db } from "@/db";
-import { user, roles } from "@/db/schema";
-import { eq, like, and, desc, asc, count, or, isNotNull, isNull } from "drizzle-orm";
-import { userSearchSchema, createUserSchema, updateUserSchema } from "@/schemas/user-management";
+import { user } from "@/db/schema";
+import { eq, like, and, desc, asc, count, or, isNull } from "drizzle-orm";
+import { userSearchSchema, createUserSchema } from "@/schemas/user-management";
 import { auth } from "@/lib/auth";
 // Dynamic imports will be used inside functions to avoid SSR issues
 import * as v from "valibot";
@@ -27,6 +27,10 @@ export const ServerRoute = createServerFileRoute("/api/users").methods({
         banned: url.searchParams.get("banned")
           ? url.searchParams.get("banned") === "true"
           : undefined,
+        emailVerified: url.searchParams.get("emailVerified")
+          ? url.searchParams.get("emailVerified") === "true"
+          : undefined,
+        moderation: (url.searchParams.get("moderation") as "pending"|"banned"|"active") || undefined,
         page: parseInt(url.searchParams.get("page") || "1"),
         limit: parseInt(url.searchParams.get("limit") || "10"),
         sortBy: url.searchParams.get("sortBy") || "createdAt",
@@ -34,18 +38,30 @@ export const ServerRoute = createServerFileRoute("/api/users").methods({
       };
 
       const validatedParams = v.parse(userSearchSchema, searchParams);
-      const { search, role, banned, page, limit, sortBy, sortOrder } = validatedParams;
+      const { search, role, banned, emailVerified, moderation, page, limit, sortBy, sortOrder } = validatedParams as any;
 
       // Build where conditions
-      const conditions = [];
+      const conditions = [] as any[];
       if (search) {
         conditions.push(or(like(user.name, `%${search}%`), like(user.email, `%${search}%`)));
       }
       if (role) {
         conditions.push(eq(user.role, role));
       }
-      if (banned !== undefined) {
-        conditions.push(banned ? isNotNull(user.banExpires) : isNull(user.banExpires));
+      if (typeof banned === 'boolean') {
+        conditions.push(eq(user.banned, banned));
+      }
+      if (typeof emailVerified === 'boolean') {
+        conditions.push(eq(user.emailVerified, emailVerified));
+      }
+      if (moderation === 'pending') {
+        conditions.push(eq(user.banned, true));
+        conditions.push(eq(user.banReason, 'PENDING_APPROVAL'));
+      } else if (moderation === 'banned') {
+        conditions.push(eq(user.banned, true));
+        conditions.push(or(isNull(user.banReason), eq(user.banReason, '')));
+      } else if (moderation === 'active') {
+        conditions.push(eq(user.banned, false));
       }
 
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -65,6 +81,7 @@ export const ServerRoute = createServerFileRoute("/api/users").methods({
           name: user.name,
           email: user.email,
           role: user.role,
+          emailVerified: user.emailVerified,
           banned: user.banned,
           banReason: user.banReason,
           banExpires: user.banExpires,

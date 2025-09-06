@@ -177,6 +177,31 @@ export function UsersPage({ className }: UsersPageProps) {
                 className="pl-8"
               />
             </div>
+            <div className="flex gap-2">
+              <select className="border rounded px-2 py-1 text-sm" onChange={(e) => {
+                const v = e.target.value;
+                const url = new URL(window.location.href);
+                if (v) url.searchParams.set('emailVerified', v === 'verified' ? 'true' : 'false'); else url.searchParams.delete('emailVerified');
+                window.history.replaceState({}, '', url.toString());
+                fetchUsers();
+              }} defaultValue="">
+                <option value="">Verification: All</option>
+                <option value="verified">Verified</option>
+                <option value="unverified">Unverified</option>
+              </select>
+              <select className="border rounded px-2 py-1 text-sm" onChange={(e) => {
+                const v = e.target.value;
+                const url = new URL(window.location.href);
+                if (v) url.searchParams.set('moderation', v); else url.searchParams.delete('moderation');
+                window.history.replaceState({}, '', url.toString());
+                fetchUsers();
+              }} defaultValue="">
+                <option value="">Moderation: All</option>
+                <option value="pending">Pending Approval</option>
+                <option value="banned">Banned</option>
+                <option value="active">Active</option>
+              </select>
+            </div>
           </div>
 
           {loading ? (
@@ -192,7 +217,8 @@ export function UsersPage({ className }: UsersPageProps) {
                   <TableRow>
                     <TableHead>User</TableHead>
                     <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Verification</TableHead>
+                    <TableHead>Moderation</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -224,10 +250,20 @@ export function UsersPage({ className }: UsersPageProps) {
                           {getRoleName(user.role || "user")}
                         </Badge>
                       </TableCell>
+                      {/* Verification column */}
+                      <TableCell>
+                        {user.emailVerified ? (
+                          <Badge variant="success">Verified</Badge>
+                        ) : (
+                          <Badge variant="secondary">Unverified</Badge>
+                        )}
+                      </TableCell>
+
+                      {/* Moderation column */}
                       <TableCell>
                         {user.banned ? (
                           user.banReason === 'PENDING_APPROVAL' ? (
-                            <Badge variant="outline">Pending</Badge>
+                            <Badge variant="outline">Pending Approval</Badge>
                           ) : (
                             <Badge variant="destructive">Banned</Badge>
                           )
@@ -246,6 +282,21 @@ export function UsersPage({ className }: UsersPageProps) {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            {/* Resend verification (visible if not verified) */}
+                            {!user.emailVerified && (
+                              <DropdownMenuItem onClick={async () => {
+                                try {
+                                  await fetch('/api/users-actions', {
+                                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ action: 'resend-verification', userId: user.id })
+                                  });
+                                } catch (e) { console.error(e); }
+                              }}>
+                                <UserCheck className="mr-2 h-4 w-4" />
+                                Resend Verification
+                              </DropdownMenuItem>
+                            )}
+
                             {user.banned && user.banReason === 'PENDING_APPROVAL' ? (
                               <>
                                 <DropdownMenuItem onClick={async () => {

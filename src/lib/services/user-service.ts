@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email: string;
   role?: string;
+  emailVerified?: boolean;
   banned?: boolean;
   banReason?: string | null;
   banExpires?: Date | null;
