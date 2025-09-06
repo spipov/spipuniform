@@ -41,45 +41,62 @@ const dashboardNavigation = [
     title: "Overview",
     url: "/dashboard",
     icon: LayoutDashboard,
+    requiredPermission: "viewDashboard",
   },
   {
     title: "Analytics",
     url: "/dashboard/analytics",
     icon: BarChart3,
+    requiredPermission: "viewDashboardAnalytics",
   },
   {
     title: "Reports",
     url: "/dashboard/reports",
     icon: FileText,
+    requiredPermission: "viewDashboardReports",
   },
   {
     title: "Settings",
     url: "/dashboard/settings",
     icon: Settings,
+    requiredPermission: "viewDashboardSettings",
   },
-];
+] as const;
 
 const userManagementNavigation = [
   {
     title: "User Management",
     url: "/dashboard/user-management/consolidated",
     icon: Users,
+    requiredPermission: "viewUserManagement",
   },
-];
+] as const;
 
 const systemAdminNavigation = [
   {
     title: "File Manager",
     url: "/dashboard/file-manager",
     icon: FolderOpen,
+    requiredPermission: "viewFileManager",
   },
-];
+] as const;
 
 export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session, isPending } = useSession();
-  const role = (session?.user as any)?.role || null;
   const isSignedIn = !!session?.user;
-  const isAdmin = role === "admin";
+
+  const { data: myPerms, isPending: permsPending } = useQuery({
+    queryKey: ["my-permissions"],
+    queryFn: async () => {
+      const res = await fetch("/api/my-permissions", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load permissions");
+      return res.json() as Promise<{ role: string | null; permissions: Record<string, boolean> }>;
+    },
+    staleTime: 60_000,
+    enabled: isSignedIn,
+  });
+
+  const can = (key: string) => Boolean(myPerms?.permissions?.[key]);
 
   return (
     <BrandingProvider>
@@ -99,8 +116,8 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent className="dashboard-sidebar__content">
-          {isPending ? (
-            // Skeleton placeholder to keep layout stable while session resolves
+          {isPending || (isSignedIn && permsPending) ? (
+            // Skeleton placeholder to keep layout stable while session/permissions resolves
             <div className="p-2 space-y-2">
               <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
               <div className="h-8 w-full bg-gray-200 rounded animate-pulse" />
@@ -114,78 +131,84 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
               {isSignedIn && (
                 <SidebarGroup className="dashboard-sidebar__nav-group">
                   <SidebarMenu className="dashboard-sidebar__nav-menu">
-                    {dashboardNavigation.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <SidebarMenuItem key={item.title} className="dashboard-sidebar__nav-item">
-                          <SidebarMenuButton asChild className="dashboard-sidebar__nav-button">
-                            <Link to={item.url} className="dashboard-sidebar__nav-link font-medium">
-                              <Icon className="dashboard-sidebar__nav-icon size-4" />
-                              <span className="dashboard-sidebar__nav-text">{item.title}</span>
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      );
-                    })}
+                    {dashboardNavigation
+                      .filter((item) => can(item.requiredPermission))
+                      .map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <SidebarMenuItem key={item.title} className="dashboard-sidebar__nav-item">
+                            <SidebarMenuButton asChild className="dashboard-sidebar__nav-button">
+                              <Link to={item.url} className="dashboard-sidebar__nav-link font-medium">
+                                <Icon className="dashboard-sidebar__nav-icon size-4" />
+                                <span className="dashboard-sidebar__nav-text">{item.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        );
+                      })}
                   </SidebarMenu>
                 </SidebarGroup>
               )}
 
-              {isAdmin && (
+              {isSignedIn && can('viewUserManagement') && (
                 <SidebarGroup className="dashboard-sidebar__user-management-group">
                   <SidebarGroupLabel className="dashboard-sidebar__group-label">
                     User Management
                   </SidebarGroupLabel>
                   <SidebarMenu className="dashboard-sidebar__user-management-menu">
-                    {userManagementNavigation.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <SidebarMenuItem
-                          key={item.title}
-                          className="dashboard-sidebar__user-management-item"
-                        >
-                          <SidebarMenuButton asChild className="dashboard-sidebar__user-management-button">
-                            <Link
-                              to={item.url}
-                              className="dashboard-sidebar__user-management-link font-medium relative"
-                            >
-                              <Icon className="dashboard-sidebar__user-management-icon size-4" />
-                              <span className="dashboard-sidebar__user-management-text">{item.title}</span>
-                              <PendingUsersBadge />
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      );
-                    })}
+                    {userManagementNavigation
+                      .filter((item) => can(item.requiredPermission))
+                      .map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <SidebarMenuItem
+                            key={item.title}
+                            className="dashboard-sidebar__user-management-item"
+                          >
+                            <SidebarMenuButton asChild className="dashboard-sidebar__user-management-button">
+                              <Link
+                                to={item.url}
+                                className="dashboard-sidebar__user-management-link font-medium relative"
+                              >
+                                <Icon className="dashboard-sidebar__user-management-icon size-4" />
+                                <span className="dashboard-sidebar__user-management-text">{item.title}</span>
+                                <PendingUsersBadge />
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        );
+                      })}
                   </SidebarMenu>
                 </SidebarGroup>
               )}
 
-              {isAdmin && (
+              {isSignedIn && (can('viewFileManager')) && (
                 <SidebarGroup className="dashboard-sidebar__system-admin-group">
                   <SidebarGroupLabel className="dashboard-sidebar__group-label">
                     System Administration
                   </SidebarGroupLabel>
                   <SidebarMenu className="dashboard-sidebar__system-admin-menu">
-                    {systemAdminNavigation.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <SidebarMenuItem
-                          key={item.title}
-                          className="dashboard-sidebar__system-admin-item"
-                        >
-                          <SidebarMenuButton asChild className="dashboard-sidebar__system-admin-button">
-                            <Link
-                              to={item.url}
-                              className="dashboard-sidebar__system-admin-link font-medium"
-                            >
-                              <Icon className="dashboard-sidebar__system-admin-icon size-4" />
-                              <span className="dashboard-sidebar__system-admin-text">{item.title}</span>
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      );
-                    })}
+                    {systemAdminNavigation
+                      .filter((item) => can(item.requiredPermission))
+                      .map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <SidebarMenuItem
+                            key={item.title}
+                            className="dashboard-sidebar__system-admin-item"
+                          >
+                            <SidebarMenuButton asChild className="dashboard-sidebar__system-admin-button">
+                              <Link
+                                to={item.url}
+                                className="dashboard-sidebar__system-admin-link font-medium"
+                              >
+                                <Icon className="dashboard-sidebar__system-admin-icon size-4" />
+                                <span className="dashboard-sidebar__system-admin-text">{item.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        );
+                      })}
                   </SidebarMenu>
                 </SidebarGroup>
               )}

@@ -59,13 +59,11 @@ export function RoleDialog({
   const [permissions, setPermissions] = useState<Record<string, boolean>>({});
   const [allPermissions, setAllPermissions] = useState<Array<{ key: string; label: string }>>([]);
 
-  const isEdit = mode === "edit";
-
   const form = useForm({
     defaultValues: {
-      name: "",
-      description: "",
-    } as CreateRoleInput | UpdateRoleInput,
+      name: role?.name || "",
+      color: role?.color || selectedColor,
+    },
     onSubmit: async ({ value }) => {
       try {
         setLoading(true);
@@ -94,56 +92,43 @@ export function RoleDialog({
     },
   });
 
+  const isEdit = mode === "edit";
+
+  const handleCancel = () => {
+    onCancel();
+    onClose?.();
+  };
+
   useEffect(() => {
     const loadPermissions = async () => {
       try {
         const allPerms = await RoleService.getAllPermissions();
         setAllPermissions(allPerms);
-
-        if (isEdit && role) {
-          setSelectedColor(role.color);
-          setPermissions(role.permissions);
-          form.setFieldValue("name", role.name);
-          form.setFieldValue("description", role.description || "");
-        } else {
-          // Initialize with empty permissions for create mode
-          const emptyPermissions: Record<string, boolean> = {};
+  
+        if (role) {
+          // Merge role permissions with defaults (default false, except viewDashboard true)
+          const defaults: Record<string, boolean> = {};
           allPerms.forEach((perm) => {
-            emptyPermissions[perm.key] = false;
+            defaults[perm.key] = perm.key === 'viewDashboard';
           });
-          setPermissions(emptyPermissions);
-          form.setFieldValue("name", "");
-          form.setFieldValue("description", "");
+          const merged: Record<string, boolean> = { ...defaults, ...(role.permissions || {}) } as any;
+          setPermissions(merged);
+        } else {
+          // Initialize with defaults for create mode
+          const defaults: Record<string, boolean> = {};
+          allPerms.forEach((perm) => {
+            defaults[perm.key] = perm.key === 'viewDashboard';
+          });
+          setPermissions(defaults);
         }
       } catch (err) {
         console.error("Failed to load permissions:", err);
       }
     };
-
-    if (open) {
-      loadPermissions();
-      setError(null);
-    }
-  }, [open, isEdit, role, form]);
-
-  const handleCancel = () => {
-    form.reset();
-    setError(null);
-    setSelectedColor(defaultColors[0]);
-    setPermissions({});
-    if (onClose) {
-      onClose();
-    } else {
-      onCancel();
-    }
-  };
-
-  const handlePermissionChange = (permission: string, checked: boolean) => {
-    setPermissions((prev) => ({
-      ...prev,
-      [permission]: checked,
-    }));
-  };
+  
+    loadPermissions();
+    // depend on role id and mode to avoid stale defaults
+  }, [role?.id, mode]);
 
   const handleSelectAllPermissions = (checked: boolean) => {
     const updatedPermissions: Record<string, boolean> = {};
@@ -288,22 +273,31 @@ export function RoleDialog({
                     <CardTitle className="text-sm font-medium capitalize">{category}</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <div className="grid grid-cols-2 gap-2">
-                      {perms.map((permission) => (
-                        <div key={permission.key} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={permission.key}
-                            checked={permissions[permission.key] || false}
-                            onCheckedChange={(checked) =>
-                              handlePermissionChange(permission.key, checked as boolean)
-                            }
-                          />
-                          <Label
-                            htmlFor={permission.key}
-                            className="text-sm font-normal cursor-pointer"
-                          >
-                            {permission.label}
-                          </Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Object.entries(permissionGroups).map(([group, permissionsInGroup]) => (
+                        <div key={group} className="border rounded-md p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-semibold capitalize">{group}</h4>
+                          </div>
+                          <div className="space-y-2">
+                            {permissionsInGroup.map((permission) => (
+                              <div key={permission.key} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={permission.key}
+                                  checked={permissions[permission.key] || false}
+                                  onCheckedChange={(checked) => {
+                                    setPermissions((prev) => ({
+                                      ...prev,
+                                      [permission.key]: Boolean(checked),
+                                    }));
+                                  }}
+                                />
+                                <label htmlFor={permission.key} className="text-sm">
+                                  {permission.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       ))}
                     </div>

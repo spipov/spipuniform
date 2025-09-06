@@ -136,6 +136,19 @@ export class RoleService {
       banUsers: "Ban Users",
       deleteUsers: "Delete Users",
       assignRoles: "Assign Roles",
+      // Dashboard & Routes
+      viewDashboard: "View Dashboard",
+      viewDashboardSettings: "View Dashboard Settings",
+      viewBranding: "View Branding",
+      viewEmail: "View Email Settings",
+      viewStorageSettings: "View Storage Settings",
+      viewFileManager: "View File Manager",
+      viewUserManagement: "View User Management",
+      viewUserManagementUsers: "View Users Tab",
+      viewUserManagementRoles: "View Roles Tab",
+      viewUserManagementPermissions: "View Permissions Tab",
+      viewDashboardAnalytics: "View Analytics",
+      viewDashboardReports: "View Reports",
     };
 
     return displayNames[permission] || permission;
@@ -151,6 +164,19 @@ export class RoleService {
       "viewRoles",
       "manageRoles",
       "assignRoles",
+      // Dashboard & Routes
+      "viewDashboard",
+      "viewDashboardSettings",
+      "viewBranding",
+      "viewEmail",
+      "viewStorageSettings",
+      "viewFileManager",
+      "viewUserManagement",
+      "viewUserManagementUsers",
+      "viewUserManagementRoles",
+      "viewUserManagementPermissions",
+      "viewDashboardAnalytics",
+      "viewDashboardReports",
     ];
 
     return permissions.map((permission) => ({

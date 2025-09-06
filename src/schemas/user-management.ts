@@ -64,6 +64,19 @@ export const createRoleSchema = v.object({
     banUsers: v.optional(v.boolean(), false),
     deleteUsers: v.optional(v.boolean(), false),
     assignRoles: v.optional(v.boolean(), false),
+    // Dashboard & Routes
+    viewDashboard: v.optional(v.boolean(), true),
+    viewDashboardSettings: v.optional(v.boolean(), false),
+    viewBranding: v.optional(v.boolean(), false),
+    viewEmail: v.optional(v.boolean(), false),
+    viewStorageSettings: v.optional(v.boolean(), false),
+    viewFileManager: v.optional(v.boolean(), false),
+    viewUserManagement: v.optional(v.boolean(), false),
+    viewUserManagementUsers: v.optional(v.boolean(), false),
+    viewUserManagementRoles: v.optional(v.boolean(), false),
+    viewUserManagementPermissions: v.optional(v.boolean(), false),
+    viewDashboardAnalytics: v.optional(v.boolean(), false),
+    viewDashboardReports: v.optional(v.boolean(), false),
   }),
   color: v.pipe(v.string(), v.regex(/^#[0-9A-F]{6}$/i, "Invalid color format")),
 });
@@ -85,6 +98,19 @@ export const updateRoleSchema = v.object({
       banUsers: v.optional(v.boolean()),
       deleteUsers: v.optional(v.boolean()),
       assignRoles: v.optional(v.boolean()),
+      // Dashboard & Routes
+      viewDashboard: v.optional(v.boolean()),
+      viewDashboardSettings: v.optional(v.boolean()),
+      viewBranding: v.optional(v.boolean()),
+      viewEmail: v.optional(v.boolean()),
+      viewStorageSettings: v.optional(v.boolean()),
+      viewFileManager: v.optional(v.boolean()),
+      viewUserManagement: v.optional(v.boolean()),
+      viewUserManagementUsers: v.optional(v.boolean()),
+      viewUserManagementRoles: v.optional(v.boolean()),
+      viewUserManagementPermissions: v.optional(v.boolean()),
+      viewDashboardAnalytics: v.optional(v.boolean()),
+      viewDashboardReports: v.optional(v.boolean()),
     })
   ),
   color: v.optional(v.pipe(v.string(), v.regex(/^#[0-9A-F]{6}$/i, "Invalid color format"))),
@@ -136,4 +162,17 @@ export type Permission = {
   banUsers: boolean;
   deleteUsers: boolean;
   assignRoles: boolean;
+  // Dashboard & Routes
+  viewDashboard: boolean;
+  viewDashboardSettings: boolean;
+  viewBranding: boolean;
+  viewEmail: boolean;
+  viewStorageSettings: boolean;
+  viewFileManager: boolean;
+  viewUserManagement: boolean;
+  viewUserManagementUsers: boolean;
+  viewUserManagementRoles: boolean;
+  viewUserManagementPermissions: boolean;
+  viewDashboardAnalytics: boolean;
+  viewDashboardReports: boolean;
 };

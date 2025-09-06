@@ -1,4 +1,4 @@
-import { createFileRoute, useSearch, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useSearch, useNavigate, redirect } from "@tanstack/react-router";
 import { BrandingManager } from "@/components/branding/branding-manager";
 import { EmailManagement } from "@/components/email/email-management";
 import { StorageSettingsManagement } from "@/components/file-system/storage-settings-management";
@@ -6,10 +6,16 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AuthSettingsPanel } from "@/components/settings/auth-settings";
 
 export const Route = createFileRoute("/dashboard/settings")({
-  component: SettingsPage,
+  beforeLoad: async () => {
+    const res = await fetch("/api/my-permissions", { credentials: "include" });
+    if (!res.ok) throw redirect({ to: "/" });
+    const data = (await res.json()) as { permissions: Record<string, boolean> };
+    if (!data.permissions?.viewDashboardSettings) throw redirect({ to: "/" });
+  },
   validateSearch: (search: Record<string, unknown>) => ({
     tab: (search.tab as string) || "branding",
   }),
+  component: SettingsPage,
 });
 
 function SettingsPage() {

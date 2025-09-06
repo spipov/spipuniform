@@ -35,6 +35,7 @@ import { ServerRoute as ApiUsersServerRouteImport } from './routes/api.users'
 import { ServerRoute as ApiTestServerRouteImport } from './routes/api.test'
 import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api.storage-settings'
 import { ServerRoute as ApiRolesServerRouteImport } from './routes/api.roles'
+import { ServerRoute as ApiMyPermissionsServerRouteImport } from './routes/api.my-permissions'
 import { ServerRoute as ApiFilesServerRouteImport } from './routes/api/files'
 import { ServerRoute as ApiEmailServerRouteImport } from './routes/api.email'
 import { ServerRoute as ApiCredentialsServerRouteImport } from './routes/api/credentials'
@@ -181,6 +182,11 @@ const ApiStorageSettingsServerRoute =
 const ApiRolesServerRoute = ApiRolesServerRouteImport.update({
   id: '/api/roles',
   path: '/api/roles',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiMyPermissionsServerRoute = ApiMyPermissionsServerRouteImport.update({
+  id: '/api/my-permissions',
+  path: '/api/my-permissions',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiFilesServerRoute = ApiFilesServerRouteImport.update({
@@ -416,6 +422,7 @@ export interface FileServerRoutesByFullPath {
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/email': typeof ApiEmailServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
+  '/api/my-permissions': typeof ApiMyPermissionsServerRoute
   '/api/roles': typeof ApiRolesServerRouteWithChildren
   '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
@@ -442,6 +449,7 @@ export interface FileServerRoutesByTo {
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/email': typeof ApiEmailServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
+  '/api/my-permissions': typeof ApiMyPermissionsServerRoute
   '/api/roles': typeof ApiRolesServerRouteWithChildren
   '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
@@ -469,6 +477,7 @@ export interface FileServerRoutesById {
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/email': typeof ApiEmailServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
+  '/api/my-permissions': typeof ApiMyPermissionsServerRoute
   '/api/roles': typeof ApiRolesServerRouteWithChildren
   '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
@@ -497,6 +506,7 @@ export interface FileServerRouteTypes {
     | '/api/credentials'
     | '/api/email'
     | '/api/files'
+    | '/api/my-permissions'
     | '/api/roles'
     | '/api/storage-settings'
     | '/api/test'
@@ -523,6 +533,7 @@ export interface FileServerRouteTypes {
     | '/api/credentials'
     | '/api/email'
     | '/api/files'
+    | '/api/my-permissions'
     | '/api/roles'
     | '/api/storage-settings'
     | '/api/test'
@@ -549,6 +560,7 @@ export interface FileServerRouteTypes {
     | '/api/credentials'
     | '/api/email'
     | '/api/files'
+    | '/api/my-permissions'
     | '/api/roles'
     | '/api/storage-settings'
     | '/api/test'
@@ -576,6 +588,7 @@ export interface RootServerRouteChildren {
   ApiCredentialsServerRoute: typeof ApiCredentialsServerRoute
   ApiEmailServerRoute: typeof ApiEmailServerRouteWithChildren
   ApiFilesServerRoute: typeof ApiFilesServerRoute
+  ApiMyPermissionsServerRoute: typeof ApiMyPermissionsServerRoute
   ApiRolesServerRoute: typeof ApiRolesServerRouteWithChildren
   ApiStorageSettingsServerRoute: typeof ApiStorageSettingsServerRoute
   ApiTestServerRoute: typeof ApiTestServerRoute
@@ -758,6 +771,13 @@ declare module '@tanstack/react-start/server' {
       path: '/api/roles'
       fullPath: '/api/roles'
       preLoaderRoute: typeof ApiRolesServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/my-permissions': {
+      id: '/api/my-permissions'
+      path: '/api/my-permissions'
+      fullPath: '/api/my-permissions'
+      preLoaderRoute: typeof ApiMyPermissionsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/files': {
@@ -1029,6 +1049,7 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiCredentialsServerRoute: ApiCredentialsServerRoute,
   ApiEmailServerRoute: ApiEmailServerRouteWithChildren,
   ApiFilesServerRoute: ApiFilesServerRoute,
+  ApiMyPermissionsServerRoute: ApiMyPermissionsServerRoute,
   ApiRolesServerRoute: ApiRolesServerRouteWithChildren,
   ApiStorageSettingsServerRoute: ApiStorageSettingsServerRoute,
   ApiTestServerRoute: ApiTestServerRoute,

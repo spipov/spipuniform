@@ -1,10 +1,16 @@
-import { createFileRoute, useSearch, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useSearch, useNavigate, redirect } from "@tanstack/react-router";
 import { UsersPage } from "@/components/user-management/users-page";
 import { RolesPage } from "@/components/user-management/roles-page";
 import { PermissionsPage } from "@/components/user-management/permissions-page";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/dashboard/user-management/consolidated")({
+  beforeLoad: async () => {
+    const res = await fetch("/api/my-permissions", { credentials: "include" });
+    if (!res.ok) throw redirect({ to: "/" });
+    const data = (await res.json()) as { permissions: Record<string, boolean> };
+    if (!data.permissions?.viewUserManagement) throw redirect({ to: "/" });
+  },
   component: UserManagementPage,
   validateSearch: (search: Record<string, unknown>) => ({
     tab: (search.tab as string) || "users",

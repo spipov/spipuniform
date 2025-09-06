@@ -1,7 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { FileManager } from "@/components/file-system";
 
-export const Route = createFileRoute("/dashboard/file-manager")({  
+export const Route = createFileRoute("/dashboard/file-manager")({
+  beforeLoad: async () => {
+    const res = await fetch("/api/my-permissions", { credentials: "include" });
+    if (!res.ok) throw redirect({ to: "/" });
+    const data = (await res.json()) as { permissions: Record<string, boolean> };
+    if (!data.permissions?.viewFileManager) throw redirect({ to: "/" });
+  },
   component: FileManagerPage,
 });
 

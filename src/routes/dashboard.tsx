@@ -13,6 +13,7 @@ import {
 import { useEffect } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { useSession } from "@/lib/auth-client";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardLayout,
@@ -22,15 +23,32 @@ function DashboardLayout() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
 
-  // Always register hooks in the same order; perform navigation inside the effect
+  const { data: myPerms, isPending: permsPending } = useQuery({
+    queryKey: ["my-permissions"],
+    queryFn: async () => {
+      const res = await fetch("/api/my-permissions", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load permissions");
+      return res.json() as Promise<{ role: string | null; permissions: Record<string, boolean> }>;
+    },
+    staleTime: 60_000,
+  });
+
   useEffect(() => {
     if (!isPending && !session) {
       router.navigate({ to: "/" });
     }
   }, [isPending, session, router]);
 
-  // While session is loading OR unauthenticated, render nothing (prevents flicker and hook order issues)
+  useEffect(() => {
+    if (!isPending && session && !permsPending) {
+      if (!myPerms?.permissions?.viewDashboard) {
+        router.navigate({ to: "/" });
+      }
+    }
+  }, [isPending, session, permsPending, myPerms, router]);
+
   if (isPending || !session) return null;
+  if (permsPending) return null;
 
   return (
     <SidebarProvider>

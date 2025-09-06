@@ -1,7 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { EmailManagement } from "@/components/email/email-management";
 
-export const Route = createFileRoute("/dashboard/email")({  
+export const Route = createFileRoute("/dashboard/email")({
+  beforeLoad: async () => {
+    const res = await fetch("/api/my-permissions", { credentials: "include" });
+    if (!res.ok) throw redirect({ to: "/" });
+    const data = (await res.json()) as { permissions: Record<string, boolean> };
+    if (!data.permissions?.viewEmail) throw redirect({ to: "/" });
+  },
   component: EmailPage,
 });
 
