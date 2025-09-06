@@ -86,6 +86,14 @@ export function BrandingRuntime() {
     (async () => {
       const data = await fetchActiveBranding();
       if (cancelled) return;
+
+      // Persist first so next refresh can use it pre-paint
+      try { localStorage.setItem('branding:active', JSON.stringify(data || {})); } catch {}
+
+      // Briefly disable transitions to avoid any color flip
+      const html = document.documentElement;
+      html.classList.add('no-theme-transitions');
+
       const bodyFont = data?.fontFamily ?? 'Inter';
       const headingFont = data?.headingFont ?? bodyFont;
 
@@ -104,17 +112,14 @@ export function BrandingRuntime() {
       const root = document.documentElement.style;
       root.setProperty('--branding-font-sans', computeCssFont(bodyFont));
       root.setProperty('--branding-font-heading', computeCssFont(headingFont));
-      
-      // Apply branding colors to Tailwind CSS custom properties
-      if (data?.primaryColor) {
-        root.setProperty('--primary', data.primaryColor);
-      }
-      if (data?.secondaryColor) {
-        root.setProperty('--secondary', data.secondaryColor);
-      }
-      if (data?.accentColor) {
-        root.setProperty('--accent', data.accentColor);
-      }
+      if (data?.primaryColor) root.setProperty('--primary', data.primaryColor);
+      if (data?.secondaryColor) root.setProperty('--secondary', data.secondaryColor);
+      if (data?.accentColor) root.setProperty('--accent', data.accentColor);
+
+      // Re-enable transitions next frame
+      requestAnimationFrame(() => {
+        html.classList.remove('no-theme-transitions');
+      });
     })();
     return () => {
       cancelled = true;

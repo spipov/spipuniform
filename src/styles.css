@@ -3,6 +3,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Prevent jarring transitions during first paint/theme bootstrap */
+.no-theme-transitions *, .no-theme-transitions *::before, .no-theme-transitions *::after {
+  transition: none !important;
+}
+
 body {
   @apply m-0;
   font-family: var(--font-sans);

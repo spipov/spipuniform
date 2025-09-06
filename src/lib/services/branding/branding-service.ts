@@ -290,10 +290,33 @@ export class BrandingService {
       const activeBranding = await this.getActiveBranding();
       const cssVariables = await this.getBrandingCSSVariables();
       
+      // Extend variables to directly drive Tailwind token variables and branding font vars
+      const overrides: Record<string, string> = {};
+      if (activeBranding?.primaryColor) overrides['--primary'] = activeBranding.primaryColor;
+      if (activeBranding?.secondaryColor) overrides['--secondary'] = activeBranding.secondaryColor;
+      if (activeBranding?.accentColor) overrides['--accent'] = activeBranding.accentColor;
+      if ((activeBranding as any)?.backgroundColor) overrides['--background'] = (activeBranding as any).backgroundColor as string;
+      if ((activeBranding as any)?.textColor) overrides['--foreground'] = (activeBranding as any).textColor as string;
+
+      if (activeBranding?.fontFamily) {
+        const body = this.getFontFamilyForCSS(activeBranding.fontFamily) || 'Inter, sans-serif';
+        overrides['--branding-font-sans'] = body;
+      }
+      const heading = activeBranding?.headingFont
+        ? this.getFontFamilyForCSS(activeBranding.headingFont)
+        : undefined;
+      if (heading) {
+        overrides['--branding-font-heading'] = heading;
+      } else if (overrides['--branding-font-sans']) {
+        overrides['--branding-font-heading'] = overrides['--branding-font-sans'];
+      }
+
+      const combinedVariables: Record<string, string> = { ...cssVariables, ...overrides };
+      
       let css = '';
       
       // Add CSS variables to :root
-      const rootVariables = Object.entries(cssVariables)
+      const rootVariables = Object.entries(combinedVariables)
         .map(([key, value]) => `  ${key}: ${value};`)
         .join('\n');
       
@@ -317,16 +340,8 @@ export class BrandingService {
         }
       }
       
-      // Add ONLY font application - no colors, no layout changes
-      css += `
-/* Apply branding fonts only - minimal and safe */
-body {
-  font-family: var(--font-family), -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--heading-font), var(--font-family), -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-}`;
+      // Add ONLY font application - no extra layout changes
+      css += `\n/* Apply branding fonts only - minimal and safe */\nbody {\n  font-family: var(--font-family), -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Roboto\", \"Oxygen\", \"Ubuntu\", \"Cantarell\", \"Fira Sans\", \"Droid Sans\", \"Helvetica Neue\", sans-serif;\n}\n\nh1, h2, h3, h4, h5, h6 {\n  font-family: var(--heading-font), var(--font-family), -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Roboto\", \"Oxygen\", \"Ubuntu\", \"Cantarell\", \"Fira Sans\", \"Droid Sans\", \"Helvetica Neue\", sans-serif;\n}`;
 
       return css;
     } catch (error) {
