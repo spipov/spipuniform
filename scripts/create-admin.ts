@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/suspicious/noConsole: Console logs in CLI tools are acceptable */
 
+import * as v from "valibot";
 import { signUp } from "@/lib/auth-client";
 import { registerSchema } from "@/schemas/auth";
 import prompts from "prompts";
@@ -41,14 +42,22 @@ import prompts from "prompts";
     process.exit(1);
   }
 
-  const parsed = registerSchema.safeParse(response);
-  if (!parsed.success) {
+  try {
+    v.parse(registerSchema, response);
+  } catch (error) {
     console.error("Validation errors:");
-    parsed.error.issues.forEach((issue) => {
-      console.error(`- ${issue.path.join(".")}: ${issue.message}`);
-    });
+    if (error instanceof v.ValiError) {
+      error.issues.forEach((issue) => {
+        console.error(`- ${issue.path.join(".")}: ${issue.message}`);
+      });
+    } else {
+      console.error("Unknown validation error:", error);
+    }
     process.exit(1);
   }
+
+  // Since we validated, we can safely use the data
+  const parsed = { data: v.parse(registerSchema, response) };
 
   try {
     const result = await signUp.email({

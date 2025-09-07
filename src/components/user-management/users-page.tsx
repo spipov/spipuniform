@@ -286,9 +286,11 @@ export function UsersPage({ className }: UsersPageProps) {
                             {!user.emailVerified && (
                               <DropdownMenuItem onClick={async () => {
                                 try {
-                                  await fetch('/api/users-actions', {
-                                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ action: 'resend-verification', userId: user.id })
+                                  await fetch('/api/users/actions', {
+                                    method: 'POST',
+                                    credentials: 'include',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ action: 'resend-verification', userId: selectedUserId }),
                                   });
                                 } catch (e) { console.error(e); }
                               }}>

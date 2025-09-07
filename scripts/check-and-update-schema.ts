@@ -1,9 +1,7 @@
-import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import "dotenv/config";
 
 const sql = postgres(process.env.DATABASE_URL!);
-const db = drizzle(sql);
 
 async function checkAndUpdateSchema() {
   try {

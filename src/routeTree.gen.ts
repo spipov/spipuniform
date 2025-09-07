@@ -31,7 +31,6 @@ import { Route as DashboardUserManagementPermissionsRouteImport } from './routes
 import { Route as DashboardUserManagementConsolidatedRouteImport } from './routes/dashboard/user-management/consolidated'
 import { ServerRoute as ApiUsersApprovalServerRouteImport } from './routes/api/users-approval'
 import { ServerRoute as ApiTestServerRouteImport } from './routes/api/test'
-import { ServerRoute as ApiMyPermissionsServerRouteImport } from './routes/api.my-permissions'
 import { ServerRoute as ApiFilesServerRouteImport } from './routes/api/files'
 import { ServerRoute as ApiCredentialsServerRouteImport } from './routes/api/credentials'
 import { ServerRoute as ApiAuthSettingsServerRouteImport } from './routes/api/auth-settings'
@@ -163,11 +162,6 @@ const ApiUsersApprovalServerRoute = ApiUsersApprovalServerRouteImport.update({
 const ApiTestServerRoute = ApiTestServerRouteImport.update({
   id: '/api/test',
   path: '/api/test',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
-const ApiMyPermissionsServerRoute = ApiMyPermissionsServerRouteImport.update({
-  id: '/api/my-permissions',
-  path: '/api/my-permissions',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiFilesServerRoute = ApiFilesServerRouteImport.update({
@@ -433,7 +427,6 @@ export interface FileServerRoutesByFullPath {
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/files': typeof ApiFilesServerRoute
-  '/api/my-permissions': typeof ApiMyPermissionsServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
@@ -462,7 +455,6 @@ export interface FileServerRoutesByTo {
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/files': typeof ApiFilesServerRoute
-  '/api/my-permissions': typeof ApiMyPermissionsServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
@@ -492,7 +484,6 @@ export interface FileServerRoutesById {
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/files': typeof ApiFilesServerRoute
-  '/api/my-permissions': typeof ApiMyPermissionsServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
@@ -523,7 +514,6 @@ export interface FileServerRouteTypes {
     | '/api/auth-settings'
     | '/api/credentials'
     | '/api/files'
-    | '/api/my-permissions'
     | '/api/test'
     | '/api/users-approval'
     | '/api/auth-settings/flag'
@@ -552,7 +542,6 @@ export interface FileServerRouteTypes {
     | '/api/auth-settings'
     | '/api/credentials'
     | '/api/files'
-    | '/api/my-permissions'
     | '/api/test'
     | '/api/users-approval'
     | '/api/auth-settings/flag'
@@ -581,7 +570,6 @@ export interface FileServerRouteTypes {
     | '/api/auth-settings'
     | '/api/credentials'
     | '/api/files'
-    | '/api/my-permissions'
     | '/api/test'
     | '/api/users-approval'
     | '/api/auth-settings/flag'
@@ -611,7 +599,6 @@ export interface RootServerRouteChildren {
   ApiAuthSettingsServerRoute: typeof ApiAuthSettingsServerRouteWithChildren
   ApiCredentialsServerRoute: typeof ApiCredentialsServerRoute
   ApiFilesServerRoute: typeof ApiFilesServerRoute
-  ApiMyPermissionsServerRoute: typeof ApiMyPermissionsServerRoute
   ApiTestServerRoute: typeof ApiTestServerRoute
   ApiUsersApprovalServerRoute: typeof ApiUsersApprovalServerRoute
   ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
@@ -777,13 +764,6 @@ declare module '@tanstack/react-start/server' {
       path: '/api/test'
       fullPath: '/api/test'
       preLoaderRoute: typeof ApiTestServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/api/my-permissions': {
-      id: '/api/my-permissions'
-      path: '/api/my-permissions'
-      fullPath: '/api/my-permissions'
-      preLoaderRoute: typeof ApiMyPermissionsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/files': {
@@ -1051,7 +1031,6 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiAuthSettingsServerRoute: ApiAuthSettingsServerRouteWithChildren,
   ApiCredentialsServerRoute: ApiCredentialsServerRoute,
   ApiFilesServerRoute: ApiFilesServerRoute,
-  ApiMyPermissionsServerRoute: ApiMyPermissionsServerRoute,
   ApiTestServerRoute: ApiTestServerRoute,
   ApiUsersApprovalServerRoute: ApiUsersApprovalServerRoute,
   ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,

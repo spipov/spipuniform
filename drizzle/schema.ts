@@ -1,5 +1,4 @@
 import { pgTable, foreignKey, unique, text, timestamp, uuid, jsonb, boolean, index, bigint, pgEnum } from "drizzle-orm/pg-core"
-import { sql } from "drizzle-orm"
 
 export const credentialProvider = pgEnum("credential_provider", ['google', 'microsoft', 'aws', 'azure', 'sendgrid', 'mailgun', 'custom'])
 export const credentialType = pgEnum("credential_type", ['oauth_google', 'oauth_microsoft', 'smtp', 'imap', 'api_key', 'webhook', 'database', 'storage'])

@@ -42,14 +42,22 @@ async function seedAdmin() {
       confirmPassword: adminPassword,
     };
 
-    const parsed = v.safeParse(registerSchema, adminData);
-    if (!parsed.success) {
+    try {
+      v.parse(registerSchema, adminData);
+    } catch (error) {
       console.error("❌ Validation errors:");
-      parsed.issues.forEach((issue) => {
-        console.error(`- ${issue.path?.map(p => p.key).join(".") || "unknown"}: ${issue.message}`);
-      });
+      if (error instanceof v.ValiError) {
+        error.issues.forEach((issue) => {
+          console.error(`- ${issue.path?.map((p: any) => p.key).join(".") || "unknown"}: ${issue.message}`);
+        });
+      } else {
+        console.error("Unknown validation error:", error);
+      }
       process.exit(1);
     }
+
+    // Since we validated, we can safely use the data
+    const parsed = { data: v.parse(registerSchema, adminData) };
 
     // Create admin user using Better Auth
     const result = await signUp.email({
