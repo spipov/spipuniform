@@ -41,7 +41,8 @@ export function UserLogoutCard({
   };
 
   const handleSettings = () => {
-    router.navigate({ to: "/dashboard/settings" });
+-    router.navigate({ to: "/dashboard/settings" });
++    router.navigate({ to: "/dashboard/account" });
   };
 
   return (

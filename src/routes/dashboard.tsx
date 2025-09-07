@@ -41,8 +41,11 @@ function DashboardLayout() {
 
   useEffect(() => {
     if (!isPending && !session) {
-      // console.warn("[DashboardLayout] No session -> redirect to /");
-      router.navigate({ to: "/" });
+      // When unauthenticated, send user to sign-in and preserve intended destination
+      const redirect = typeof window !== "undefined"
+        ? `${window.location.pathname}${window.location.search || ""}`
+        : "/dashboard";
+      router.navigate({ to: "/auth/signin", search: { redirect } as any });
     }
   }, [isPending, session, router]);
 

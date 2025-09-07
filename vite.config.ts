@@ -8,6 +8,7 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 const config = defineConfig({
   server: {
     port: 3100,
+    strictPort: true,
   },
 
   // Define global variables for SSR compatibility

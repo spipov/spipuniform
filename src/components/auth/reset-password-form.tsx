@@ -83,13 +83,14 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
   const onRequestReset = async (data: RequestResetSchema) => {
     setIsLoading(true);
     try {
-      const result = await authClient.forgetPassword({
+      const redirectTo = `${window.location.origin}/auth/reset-password`;
+      const { data: resp, error } = await authClient.requestPasswordReset({
         email: data.email,
-        redirectTo: "/auth/reset-password",
+        redirectTo,
       });
 
-      if (result.error) {
-        toast.error(result.error.message || "Failed to send reset email");
+      if (error) {
+        toast.error(error.message || "Failed to send reset email");
       } else {
         setEmailSent(true);
         toast.success("Password reset email sent! Check your inbox.");
@@ -109,13 +110,13 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
 
     setIsLoading(true);
     try {
-      const result = await authClient.resetPassword({
+      const { data: resp, error } = await authClient.resetPassword({
         newPassword: data.password,
         token: search.token,
       });
 
-      if (result.error) {
-        toast.error(result.error.message || "Failed to reset password");
+      if (error) {
+        toast.error(error.message || "Failed to reset password");
       } else {
         toast.success("Password reset successfully! Please sign in.");
         router.navigate({ to: "/auth/signin" });
@@ -259,17 +260,11 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
                   )}
                 </requestForm.Field>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Sending reset email..." : "Send reset email"}
+                  {isLoading ? "Sending reset link..." : "Send reset link"}
                 </Button>
               </div>
             </form>
           )}
-          <div className="mt-4 text-center text-sm">
-            Remember your password?{" "}
-            <a href="/auth/signin" className="underline underline-offset-4">
-              Sign in
-            </a>
-          </div>
         </CardContent>
       </Card>
     </div>

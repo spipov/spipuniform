@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { valibotValidator } from "@tanstack/valibot-form-adapter";
-import { useRouter } from "@tanstack/react-router";
+import { useRouter, useSearch } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import { toast } from "sonner";
 export function SigninForm({ className, ...props }: React.ComponentProps<"div">) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const search = useSearch({ from: "/auth/signin" }) as { redirect?: string };
 
   const onSubmit = async (data: LoginSchema) => {
     setIsLoading(true);
@@ -44,7 +45,8 @@ export function SigninForm({ className, ...props }: React.ComponentProps<"div">)
           toast.error("We couldn't establish your session. Please try again.");
           return;
         }
-        router.navigate({ to: "/dashboard" });
+        const dest = search?.redirect && search.redirect.startsWith("/") ? search.redirect : "/dashboard";
+        router.navigate({ to: dest as any });
       }
     } catch (_error) {
       toast.error("An unexpected error occurred");

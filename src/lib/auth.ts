@@ -15,6 +15,33 @@ export const auth = betterAuth({
     requireEmailVerification: true,
     // Prevent immediate session on sign-up; wait until email is verified
     autoSignIn: false,
+    // Send password reset emails
+    sendResetPassword: async ({ user, url, token }) => {
+      try {
+        // Ensure a proper absolute URL is sent
+        let resetUrl = url;
+        try {
+          // Validate URL and ensure it exists
+          const u = new URL(resetUrl);
+          // nothing extra here, token is embedded in url
+          resetUrl = u.toString();
+        } catch {
+          // Fallback to constructing with baseURL
+          const baseUrl = (process.env.BETTER_AUTH_URL || '').replace(/\/$/, '');
+          const sep = (url || '').includes('?') ? '&' : '?';
+          resetUrl = `${(url && url.startsWith('http')) ? url : `${baseUrl}${url || ''}`}${sep}token=${encodeURIComponent(token)}`;
+        }
+
+        await EmailService.sendEmail({
+          to: user.email,
+          subject: 'Reset your password',
+          htmlContent: `<p>Hi ${user.name || ''},</p><p>You requested to reset your password.</p><p><a href="${resetUrl}" style="display:inline-block;padding:10px 16px;background:#111;color:#fff;border-radius:6px;text-decoration:none">Reset Password</a></p><p style="font-size:12px;color:#6b7280">If the button doesn't work, copy and paste this link: <a href="${resetUrl}">${resetUrl}</a></p>`,
+          textContent: `Hi ${user.name || ''}, Reset your password: ${resetUrl}`,
+        });
+      } catch (e) {
+        console.error('sendResetPassword failed:', e);
+      }
+    },
   },
   // Ensure verification emails are actually sent on sign-up
   emailVerification: {
