@@ -9,7 +9,7 @@ function useSafeQueryClient(): QueryClient | null {
   try {
     return useQueryClient();
   } catch (error) {
-    console.warn("QueryClient not available:", error);
+    console.error("QueryClient not available:", error);
     return null;
   }
 }
@@ -91,7 +91,7 @@ function StorageSettingsManagementClient({ className }: StorageSettingsManagemen
   const { data: allSettings, isLoading } = useQuery<StorageSettings[]>({
     queryKey: ['storage-settings'],
     queryFn: async () => {
-      const response = await fetch('/api/storage-settings');
+      const response = await fetch('/api/storage/settings');
       const result = await response.json();
       
       if (!result.success) {
@@ -109,7 +109,7 @@ function StorageSettingsManagementClient({ className }: StorageSettingsManagemen
       const method = id ? 'PUT' : 'POST';
       const body = id ? { id, ...payload } : payload;
       
-      const response = await fetch('/api/storage-settings', {
+      const response = await fetch('/api/storage/settings', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -132,7 +132,7 @@ function StorageSettingsManagementClient({ className }: StorageSettingsManagemen
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`/api/storage-settings?id=${id}`, {
+      const response = await fetch(`/api/storage/settings?id=${id}`, {
         method: 'DELETE',
       });
       
@@ -152,7 +152,7 @@ function StorageSettingsManagementClient({ className }: StorageSettingsManagemen
   // Activate mutation
   const activateMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch('/api/storage-settings', {
+      const response = await fetch('/api/storage/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'activate', id }),
@@ -174,7 +174,7 @@ function StorageSettingsManagementClient({ className }: StorageSettingsManagemen
   const testMutation = useMutation({
     mutationFn: async (id: string) => {
       setTestingSettings(id);
-      const response = await fetch('/api/storage-settings', {
+      const response = await fetch('/api/storage/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'test', id }),
@@ -188,7 +188,7 @@ function StorageSettingsManagementClient({ className }: StorageSettingsManagemen
       return result.data;
     },
     onSuccess: (data) => {
-      console.log('Test result:', data);
+      // console.log('Test result:', data);
     },
     onSettled: () => {
       setTestingSettings(null);

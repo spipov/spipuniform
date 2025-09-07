@@ -5,7 +5,7 @@ import * as v from 'valibot';
 
 // API route for branding management
 
-export const ServerRoute = createServerFileRoute('/api/branding').methods({
+export const ServerRoute = createServerFileRoute('/api/branding/').methods({
   GET: async ({ request }) => {
     const url = new URL(request.url);
     const endpoint = url.pathname.split('/api/branding')[1];

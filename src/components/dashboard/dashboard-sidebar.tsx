@@ -88,7 +88,7 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
   const { data: myPerms, isPending: permsPending } = useQuery({
     queryKey: ["my-permissions"],
     queryFn: async () => {
-      const res = await fetch("/api/my-permissions", { credentials: "include" });
+      const res = await fetch("/api/auth/permissions", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load permissions");
       return res.json() as Promise<{ role: string | null; permissions: Record<string, boolean> }>;
     },

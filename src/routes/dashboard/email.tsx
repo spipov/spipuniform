@@ -3,7 +3,12 @@ import { EmailManagement } from "@/components/email/email-management";
 
 export const Route = createFileRoute("/dashboard/email")({
   beforeLoad: async () => {
-    const res = await fetch("/api/my-permissions", { credentials: "include" });
+    const isServer = typeof window === "undefined";
+    if (isServer) {
+      return;
+    }
+
+    const res = await fetch("/api/auth/permissions", { credentials: "include" });
     if (!res.ok) throw redirect({ to: "/" });
     const data = (await res.json()) as { permissions: Record<string, boolean> };
     if (!data.permissions?.viewEmail) throw redirect({ to: "/" });

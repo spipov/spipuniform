@@ -22,33 +22,44 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardLayout() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
+  const isSignedIn = !!session?.user;
 
-  const { data: myPerms, isPending: permsPending } = useQuery({
-    queryKey: ["my-permissions"],
+  const { data: myPerms, isPending: permsPending, isError: permsError } = useQuery({
+    queryKey: ["my-permissions", isSignedIn],
     queryFn: async () => {
-      const res = await fetch("/api/my-permissions", { credentials: "include" });
+      const res = await fetch("/api/auth/permissions", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load permissions");
       return res.json() as Promise<{ role: string | null; permissions: Record<string, boolean> }>;
     },
     staleTime: 60_000,
+    enabled: isSignedIn, // prevent pre-session fetch that would 401
+    retry: 2,
   });
+
+  // Diagnostics
+  // console.log("[DashboardLayout] isPending=", isPending, "session=", !!session, "permsPending=", permsPending, "permsError=", permsError, "role=", myPerms?.role);
 
   useEffect(() => {
     if (!isPending && !session) {
+      // console.warn("[DashboardLayout] No session -> redirect to /");
       router.navigate({ to: "/" });
     }
   }, [isPending, session, router]);
 
   useEffect(() => {
-    if (!isPending && session && !permsPending) {
-      if (!myPerms?.permissions?.viewDashboard) {
+    // Only enforce permission redirect when we have a concrete permissions object and no query error
+    if (!isPending && session && !permsPending && !permsError) {
+      if (myPerms && myPerms.permissions && myPerms.permissions.viewDashboard !== true) {
+        // console.warn("[DashboardLayout] Missing viewDashboard -> redirect to /");
         router.navigate({ to: "/" });
       }
     }
-  }, [isPending, session, permsPending, myPerms, router]);
+  }, [isPending, session, permsPending, permsError, myPerms, router]);
 
   if (isPending || !session) return null;
   if (permsPending) return null;
+  // If perms errored, avoid hard redirect loop; allow UI to render, sidebar will guard its own links
+  // Optionally, could show a toast here
 
   return (
     <SidebarProvider>

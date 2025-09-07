@@ -146,7 +146,7 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
   };
 
   const handleCreateFolder = async () => {
-    console.log('Create folder clicked, folder name:', newFolderName);
+    // console.log('Create folder clicked, folder name:', newFolderName);
     
     if (!newFolderName.trim()) {
       toast.error('Folder name is required');
@@ -158,7 +158,7 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
       name: newFolderName.trim(),
     };
     
-    console.log('Making PUT request to create folder:', folderData);
+    // console.log('Making PUT request to create folder:', folderData);
 
     try {
       const response = await fetch('/api/files', {
@@ -169,16 +169,16 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
         body: JSON.stringify(folderData),
       });
 
-      console.log('Create folder response status:', response.status);
+      // console.log('Create folder response status:', response.status);
       
       const result = await response.json();
-      console.log('Create folder result:', result);
+      // console.log('Create folder result:', result);
 
       if (result.success) {
         toast.success(`Folder "${newFolderName}" created successfully`);
         setNewFolderName('');
         setCreatingFolder(false);
-        console.log('Reloading files after folder creation');
+        // console.log('Reloading files after folder creation');
         await loadFiles(); // Reload the file list
       } else {
         toast.error(result.error || 'Failed to create folder');
@@ -192,30 +192,30 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
   const handleDeleteFile = async (file: FileItem, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent triggering the file click
     
-    console.log('Delete button clicked for file:', file);
+    // console.log('Delete button clicked for file:', file);
     
     if (!confirm(`Are you sure you want to delete "${file.name}"?`)) {
-      console.log('User cancelled delete');
+      // console.log('User cancelled delete');
       return;
     }
     
     const deleteUrl = `/api/files?path=${encodeURIComponent(file.path)}`;
-    console.log('Making DELETE request to:', deleteUrl);
+    // console.log('Making DELETE request to:', deleteUrl);
     
     try {
       const response = await fetch(deleteUrl, {
         method: 'DELETE',
       });
       
-      console.log('Delete response status:', response.status);
-      console.log('Delete response:', response);
+      // console.log('Delete response status:', response.status);
+      // console.log('Delete response:', response);
       
       const result = await response.json();
-      console.log('Delete result:', result);
+      // console.log('Delete result:', result);
       
       if (result.success) {
         toast.success(`"${file.name}" deleted successfully`);
-        console.log('Reloading files after delete');
+        // console.log('Reloading files after delete');
         await loadFiles(); // Reload the file list
       } else {
         toast.error(result.error || 'Failed to delete file');
@@ -227,7 +227,7 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
   };
 
   const handleFileUpload = async () => {
-    console.log('Upload button clicked');
+    // console.log('Upload button clicked');
     
     const input = document.createElement('input');
     input.type = 'file';
@@ -246,7 +246,7 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
 
     input.onchange = async (event) => {
       const file = (event.target as HTMLInputElement).files?.[0];
-      console.log('File selected for upload:', file);
+      // console.log('File selected for upload:', file);
       
       if (file) {
         try {
@@ -264,21 +264,21 @@ function FilePicker({ type, onFileSelect, onCancel }: FilePickerProps) {
           }
           formData.append('category', category);
 
-          console.log('Uploading file with category:', category, 'to path:', currentPath);
-
+          // console.log('Uploading file with category:', category, 'to path:', currentPath);
+          
           const response = await fetch('/api/files', {
             method: 'POST',
             body: formData,
           });
 
-          console.log('Upload response status:', response.status);
+          // console.log('Upload response status:', response.status);
           
           const result = await response.json();
-          console.log('Upload result:', result);
+          // console.log('Upload result:', result);
 
           if (result.success) {
             toast.success(`${file.name} uploaded successfully`);
-            console.log('Reloading files after upload');
+            // console.log('Reloading files after upload');
             await loadFiles(); // Reload the file list
           } else {
             toast.error(result.error || 'Failed to upload file');
@@ -502,8 +502,9 @@ export function BrandingManagement() {
   
   // Debug the state changes
   useEffect(() => {
-    console.log('filePickerType state changed:', filePickerType);
-  }, [filePickerType]);
+    // console.log('filePickerType state changed:', filePickerType);
+    // console.log('filePickerType state changed:', filePickerType);
+    }, [filePickerType]);
 
   // Fetch branding configurations from API
   useEffect(() => {

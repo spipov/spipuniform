@@ -49,14 +49,14 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
       const url = new URL(request.url);
       const requestedPath = url.searchParams.get('path') || '/';
       
-      console.log('GET /api/files requested path:', requestedPath);
+      // console.log('GET /api/files requested path:', requestedPath);
       
       // Sanitize the path to prevent directory traversal
-      const sanitizedPath = requestedPath.replace(/\.\./g, '').replace(/\/+/g, '/');
-      console.log('Sanitized path:', sanitizedPath);
+      const sanitizedPath = requestedPath.replace(/\.{2}/g, '').replace(/\/+/g, '/');
+      // console.log('Sanitized path:', sanitizedPath);
       
       const fullPath = path.join(UPLOADS_BASE, sanitizedPath === '/' ? '' : sanitizedPath);
-      console.log('Full path:', fullPath);
+      // console.log('Full path:', fullPath);
       
       // Ensure the path is within uploads directory
       const resolvedPath = path.resolve(fullPath);
@@ -119,7 +119,7 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
       } catch (error) {
         if ((error as any).code === 'ENOENT') {
           // Directory doesn't exist, return empty array
-          console.log('Directory does not exist:', resolvedPath);
+          // console.log('Directory does not exist:', resolvedPath);
         } else {
           throw error;
         }
@@ -232,7 +232,7 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
       const url = new URL(request.url);
       const filePath = url.searchParams.get('path');
 
-      console.log('DELETE /api/files requested path:', filePath);
+      // console.log('DELETE /api/files requested path:', filePath);
 
       if (!filePath) {
         return new Response(
@@ -247,8 +247,8 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
       const resolvedPath = path.resolve(fullPath);
       const resolvedBase = path.resolve(UPLOADS_BASE);
 
-      console.log('Delete full path:', fullPath);
-      console.log('Delete resolved path:', resolvedPath);
+      // console.log('Delete full path:', fullPath);
+      // console.log('Delete resolved path:', resolvedPath);
 
       // Ensure the path is within uploads directory
       if (!resolvedPath.startsWith(resolvedBase)) {
@@ -269,13 +269,13 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
         );
       }
 
-      console.log('File stats:', { isDirectory: stats.isDirectory(), isFile: stats.isFile() });
+      // console.log('File stats:', { isDirectory: stats.isDirectory(), isFile: stats.isFile() });
 
       // Use the modern fs.rm method which handles both files and directories
-      console.log('Deleting:', resolvedPath, 'isDirectory:', stats.isDirectory());
+      // console.log('Deleting:', resolvedPath, 'isDirectory:', stats.isDirectory());
       try {
         await rm(resolvedPath, { recursive: true, force: true });
-        console.log('Successfully deleted:', resolvedPath);
+        // console.log('Successfully deleted:', resolvedPath);
       } catch (error: any) {
         console.error('Error deleting:', error);
         throw error;
@@ -354,7 +354,7 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
     try {
       const { id, name } = await request.json();
 
-      console.log('PATCH /api/files requested id:', id, 'new name:', name);
+      // console.log('PATCH /api/files requested id:', id, 'new name:', name);
 
       if (!id || !name || !name.trim()) {
         return new Response(
@@ -367,7 +367,7 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
       let oldPath: string;
       try {
         oldPath = Buffer.from(id, 'base64').toString('utf-8');
-        console.log('Decoded path from ID:', oldPath);
+        // console.log('Decoded path from ID:', oldPath);
       } catch (decodeError) {
         return new Response(
           JSON.stringify({ success: false, error: 'Invalid file ID' }),
@@ -401,7 +401,7 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
       const sanitizedName = name.trim().replace(/[^a-zA-Z0-9.\-_]/g, '_');
       const newPath = path.join(parentDir, sanitizedName);
 
-      console.log('Renaming from:', resolvedOldPath, 'to:', newPath);
+      // console.log('Renaming from:', resolvedOldPath, 'to:', newPath);
 
       // Perform the rename
       await rename(resolvedOldPath, newPath);

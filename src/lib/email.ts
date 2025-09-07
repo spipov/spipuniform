@@ -10,11 +10,11 @@ export interface EmailOptions {
 
 export async function sendEmail(options: EmailOptions): Promise<void> {
   // TODO: Implement actual email sending logic
-  console.log("Email would be sent:", {
-    to: options.to,
-    subject: options.subject,
-    // Don't log the full content in production
-  });
+  // console.log("Email would be sent:", {
+  //   to: options.to,
+  //   subject: options.subject,
+  //   // Don't log the full content in production
+  // });
 
   // For development, we'll just log the email
   // In production, replace this with actual email service integration

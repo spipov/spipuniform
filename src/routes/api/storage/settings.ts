@@ -3,7 +3,7 @@ import { StorageService } from '@/lib/services/file-system';
 import { insertStorageSettingsSchema, updateStorageSettingsSchema } from '@/db/schema/file-system';
 import * as v from 'valibot';
 
-export const ServerRoute = createServerFileRoute('/api/storage-settings').methods({
+export const ServerRoute = createServerFileRoute('/api/storage/settings').methods({
   GET: async ({ request }) => {
     try {
       const url = new URL(request.url);

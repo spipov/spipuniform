@@ -78,6 +78,18 @@ export function EmailBuilderIntegration({ initialHtml = '', onHtmlChange }: Emai
     onHtmlChange?.(html);
   };
 
+  const handleSave = React.useCallback(async () => {
+    try {
+      const jsonData = (window as any).__emailBuilderDoc;
+      const htmlOutput = editorHtml || '';
+      // console.log('Saving template:', { jsonData, htmlOutput });
+      await onSave(jsonData, htmlOutput);
+      toast({ title: 'Saved', description: 'Email template saved successfully.' });
+    } catch (e) {
+      toast({ title: 'Save failed', description: String(e), variant: 'destructive' });
+    }
+  }, [editorHtml, onSave]);
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -152,7 +164,7 @@ export function EmailBuilderIntegration({ initialHtml = '', onHtmlChange }: Emai
           <Button
             onClick={() => {
               // Here you could add logic to save the template
-              console.log('Saving template:', { jsonData, htmlOutput });
+              // console.log('Saving template:', { jsonData, htmlOutput });
             }}
           >
             Save Template

@@ -3,7 +3,12 @@ import { BrandingManager } from "@/components/branding/branding-manager";
 
 export const Route = createFileRoute("/dashboard/branding")({
   beforeLoad: async () => {
-    const res = await fetch("/api/my-permissions", { credentials: "include" });
+    const isServer = typeof window === "undefined";
+    if (isServer) {
+      return;
+    }
+
+    const res = await fetch("/api/auth/permissions", { credentials: "include" });
     if (!res.ok) {
       throw redirect({ to: "/" });
     }

@@ -155,7 +155,7 @@ function useCompiledHtml(doc: any) {
         </div>
       `);
     } catch (e) {
-      console.warn('Failed to compile email:', e);
+      console.error('Failed to compile email:', e);
       setHtml('<p>Preview error</p>');
     }
   }, [doc]);

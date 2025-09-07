@@ -6,7 +6,7 @@ function useSafeMutation(options: Parameters<typeof useMutation>[0]) {
   try {
     return useMutation(options);
   } catch (error) {
-    console.warn("useMutation not available:", error);
+    console.error("useMutation not available:", error);
     return {
       mutate: () => {},
       isPending: false,

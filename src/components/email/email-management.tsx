@@ -278,7 +278,7 @@ export function EmailManagement() {
         (window as any).__emailFragmentsHeader = header || [];
         (window as any).__emailFragmentsFooter = footer || [];
       } catch (e) {
-        console.warn('Failed to load email fragments', e);
+        console.error('Failed to load email fragments', e);
       }
     }
     loadFragments();

@@ -156,6 +156,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             __html: `(() => { try { var d = document.documentElement; d.classList.add('no-theme-transitions'); var raw = localStorage.getItem('branding:active'); if (!raw) return; var b = JSON.parse(raw); var r = d.style; if (b.primaryColor) r.setProperty('--primary', b.primaryColor); if (b.secondaryColor) r.setProperty('--secondary', b.secondaryColor); if (b.accentColor) r.setProperty('--accent', b.accentColor); if (b.backgroundColor) r.setProperty('--background', b.backgroundColor); if (b.textColor) r.setProperty('--foreground', b.textColor); } catch(e){} })();`,
           }}
         />
+        {/* Silence console output on the client */}
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: `(() => { try { var c = window.console; if (!c) return; var noop = function(){}; ['log','info','warn','debug','trace'].forEach(function(k){ try { if (typeof c[k] === 'function') c[k] = noop; } catch(e){} }); } catch(e){} })();`,
+          }}
+        />
         <HeadContent />
       </head>
       <body>

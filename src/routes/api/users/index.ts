@@ -7,7 +7,7 @@ import { auth } from "@/lib/auth";
 // Dynamic imports will be used inside functions to avoid SSR issues
 import * as v from "valibot";
 
-export const ServerRoute = createServerFileRoute("/api/users").methods({
+export const ServerRoute = createServerFileRoute("/api/users/").methods({
   GET: async ({ request }) => {
     try {
       // Check authentication

@@ -30,26 +30,28 @@ import { Route as DashboardUserManagementRolesRouteImport } from './routes/dashb
 import { Route as DashboardUserManagementPermissionsRouteImport } from './routes/dashboard/user-management/permissions'
 import { Route as DashboardUserManagementConsolidatedRouteImport } from './routes/dashboard/user-management/consolidated'
 import { ServerRoute as ApiUsersApprovalServerRouteImport } from './routes/api/users-approval'
-import { ServerRoute as ApiUsersActionsServerRouteImport } from './routes/api.users-actions'
-import { ServerRoute as ApiUsersServerRouteImport } from './routes/api.users'
-import { ServerRoute as ApiTestServerRouteImport } from './routes/api.test'
-import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api.storage-settings'
-import { ServerRoute as ApiRolesServerRouteImport } from './routes/api.roles'
+import { ServerRoute as ApiTestServerRouteImport } from './routes/api/test'
 import { ServerRoute as ApiMyPermissionsServerRouteImport } from './routes/api.my-permissions'
 import { ServerRoute as ApiFilesServerRouteImport } from './routes/api/files'
-import { ServerRoute as ApiEmailServerRouteImport } from './routes/api.email'
 import { ServerRoute as ApiCredentialsServerRouteImport } from './routes/api/credentials'
-import { ServerRoute as ApiBrandingServerRouteImport } from './routes/api.branding'
 import { ServerRoute as ApiAuthSettingsServerRouteImport } from './routes/api/auth-settings'
-import { ServerRoute as ApiUsersUserIdServerRouteImport } from './routes/api.users.$userId'
-import { ServerRoute as ApiRolesRoleIdServerRouteImport } from './routes/api.roles.$roleId'
+import { ServerRoute as ApiUsersIndexServerRouteImport } from './routes/api/users/index'
+import { ServerRoute as ApiRolesIndexServerRouteImport } from './routes/api/roles/index'
+import { ServerRoute as ApiEmailIndexServerRouteImport } from './routes/api/email/index'
+import { ServerRoute as ApiBrandingIndexServerRouteImport } from './routes/api/branding/index'
+import { ServerRoute as ApiUsersActionsServerRouteImport } from './routes/api/users/actions'
+import { ServerRoute as ApiUsersUserIdServerRouteImport } from './routes/api/users/$userId'
+import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api/storage/settings'
+import { ServerRoute as ApiRolesRoleIdServerRouteImport } from './routes/api/roles/$roleId'
 import { ServerRoute as ApiEmailTestServerRouteImport } from './routes/api/email/test'
 import { ServerRoute as ApiEmailTemplatesServerRouteImport } from './routes/api/email/templates'
 import { ServerRoute as ApiEmailSettingsServerRouteImport } from './routes/api/email/settings'
 import { ServerRoute as ApiEmailLogsServerRouteImport } from './routes/api/email/logs'
 import { ServerRoute as ApiEmailFragmentsServerRouteImport } from './routes/api/email/fragments'
+import { ServerRoute as ApiBrandingActiveServerRouteImport } from './routes/api/branding/active'
 import { ServerRoute as ApiAuthSignupPostHookServerRouteImport } from './routes/api/auth/signup-post-hook'
-import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api.auth.$'
+import { ServerRoute as ApiAuthPermissionsServerRouteImport } from './routes/api/auth/permissions'
+import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth/$'
 import { ServerRoute as ApiAuthSettingsFlagServerRouteImport } from './routes/api/auth-settings.flag'
 import { ServerRoute as ApiEmailTemplatesSeedApprovalServerRouteImport } from './routes/api/email/templates.seed-approval'
 import { ServerRoute as ApiEmailTemplatesPreviewServerRouteImport } from './routes/api/email/templates.preview'
@@ -158,30 +160,9 @@ const ApiUsersApprovalServerRoute = ApiUsersApprovalServerRouteImport.update({
   path: '/api/users-approval',
   getParentRoute: () => rootServerRouteImport,
 } as any)
-const ApiUsersActionsServerRoute = ApiUsersActionsServerRouteImport.update({
-  id: '/api/users-actions',
-  path: '/api/users-actions',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
-const ApiUsersServerRoute = ApiUsersServerRouteImport.update({
-  id: '/api/users',
-  path: '/api/users',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
 const ApiTestServerRoute = ApiTestServerRouteImport.update({
   id: '/api/test',
   path: '/api/test',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
-const ApiStorageSettingsServerRoute =
-  ApiStorageSettingsServerRouteImport.update({
-    id: '/api/storage-settings',
-    path: '/api/storage-settings',
-    getParentRoute: () => rootServerRouteImport,
-  } as any)
-const ApiRolesServerRoute = ApiRolesServerRouteImport.update({
-  id: '/api/roles',
-  path: '/api/roles',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiMyPermissionsServerRoute = ApiMyPermissionsServerRouteImport.update({
@@ -194,19 +175,9 @@ const ApiFilesServerRoute = ApiFilesServerRouteImport.update({
   path: '/api/files',
   getParentRoute: () => rootServerRouteImport,
 } as any)
-const ApiEmailServerRoute = ApiEmailServerRouteImport.update({
-  id: '/api/email',
-  path: '/api/email',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
 const ApiCredentialsServerRoute = ApiCredentialsServerRouteImport.update({
   id: '/api/credentials',
   path: '/api/credentials',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
-const ApiBrandingServerRoute = ApiBrandingServerRouteImport.update({
-  id: '/api/branding',
-  path: '/api/branding',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiAuthSettingsServerRoute = ApiAuthSettingsServerRouteImport.update({
@@ -214,45 +185,87 @@ const ApiAuthSettingsServerRoute = ApiAuthSettingsServerRouteImport.update({
   path: '/api/auth-settings',
   getParentRoute: () => rootServerRouteImport,
 } as any)
-const ApiUsersUserIdServerRoute = ApiUsersUserIdServerRouteImport.update({
-  id: '/$userId',
-  path: '/$userId',
-  getParentRoute: () => ApiUsersServerRoute,
+const ApiUsersIndexServerRoute = ApiUsersIndexServerRouteImport.update({
+  id: '/api/users/',
+  path: '/api/users/',
+  getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiRolesIndexServerRoute = ApiRolesIndexServerRouteImport.update({
+  id: '/api/roles/',
+  path: '/api/roles/',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiEmailIndexServerRoute = ApiEmailIndexServerRouteImport.update({
+  id: '/api/email/',
+  path: '/api/email/',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiBrandingIndexServerRoute = ApiBrandingIndexServerRouteImport.update({
+  id: '/api/branding/',
+  path: '/api/branding/',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiUsersActionsServerRoute = ApiUsersActionsServerRouteImport.update({
+  id: '/api/users/actions',
+  path: '/api/users/actions',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiUsersUserIdServerRoute = ApiUsersUserIdServerRouteImport.update({
+  id: '/api/users/$userId',
+  path: '/api/users/$userId',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiStorageSettingsServerRoute =
+  ApiStorageSettingsServerRouteImport.update({
+    id: '/api/storage/settings',
+    path: '/api/storage/settings',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiRolesRoleIdServerRoute = ApiRolesRoleIdServerRouteImport.update({
-  id: '/$roleId',
-  path: '/$roleId',
-  getParentRoute: () => ApiRolesServerRoute,
+  id: '/api/roles/$roleId',
+  path: '/api/roles/$roleId',
+  getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiEmailTestServerRoute = ApiEmailTestServerRouteImport.update({
-  id: '/test',
-  path: '/test',
-  getParentRoute: () => ApiEmailServerRoute,
+  id: '/api/email/test',
+  path: '/api/email/test',
+  getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiEmailTemplatesServerRoute = ApiEmailTemplatesServerRouteImport.update({
-  id: '/templates',
-  path: '/templates',
-  getParentRoute: () => ApiEmailServerRoute,
+  id: '/api/email/templates',
+  path: '/api/email/templates',
+  getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiEmailSettingsServerRoute = ApiEmailSettingsServerRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => ApiEmailServerRoute,
+  id: '/api/email/settings',
+  path: '/api/email/settings',
+  getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiEmailLogsServerRoute = ApiEmailLogsServerRouteImport.update({
-  id: '/logs',
-  path: '/logs',
-  getParentRoute: () => ApiEmailServerRoute,
+  id: '/api/email/logs',
+  path: '/api/email/logs',
+  getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiEmailFragmentsServerRoute = ApiEmailFragmentsServerRouteImport.update({
-  id: '/fragments',
-  path: '/fragments',
-  getParentRoute: () => ApiEmailServerRoute,
+  id: '/api/email/fragments',
+  path: '/api/email/fragments',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiBrandingActiveServerRoute = ApiBrandingActiveServerRouteImport.update({
+  id: '/api/branding/active',
+  path: '/api/branding/active',
+  getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiAuthSignupPostHookServerRoute =
   ApiAuthSignupPostHookServerRouteImport.update({
     id: '/api/auth/signup-post-hook',
     path: '/api/auth/signup-post-hook',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiAuthPermissionsServerRoute =
+  ApiAuthPermissionsServerRouteImport.update({
+    id: '/api/auth/permissions',
+    path: '/api/auth/permissions',
     getParentRoute: () => rootServerRouteImport,
   } as any)
 const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
@@ -418,54 +431,58 @@ export interface RootRouteChildren {
 }
 export interface FileServerRoutesByFullPath {
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
-  '/api/branding': typeof ApiBrandingServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
-  '/api/email': typeof ApiEmailServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
   '/api/my-permissions': typeof ApiMyPermissionsServerRoute
-  '/api/roles': typeof ApiRolesServerRouteWithChildren
-  '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
-  '/api/users': typeof ApiUsersServerRouteWithChildren
-  '/api/users-actions': typeof ApiUsersActionsServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/auth/permissions': typeof ApiAuthPermissionsServerRoute
   '/api/auth/signup-post-hook': typeof ApiAuthSignupPostHookServerRoute
+  '/api/branding/active': typeof ApiBrandingActiveServerRoute
   '/api/email/fragments': typeof ApiEmailFragmentsServerRouteWithChildren
   '/api/email/logs': typeof ApiEmailLogsServerRoute
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
   '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
+  '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
+  '/api/users/actions': typeof ApiUsersActionsServerRoute
+  '/api/branding': typeof ApiBrandingIndexServerRoute
+  '/api/email': typeof ApiEmailIndexServerRoute
+  '/api/roles': typeof ApiRolesIndexServerRoute
+  '/api/users': typeof ApiUsersIndexServerRoute
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
 }
 export interface FileServerRoutesByTo {
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
-  '/api/branding': typeof ApiBrandingServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
-  '/api/email': typeof ApiEmailServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
   '/api/my-permissions': typeof ApiMyPermissionsServerRoute
-  '/api/roles': typeof ApiRolesServerRouteWithChildren
-  '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
-  '/api/users': typeof ApiUsersServerRouteWithChildren
-  '/api/users-actions': typeof ApiUsersActionsServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/auth/permissions': typeof ApiAuthPermissionsServerRoute
   '/api/auth/signup-post-hook': typeof ApiAuthSignupPostHookServerRoute
+  '/api/branding/active': typeof ApiBrandingActiveServerRoute
   '/api/email/fragments': typeof ApiEmailFragmentsServerRouteWithChildren
   '/api/email/logs': typeof ApiEmailLogsServerRoute
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
   '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
+  '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
+  '/api/users/actions': typeof ApiUsersActionsServerRoute
+  '/api/branding': typeof ApiBrandingIndexServerRoute
+  '/api/email': typeof ApiEmailIndexServerRoute
+  '/api/roles': typeof ApiRolesIndexServerRoute
+  '/api/users': typeof ApiUsersIndexServerRoute
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
@@ -473,27 +490,29 @@ export interface FileServerRoutesByTo {
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
-  '/api/branding': typeof ApiBrandingServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
-  '/api/email': typeof ApiEmailServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
   '/api/my-permissions': typeof ApiMyPermissionsServerRoute
-  '/api/roles': typeof ApiRolesServerRouteWithChildren
-  '/api/storage-settings': typeof ApiStorageSettingsServerRoute
   '/api/test': typeof ApiTestServerRoute
-  '/api/users': typeof ApiUsersServerRouteWithChildren
-  '/api/users-actions': typeof ApiUsersActionsServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/auth/permissions': typeof ApiAuthPermissionsServerRoute
   '/api/auth/signup-post-hook': typeof ApiAuthSignupPostHookServerRoute
+  '/api/branding/active': typeof ApiBrandingActiveServerRoute
   '/api/email/fragments': typeof ApiEmailFragmentsServerRouteWithChildren
   '/api/email/logs': typeof ApiEmailLogsServerRoute
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
   '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
+  '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
+  '/api/users/actions': typeof ApiUsersActionsServerRoute
+  '/api/branding/': typeof ApiBrandingIndexServerRoute
+  '/api/email/': typeof ApiEmailIndexServerRoute
+  '/api/roles/': typeof ApiRolesIndexServerRoute
+  '/api/users/': typeof ApiUsersIndexServerRoute
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
@@ -502,81 +521,87 @@ export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
   fullPaths:
     | '/api/auth-settings'
-    | '/api/branding'
     | '/api/credentials'
-    | '/api/email'
     | '/api/files'
     | '/api/my-permissions'
-    | '/api/roles'
-    | '/api/storage-settings'
     | '/api/test'
-    | '/api/users'
-    | '/api/users-actions'
     | '/api/users-approval'
     | '/api/auth-settings/flag'
     | '/api/auth/$'
+    | '/api/auth/permissions'
     | '/api/auth/signup-post-hook'
+    | '/api/branding/active'
     | '/api/email/fragments'
     | '/api/email/logs'
     | '/api/email/settings'
     | '/api/email/templates'
     | '/api/email/test'
     | '/api/roles/$roleId'
+    | '/api/storage/settings'
     | '/api/users/$userId'
+    | '/api/users/actions'
+    | '/api/branding'
+    | '/api/email'
+    | '/api/roles'
+    | '/api/users'
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
   fileServerRoutesByTo: FileServerRoutesByTo
   to:
     | '/api/auth-settings'
-    | '/api/branding'
     | '/api/credentials'
-    | '/api/email'
     | '/api/files'
     | '/api/my-permissions'
-    | '/api/roles'
-    | '/api/storage-settings'
     | '/api/test'
-    | '/api/users'
-    | '/api/users-actions'
     | '/api/users-approval'
     | '/api/auth-settings/flag'
     | '/api/auth/$'
+    | '/api/auth/permissions'
     | '/api/auth/signup-post-hook'
+    | '/api/branding/active'
     | '/api/email/fragments'
     | '/api/email/logs'
     | '/api/email/settings'
     | '/api/email/templates'
     | '/api/email/test'
     | '/api/roles/$roleId'
+    | '/api/storage/settings'
     | '/api/users/$userId'
+    | '/api/users/actions'
+    | '/api/branding'
+    | '/api/email'
+    | '/api/roles'
+    | '/api/users'
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
   id:
     | '__root__'
     | '/api/auth-settings'
-    | '/api/branding'
     | '/api/credentials'
-    | '/api/email'
     | '/api/files'
     | '/api/my-permissions'
-    | '/api/roles'
-    | '/api/storage-settings'
     | '/api/test'
-    | '/api/users'
-    | '/api/users-actions'
     | '/api/users-approval'
     | '/api/auth-settings/flag'
     | '/api/auth/$'
+    | '/api/auth/permissions'
     | '/api/auth/signup-post-hook'
+    | '/api/branding/active'
     | '/api/email/fragments'
     | '/api/email/logs'
     | '/api/email/settings'
     | '/api/email/templates'
     | '/api/email/test'
     | '/api/roles/$roleId'
+    | '/api/storage/settings'
     | '/api/users/$userId'
+    | '/api/users/actions'
+    | '/api/branding/'
+    | '/api/email/'
+    | '/api/roles/'
+    | '/api/users/'
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
@@ -584,19 +609,28 @@ export interface FileServerRouteTypes {
 }
 export interface RootServerRouteChildren {
   ApiAuthSettingsServerRoute: typeof ApiAuthSettingsServerRouteWithChildren
-  ApiBrandingServerRoute: typeof ApiBrandingServerRoute
   ApiCredentialsServerRoute: typeof ApiCredentialsServerRoute
-  ApiEmailServerRoute: typeof ApiEmailServerRouteWithChildren
   ApiFilesServerRoute: typeof ApiFilesServerRoute
   ApiMyPermissionsServerRoute: typeof ApiMyPermissionsServerRoute
-  ApiRolesServerRoute: typeof ApiRolesServerRouteWithChildren
-  ApiStorageSettingsServerRoute: typeof ApiStorageSettingsServerRoute
   ApiTestServerRoute: typeof ApiTestServerRoute
-  ApiUsersServerRoute: typeof ApiUsersServerRouteWithChildren
-  ApiUsersActionsServerRoute: typeof ApiUsersActionsServerRoute
   ApiUsersApprovalServerRoute: typeof ApiUsersApprovalServerRoute
   ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
+  ApiAuthPermissionsServerRoute: typeof ApiAuthPermissionsServerRoute
   ApiAuthSignupPostHookServerRoute: typeof ApiAuthSignupPostHookServerRoute
+  ApiBrandingActiveServerRoute: typeof ApiBrandingActiveServerRoute
+  ApiEmailFragmentsServerRoute: typeof ApiEmailFragmentsServerRouteWithChildren
+  ApiEmailLogsServerRoute: typeof ApiEmailLogsServerRoute
+  ApiEmailSettingsServerRoute: typeof ApiEmailSettingsServerRoute
+  ApiEmailTemplatesServerRoute: typeof ApiEmailTemplatesServerRouteWithChildren
+  ApiEmailTestServerRoute: typeof ApiEmailTestServerRoute
+  ApiRolesRoleIdServerRoute: typeof ApiRolesRoleIdServerRoute
+  ApiStorageSettingsServerRoute: typeof ApiStorageSettingsServerRoute
+  ApiUsersUserIdServerRoute: typeof ApiUsersUserIdServerRoute
+  ApiUsersActionsServerRoute: typeof ApiUsersActionsServerRoute
+  ApiBrandingIndexServerRoute: typeof ApiBrandingIndexServerRoute
+  ApiEmailIndexServerRoute: typeof ApiEmailIndexServerRoute
+  ApiRolesIndexServerRoute: typeof ApiRolesIndexServerRoute
+  ApiUsersIndexServerRoute: typeof ApiUsersIndexServerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -738,39 +772,11 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiUsersApprovalServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
-    '/api/users-actions': {
-      id: '/api/users-actions'
-      path: '/api/users-actions'
-      fullPath: '/api/users-actions'
-      preLoaderRoute: typeof ApiUsersActionsServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/api/users': {
-      id: '/api/users'
-      path: '/api/users'
-      fullPath: '/api/users'
-      preLoaderRoute: typeof ApiUsersServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
     '/api/test': {
       id: '/api/test'
       path: '/api/test'
       fullPath: '/api/test'
       preLoaderRoute: typeof ApiTestServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/api/storage-settings': {
-      id: '/api/storage-settings'
-      path: '/api/storage-settings'
-      fullPath: '/api/storage-settings'
-      preLoaderRoute: typeof ApiStorageSettingsServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/api/roles': {
-      id: '/api/roles'
-      path: '/api/roles'
-      fullPath: '/api/roles'
-      preLoaderRoute: typeof ApiRolesServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/my-permissions': {
@@ -787,25 +793,11 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiFilesServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
-    '/api/email': {
-      id: '/api/email'
-      path: '/api/email'
-      fullPath: '/api/email'
-      preLoaderRoute: typeof ApiEmailServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
     '/api/credentials': {
       id: '/api/credentials'
       path: '/api/credentials'
       fullPath: '/api/credentials'
       preLoaderRoute: typeof ApiCredentialsServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/api/branding': {
-      id: '/api/branding'
-      path: '/api/branding'
-      fullPath: '/api/branding'
-      preLoaderRoute: typeof ApiBrandingServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/auth-settings': {
@@ -815,60 +807,116 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiAuthSettingsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/users/': {
+      id: '/api/users/'
+      path: '/api/users'
+      fullPath: '/api/users'
+      preLoaderRoute: typeof ApiUsersIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/roles/': {
+      id: '/api/roles/'
+      path: '/api/roles'
+      fullPath: '/api/roles'
+      preLoaderRoute: typeof ApiRolesIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/email/': {
+      id: '/api/email/'
+      path: '/api/email'
+      fullPath: '/api/email'
+      preLoaderRoute: typeof ApiEmailIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/branding/': {
+      id: '/api/branding/'
+      path: '/api/branding'
+      fullPath: '/api/branding'
+      preLoaderRoute: typeof ApiBrandingIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/users/actions': {
+      id: '/api/users/actions'
+      path: '/api/users/actions'
+      fullPath: '/api/users/actions'
+      preLoaderRoute: typeof ApiUsersActionsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/users/$userId': {
       id: '/api/users/$userId'
-      path: '/$userId'
+      path: '/api/users/$userId'
       fullPath: '/api/users/$userId'
       preLoaderRoute: typeof ApiUsersUserIdServerRouteImport
-      parentRoute: typeof ApiUsersServerRoute
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/storage/settings': {
+      id: '/api/storage/settings'
+      path: '/api/storage/settings'
+      fullPath: '/api/storage/settings'
+      preLoaderRoute: typeof ApiStorageSettingsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
     }
     '/api/roles/$roleId': {
       id: '/api/roles/$roleId'
-      path: '/$roleId'
+      path: '/api/roles/$roleId'
       fullPath: '/api/roles/$roleId'
       preLoaderRoute: typeof ApiRolesRoleIdServerRouteImport
-      parentRoute: typeof ApiRolesServerRoute
+      parentRoute: typeof rootServerRouteImport
     }
     '/api/email/test': {
       id: '/api/email/test'
-      path: '/test'
+      path: '/api/email/test'
       fullPath: '/api/email/test'
       preLoaderRoute: typeof ApiEmailTestServerRouteImport
-      parentRoute: typeof ApiEmailServerRoute
+      parentRoute: typeof rootServerRouteImport
     }
     '/api/email/templates': {
       id: '/api/email/templates'
-      path: '/templates'
+      path: '/api/email/templates'
       fullPath: '/api/email/templates'
       preLoaderRoute: typeof ApiEmailTemplatesServerRouteImport
-      parentRoute: typeof ApiEmailServerRoute
+      parentRoute: typeof rootServerRouteImport
     }
     '/api/email/settings': {
       id: '/api/email/settings'
-      path: '/settings'
+      path: '/api/email/settings'
       fullPath: '/api/email/settings'
       preLoaderRoute: typeof ApiEmailSettingsServerRouteImport
-      parentRoute: typeof ApiEmailServerRoute
+      parentRoute: typeof rootServerRouteImport
     }
     '/api/email/logs': {
       id: '/api/email/logs'
-      path: '/logs'
+      path: '/api/email/logs'
       fullPath: '/api/email/logs'
       preLoaderRoute: typeof ApiEmailLogsServerRouteImport
-      parentRoute: typeof ApiEmailServerRoute
+      parentRoute: typeof rootServerRouteImport
     }
     '/api/email/fragments': {
       id: '/api/email/fragments'
-      path: '/fragments'
+      path: '/api/email/fragments'
       fullPath: '/api/email/fragments'
       preLoaderRoute: typeof ApiEmailFragmentsServerRouteImport
-      parentRoute: typeof ApiEmailServerRoute
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/branding/active': {
+      id: '/api/branding/active'
+      path: '/api/branding/active'
+      fullPath: '/api/branding/active'
+      preLoaderRoute: typeof ApiBrandingActiveServerRouteImport
+      parentRoute: typeof rootServerRouteImport
     }
     '/api/auth/signup-post-hook': {
       id: '/api/auth/signup-post-hook'
       path: '/api/auth/signup-post-hook'
       fullPath: '/api/auth/signup-post-hook'
       preLoaderRoute: typeof ApiAuthSignupPostHookServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/permissions': {
+      id: '/api/auth/permissions'
+      path: '/api/auth/permissions'
+      fullPath: '/api/auth/permissions'
+      preLoaderRoute: typeof ApiAuthPermissionsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/auth/$': {
@@ -987,50 +1035,6 @@ const ApiEmailTemplatesServerRouteWithChildren =
     ApiEmailTemplatesServerRouteChildren,
   )
 
-interface ApiEmailServerRouteChildren {
-  ApiEmailFragmentsServerRoute: typeof ApiEmailFragmentsServerRouteWithChildren
-  ApiEmailLogsServerRoute: typeof ApiEmailLogsServerRoute
-  ApiEmailSettingsServerRoute: typeof ApiEmailSettingsServerRoute
-  ApiEmailTemplatesServerRoute: typeof ApiEmailTemplatesServerRouteWithChildren
-  ApiEmailTestServerRoute: typeof ApiEmailTestServerRoute
-}
-
-const ApiEmailServerRouteChildren: ApiEmailServerRouteChildren = {
-  ApiEmailFragmentsServerRoute: ApiEmailFragmentsServerRouteWithChildren,
-  ApiEmailLogsServerRoute: ApiEmailLogsServerRoute,
-  ApiEmailSettingsServerRoute: ApiEmailSettingsServerRoute,
-  ApiEmailTemplatesServerRoute: ApiEmailTemplatesServerRouteWithChildren,
-  ApiEmailTestServerRoute: ApiEmailTestServerRoute,
-}
-
-const ApiEmailServerRouteWithChildren = ApiEmailServerRoute._addFileChildren(
-  ApiEmailServerRouteChildren,
-)
-
-interface ApiRolesServerRouteChildren {
-  ApiRolesRoleIdServerRoute: typeof ApiRolesRoleIdServerRoute
-}
-
-const ApiRolesServerRouteChildren: ApiRolesServerRouteChildren = {
-  ApiRolesRoleIdServerRoute: ApiRolesRoleIdServerRoute,
-}
-
-const ApiRolesServerRouteWithChildren = ApiRolesServerRoute._addFileChildren(
-  ApiRolesServerRouteChildren,
-)
-
-interface ApiUsersServerRouteChildren {
-  ApiUsersUserIdServerRoute: typeof ApiUsersUserIdServerRoute
-}
-
-const ApiUsersServerRouteChildren: ApiUsersServerRouteChildren = {
-  ApiUsersUserIdServerRoute: ApiUsersUserIdServerRoute,
-}
-
-const ApiUsersServerRouteWithChildren = ApiUsersServerRoute._addFileChildren(
-  ApiUsersServerRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
@@ -1045,19 +1049,28 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
   ApiAuthSettingsServerRoute: ApiAuthSettingsServerRouteWithChildren,
-  ApiBrandingServerRoute: ApiBrandingServerRoute,
   ApiCredentialsServerRoute: ApiCredentialsServerRoute,
-  ApiEmailServerRoute: ApiEmailServerRouteWithChildren,
   ApiFilesServerRoute: ApiFilesServerRoute,
   ApiMyPermissionsServerRoute: ApiMyPermissionsServerRoute,
-  ApiRolesServerRoute: ApiRolesServerRouteWithChildren,
-  ApiStorageSettingsServerRoute: ApiStorageSettingsServerRoute,
   ApiTestServerRoute: ApiTestServerRoute,
-  ApiUsersServerRoute: ApiUsersServerRouteWithChildren,
-  ApiUsersActionsServerRoute: ApiUsersActionsServerRoute,
   ApiUsersApprovalServerRoute: ApiUsersApprovalServerRoute,
   ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
+  ApiAuthPermissionsServerRoute: ApiAuthPermissionsServerRoute,
   ApiAuthSignupPostHookServerRoute: ApiAuthSignupPostHookServerRoute,
+  ApiBrandingActiveServerRoute: ApiBrandingActiveServerRoute,
+  ApiEmailFragmentsServerRoute: ApiEmailFragmentsServerRouteWithChildren,
+  ApiEmailLogsServerRoute: ApiEmailLogsServerRoute,
+  ApiEmailSettingsServerRoute: ApiEmailSettingsServerRoute,
+  ApiEmailTemplatesServerRoute: ApiEmailTemplatesServerRouteWithChildren,
+  ApiEmailTestServerRoute: ApiEmailTestServerRoute,
+  ApiRolesRoleIdServerRoute: ApiRolesRoleIdServerRoute,
+  ApiStorageSettingsServerRoute: ApiStorageSettingsServerRoute,
+  ApiUsersUserIdServerRoute: ApiUsersUserIdServerRoute,
+  ApiUsersActionsServerRoute: ApiUsersActionsServerRoute,
+  ApiBrandingIndexServerRoute: ApiBrandingIndexServerRoute,
+  ApiEmailIndexServerRoute: ApiEmailIndexServerRoute,
+  ApiRolesIndexServerRoute: ApiRolesIndexServerRoute,
+  ApiUsersIndexServerRoute: ApiUsersIndexServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)

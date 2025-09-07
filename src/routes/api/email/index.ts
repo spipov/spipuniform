@@ -3,7 +3,7 @@ import { EmailService } from '@/lib/services/email/email-service';
 import { insertEmailTemplateSchema, updateEmailTemplateSchema } from '@/db/schema/email';
 import * as v from 'valibot';
 
-export const ServerRoute = createServerFileRoute('/api/email').methods({
+export const ServerRoute = createServerFileRoute('/api/email/').methods({
   GET: async ({ request }) => {
     try {
       const url = new URL(request.url);

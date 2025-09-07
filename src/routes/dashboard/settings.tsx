@@ -4,13 +4,42 @@ import { EmailManagement } from "@/components/email/email-management";
 import { StorageSettingsManagement } from "@/components/file-system/storage-settings-management";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AuthSettingsPanel } from "@/components/settings/auth-settings";
+import { getSession } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/dashboard/settings")({
-  beforeLoad: async () => {
-    const res = await fetch("/api/my-permissions", { credentials: "include" });
-    if (!res.ok) throw redirect({ to: "/" });
-    const data = (await res.json()) as { permissions: Record<string, boolean> };
-    if (!data.permissions?.viewDashboardSettings) throw redirect({ to: "/" });
+  beforeLoad: async (opts) => {
+    const isServer = typeof window === "undefined";
+
+    if (isServer) {
+      return;
+    }
+
+    try {
+      // Wait for a real session after hydration to avoid race
+      let tries = 0;
+      let sess = await getSession();
+      while (!sess && tries < 20) {
+        await new Promise((r) => setTimeout(r, 100));
+        tries += 1;
+        sess = await getSession();
+      }
+      if (!sess) {
+        return; // let layout/session guard handle
+      }
+
+      // Client-side permission check
+      const res = await fetch("/api/auth/permissions", { credentials: "include" });
+
+      if (res.status === 401) return; // let layout guard handle
+      if (!res.ok) {
+        return; // avoid loop
+      }
+
+      const data = (await res.json()) as { permissions: Record<string, boolean> };
+      if (!data.permissions?.viewDashboardSettings) throw redirect({ to: "/" });
+    } catch (err) {
+      return; // avoid accidental homepage redirect
+    }
   },
   validateSearch: (search: Record<string, unknown>) => ({
     tab: (search.tab as string) || "branding",
