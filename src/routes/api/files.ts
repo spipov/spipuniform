@@ -3,6 +3,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
 import type { Stats } from 'fs';
+import { auth } from '@/lib/auth';
+import { db } from '@/db';
+import { user as userTable } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
@@ -16,6 +20,20 @@ const rm = promisify(fs.rm);
 
 // Base uploads directory
 const UPLOADS_BASE = path.join(process.cwd(), 'public', 'uploads');
+
+// Helper function to get current user
+async function getCurrentUser(headers: Headers): Promise<{ userId: string; email: string; role: string | null } | null> {
+  const session = await auth.api.getSession({ headers });
+  if (!session) return null;
+  const uid = session.user.id;
+  const email = session.user.email;
+  const [row] = await db
+    .select({ role: userTable.role })
+    .from(userTable)
+    .where(eq(userTable.id, uid))
+    .limit(1);
+  return { userId: uid, email, role: row?.role ?? null };
+}
 
 // Ensure uploads directory exists
 async function ensureUploadsDir() {
@@ -44,6 +62,15 @@ interface FileItem {
 export const ServerRoute = createServerFileRoute('/api/files').methods({
   GET: async ({ request }) => {
     try {
+      // Check authentication
+      const currentUser = await getCurrentUser(request.headers);
+      if (!currentUser) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Unauthorized' }),
+          { status: 401, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       await ensureUploadsDir();
       
       const url = new URL(request.url);
@@ -54,6 +81,39 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
       // Sanitize the path to prevent directory traversal
       const sanitizedPath = requestedPath.replace(/\.{2}/g, '').replace(/\/+/g, '/');
       // console.log('Sanitized path:', sanitizedPath);
+      
+      // For non-admin users, restrict access to their own folder only
+      const isAdmin = currentUser.role?.toLowerCase() === 'admin';
+      let allowedBasePath = '/';
+      
+      if (!isAdmin) {
+        // Non-admin users can only access /users/{userId}/ folder
+        allowedBasePath = `/users/${currentUser.userId}`;
+        
+        // If requesting root or not in their folder, redirect to their folder
+        if (sanitizedPath === '/' || !sanitizedPath.startsWith(allowedBasePath)) {
+          const userFolderPath = path.join(UPLOADS_BASE, 'users', currentUser.userId);
+          
+          // Ensure user folder exists
+          try {
+            await mkdir(userFolderPath, { recursive: true });
+          } catch (error) {
+            // Folder might already exist
+          }
+          
+          return new Response(
+            JSON.stringify({
+              success: true,
+              data: {
+                path: allowedBasePath,
+                files: [],
+                redirectTo: allowedBasePath
+              },
+            }),
+            { headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+      }
       
       const fullPath = path.join(UPLOADS_BASE, sanitizedPath === '/' ? '' : sanitizedPath);
       // console.log('Full path:', fullPath);
@@ -146,12 +206,31 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
 
   POST: async ({ request }) => {
     try {
+      // Check authentication
+      const currentUser = await getCurrentUser(request.headers);
+      if (!currentUser) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Unauthorized' }),
+          { status: 401, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       await ensureUploadsDir();
 
       const formData = await request.formData();
       const files = formData.getAll('files') as File[];
-      const uploadPath = formData.get('path') as string || '/';
+      let uploadPath = formData.get('path') as string || '/';
       const category = formData.get('category') as string || 'documents';
+      
+      // For non-admin users, restrict uploads to their own folder only
+      const isAdmin = currentUser.role?.toLowerCase() === 'admin';
+      if (!isAdmin) {
+        const userFolderPath = `/users/${currentUser.userId}`;
+        // Force upload to user's folder if not admin
+        if (!uploadPath.startsWith(userFolderPath)) {
+          uploadPath = userFolderPath;
+        }
+      }
 
       if (!files || files.length === 0) {
         return new Response(
@@ -229,6 +308,15 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
 
   DELETE: async ({ request }) => {
     try {
+      // Check authentication
+      const currentUser = await getCurrentUser(request.headers);
+      if (!currentUser) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Unauthorized' }),
+          { status: 401, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       const url = new URL(request.url);
       const filePath = url.searchParams.get('path');
 
@@ -239,6 +327,18 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
           JSON.stringify({ success: false, error: 'File path is required' }),
           { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
+      }
+
+      // For non-admin users, restrict deletion to their own folder only
+      const isAdmin = currentUser.role?.toLowerCase() === 'admin';
+      if (!isAdmin) {
+        const userFolderPath = `/users/${currentUser.userId}`;
+        if (!filePath.startsWith(userFolderPath)) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Access denied: You can only delete files in your own folder' }),
+            { status: 403, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
       }
 
       // Sanitize the file path
@@ -296,6 +396,15 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
 
   PUT: async ({ request }) => {
     try {
+      // Check authentication
+      const currentUser = await getCurrentUser(request.headers);
+      if (!currentUser) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Unauthorized' }),
+          { status: 401, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       await ensureUploadsDir();
 
       const { path: folderPath, name } = await request.json();
@@ -308,8 +417,20 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
       }
 
       // Sanitize the path and name
-      const sanitizedPath = (folderPath || '/').replace(/\.\./g, '').replace(/\/+/g, '/');
+      let sanitizedPath = (folderPath || '/').replace(/\.\./g, '').replace(/\/+/g, '/');
       const sanitizedName = name.trim().replace(/[^a-zA-Z0-9.\-_]/g, '_');
+      
+      // For non-admin users, restrict folder creation to their own folder only
+      const isAdmin = currentUser.role?.toLowerCase() === 'admin';
+      if (!isAdmin) {
+        const userFolderPath = `/users/${currentUser.userId}`;
+        if (!sanitizedPath.startsWith(userFolderPath)) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Access denied: You can only create folders in your own directory' }),
+            { status: 403, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+      }
 
       const fullPath = path.join(UPLOADS_BASE, sanitizedPath === '/' ? '' : sanitizedPath, sanitizedName);
       const resolvedPath = path.resolve(fullPath);
@@ -352,6 +473,15 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
 
   PATCH: async ({ request }) => {
     try {
+      // Check authentication
+      const currentUser = await getCurrentUser(request.headers);
+      if (!currentUser) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Unauthorized' }),
+          { status: 401, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       const { id, name } = await request.json();
 
       // console.log('PATCH /api/files requested id:', id, 'new name:', name);
@@ -373,6 +503,20 @@ export const ServerRoute = createServerFileRoute('/api/files').methods({
           JSON.stringify({ success: false, error: 'Invalid file ID' }),
           { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
+      }
+      
+      // For non-admin users, restrict renaming to their own folder only
+      const isAdmin = currentUser.role?.toLowerCase() === 'admin';
+      if (!isAdmin) {
+        const userFolderPath = `/users/${currentUser.userId}`;
+        const relativePath = path.relative(UPLOADS_BASE, oldPath);
+        const normalizedRelativePath = '/' + relativePath.replace(/\\/g, '/');
+        if (!normalizedRelativePath.startsWith(userFolderPath)) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Access denied: You can only rename files in your own folder' }),
+            { status: 403, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
       }
 
       const resolvedOldPath = path.resolve(oldPath);

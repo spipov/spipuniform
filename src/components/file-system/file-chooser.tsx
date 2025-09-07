@@ -50,23 +50,33 @@ export function FileChooser({
       
       const result = await response.json();
       
-      if (result.success && result.data?.files) {
-        // Filter files based on type but always show folders for navigation
-        let filteredFiles = result.data.files;
-        
-        if (type === 'font') {
-          filteredFiles = filteredFiles.filter((file: FileItem) =>
-            file.type === 'folder' || 
-            (file.type === 'file' && (file.mimeType?.startsWith('font/') || /\.(woff2?|ttf|otf)$/i.test(file.name)))
-          );
-        } else if (type === 'logo' || type === 'favicon' || type === 'image') {
-          filteredFiles = filteredFiles.filter((file: FileItem) =>
-            file.type === 'folder' || 
-            (file.type === 'file' && (file.mimeType?.startsWith('image/') || /\.(jpg|jpeg|png|svg|gif|webp)$/i.test(file.name)))
-          );
+      if (result.success && result.data) {
+        // Handle redirect to user folder
+        if (result.data.redirectTo && result.data.redirectTo !== currentPath) {
+          setCurrentPath(result.data.redirectTo);
+          return; // This will trigger another loadFiles call with the new path
         }
         
-        setFiles(filteredFiles || []);
+        if (result.data.files) {
+          // Filter files based on type but always show folders for navigation
+          let filteredFiles = result.data.files;
+          
+          if (type === 'font') {
+            filteredFiles = filteredFiles.filter((file: FileItem) =>
+              file.type === 'folder' || 
+              (file.type === 'file' && (file.mimeType?.startsWith('font/') || /\.(woff2?|ttf|otf)$/i.test(file.name)))
+            );
+          } else if (type === 'logo' || type === 'favicon' || type === 'image') {
+            filteredFiles = filteredFiles.filter((file: FileItem) =>
+              file.type === 'folder' || 
+              (file.type === 'file' && (file.mimeType?.startsWith('image/') || /\.(jpg|jpeg|png|svg|gif|webp)$/i.test(file.name)))
+            );
+          }
+          
+          setFiles(filteredFiles || []);
+        } else {
+          setFiles([]);
+        }
       } else {
         console.error('API Error:', result);
         setFiles([]);
@@ -88,7 +98,7 @@ export function FileChooser({
 
   useEffect(() => {
     loadFiles();
-  }, [currentPath, loadFiles]);
+  }, [loadFiles]);
 
   const handleFileClick = (file: FileItem) => {
     if (file.type === 'folder') {
@@ -362,8 +372,17 @@ export function FileChooser({
                 className="flex items-center gap-3 p-3 hover:bg-muted group relative"
               >
                 <div 
-                  className="flex items-center gap-3 flex-1 cursor-pointer"
+                  className="flex items-center gap-3 flex-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                   onClick={() => handleFileClick(file)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleFileClick(file);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`${file.type === 'folder' ? 'Open folder' : 'Select file'} ${file.name}`}
                 >
                   {file.type === 'folder' ? (
                     <Folder className="h-5 w-5 text-blue-500" />

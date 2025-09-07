@@ -36,6 +36,7 @@ import { ServerRoute as ApiTestServerRouteImport } from './routes/api/test'
 import { ServerRoute as ApiMeServerRouteImport } from './routes/api/me'
 import { ServerRoute as ApiFilesServerRouteImport } from './routes/api/files'
 import { ServerRoute as ApiCredentialsServerRouteImport } from './routes/api/credentials'
+import { ServerRoute as ApiChangePasswordServerRouteImport } from './routes/api/change-password'
 import { ServerRoute as ApiAvatarServerRouteImport } from './routes/api/avatar'
 import { ServerRoute as ApiAuthSettingsServerRouteImport } from './routes/api/auth-settings'
 import { ServerRoute as ApiUsersIndexServerRouteImport } from './routes/api/users/index'
@@ -191,6 +192,11 @@ const ApiFilesServerRoute = ApiFilesServerRouteImport.update({
 const ApiCredentialsServerRoute = ApiCredentialsServerRouteImport.update({
   id: '/api/credentials',
   path: '/api/credentials',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiChangePasswordServerRoute = ApiChangePasswordServerRouteImport.update({
+  id: '/api/change-password',
+  path: '/api/change-password',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiAvatarServerRoute = ApiAvatarServerRouteImport.update({
@@ -456,6 +462,7 @@ export interface RootRouteChildren {
 export interface FileServerRoutesByFullPath {
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/avatar': typeof ApiAvatarServerRoute
+  '/api/change-password': typeof ApiChangePasswordServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/files': typeof ApiFilesServerRoute
   '/api/me': typeof ApiMeServerRoute
@@ -487,6 +494,7 @@ export interface FileServerRoutesByFullPath {
 export interface FileServerRoutesByTo {
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/avatar': typeof ApiAvatarServerRoute
+  '/api/change-password': typeof ApiChangePasswordServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/files': typeof ApiFilesServerRoute
   '/api/me': typeof ApiMeServerRoute
@@ -519,6 +527,7 @@ export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/avatar': typeof ApiAvatarServerRoute
+  '/api/change-password': typeof ApiChangePasswordServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/files': typeof ApiFilesServerRoute
   '/api/me': typeof ApiMeServerRoute
@@ -552,6 +561,7 @@ export interface FileServerRouteTypes {
   fullPaths:
     | '/api/auth-settings'
     | '/api/avatar'
+    | '/api/change-password'
     | '/api/credentials'
     | '/api/files'
     | '/api/me'
@@ -583,6 +593,7 @@ export interface FileServerRouteTypes {
   to:
     | '/api/auth-settings'
     | '/api/avatar'
+    | '/api/change-password'
     | '/api/credentials'
     | '/api/files'
     | '/api/me'
@@ -614,6 +625,7 @@ export interface FileServerRouteTypes {
     | '__root__'
     | '/api/auth-settings'
     | '/api/avatar'
+    | '/api/change-password'
     | '/api/credentials'
     | '/api/files'
     | '/api/me'
@@ -646,6 +658,7 @@ export interface FileServerRouteTypes {
 export interface RootServerRouteChildren {
   ApiAuthSettingsServerRoute: typeof ApiAuthSettingsServerRouteWithChildren
   ApiAvatarServerRoute: typeof ApiAvatarServerRoute
+  ApiChangePasswordServerRoute: typeof ApiChangePasswordServerRoute
   ApiCredentialsServerRoute: typeof ApiCredentialsServerRoute
   ApiFilesServerRoute: typeof ApiFilesServerRoute
   ApiMeServerRoute: typeof ApiMeServerRoute
@@ -850,6 +863,13 @@ declare module '@tanstack/react-start/server' {
       path: '/api/credentials'
       fullPath: '/api/credentials'
       preLoaderRoute: typeof ApiCredentialsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/change-password': {
+      id: '/api/change-password'
+      path: '/api/change-password'
+      fullPath: '/api/change-password'
+      preLoaderRoute: typeof ApiChangePasswordServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/avatar': {
@@ -1111,6 +1131,7 @@ export const routeTree = rootRouteImport
 const rootServerRouteChildren: RootServerRouteChildren = {
   ApiAuthSettingsServerRoute: ApiAuthSettingsServerRouteWithChildren,
   ApiAvatarServerRoute: ApiAvatarServerRoute,
+  ApiChangePasswordServerRoute: ApiChangePasswordServerRoute,
   ApiCredentialsServerRoute: ApiCredentialsServerRoute,
   ApiFilesServerRoute: ApiFilesServerRoute,
   ApiMeServerRoute: ApiMeServerRoute,
