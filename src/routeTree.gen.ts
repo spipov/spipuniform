@@ -57,6 +57,8 @@ import { ServerRoute as ApiAuthSignupPostHookServerRouteImport } from './routes/
 import { ServerRoute as ApiAuthPermissionsServerRouteImport } from './routes/api/auth/permissions'
 import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth/$'
 import { ServerRoute as ApiAuthSettingsFlagServerRouteImport } from './routes/api/auth-settings.flag'
+import { ServerRoute as ApiAdminDashboardStatsServerRouteImport } from './routes/api/admin/dashboard-stats'
+import { ServerRoute as ApiAdminAnalyticsServerRouteImport } from './routes/api/admin/analytics'
 import { ServerRoute as ApiEmailTemplatesSeedApprovalServerRouteImport } from './routes/api/email/templates.seed-approval'
 import { ServerRoute as ApiEmailTemplatesPreviewServerRouteImport } from './routes/api/email/templates.preview'
 import { ServerRoute as ApiEmailFragmentsDefaultServerRouteImport } from './routes/api/email/fragments.default'
@@ -303,6 +305,17 @@ const ApiAuthSettingsFlagServerRoute =
     path: '/flag',
     getParentRoute: () => ApiAuthSettingsServerRoute,
   } as any)
+const ApiAdminDashboardStatsServerRoute =
+  ApiAdminDashboardStatsServerRouteImport.update({
+    id: '/api/admin/dashboard-stats',
+    path: '/api/admin/dashboard-stats',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiAdminAnalyticsServerRoute = ApiAdminAnalyticsServerRouteImport.update({
+  id: '/api/admin/analytics',
+  path: '/api/admin/analytics',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
 const ApiEmailTemplatesSeedApprovalServerRoute =
   ApiEmailTemplatesSeedApprovalServerRouteImport.update({
     id: '/seed-approval',
@@ -469,6 +482,8 @@ export interface FileServerRoutesByFullPath {
   '/api/test': typeof ApiTestServerRoute
   '/api/user-files': typeof ApiUserFilesServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsServerRoute
+  '/api/admin/dashboard-stats': typeof ApiAdminDashboardStatsServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
   '/api/auth/permissions': typeof ApiAuthPermissionsServerRoute
@@ -501,6 +516,8 @@ export interface FileServerRoutesByTo {
   '/api/test': typeof ApiTestServerRoute
   '/api/user-files': typeof ApiUserFilesServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsServerRoute
+  '/api/admin/dashboard-stats': typeof ApiAdminDashboardStatsServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
   '/api/auth/permissions': typeof ApiAuthPermissionsServerRoute
@@ -534,6 +551,8 @@ export interface FileServerRoutesById {
   '/api/test': typeof ApiTestServerRoute
   '/api/user-files': typeof ApiUserFilesServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsServerRoute
+  '/api/admin/dashboard-stats': typeof ApiAdminDashboardStatsServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
   '/api/auth/permissions': typeof ApiAuthPermissionsServerRoute
@@ -568,6 +587,8 @@ export interface FileServerRouteTypes {
     | '/api/test'
     | '/api/user-files'
     | '/api/users-approval'
+    | '/api/admin/analytics'
+    | '/api/admin/dashboard-stats'
     | '/api/auth-settings/flag'
     | '/api/auth/$'
     | '/api/auth/permissions'
@@ -600,6 +621,8 @@ export interface FileServerRouteTypes {
     | '/api/test'
     | '/api/user-files'
     | '/api/users-approval'
+    | '/api/admin/analytics'
+    | '/api/admin/dashboard-stats'
     | '/api/auth-settings/flag'
     | '/api/auth/$'
     | '/api/auth/permissions'
@@ -632,6 +655,8 @@ export interface FileServerRouteTypes {
     | '/api/test'
     | '/api/user-files'
     | '/api/users-approval'
+    | '/api/admin/analytics'
+    | '/api/admin/dashboard-stats'
     | '/api/auth-settings/flag'
     | '/api/auth/$'
     | '/api/auth/permissions'
@@ -665,6 +690,8 @@ export interface RootServerRouteChildren {
   ApiTestServerRoute: typeof ApiTestServerRoute
   ApiUserFilesServerRoute: typeof ApiUserFilesServerRoute
   ApiUsersApprovalServerRoute: typeof ApiUsersApprovalServerRoute
+  ApiAdminAnalyticsServerRoute: typeof ApiAdminAnalyticsServerRoute
+  ApiAdminDashboardStatsServerRoute: typeof ApiAdminDashboardStatsServerRoute
   ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
   ApiAuthPermissionsServerRoute: typeof ApiAuthPermissionsServerRoute
   ApiAuthSignupPostHookServerRoute: typeof ApiAuthSignupPostHookServerRoute
@@ -1012,6 +1039,20 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiAuthSettingsFlagServerRouteImport
       parentRoute: typeof ApiAuthSettingsServerRoute
     }
+    '/api/admin/dashboard-stats': {
+      id: '/api/admin/dashboard-stats'
+      path: '/api/admin/dashboard-stats'
+      fullPath: '/api/admin/dashboard-stats'
+      preLoaderRoute: typeof ApiAdminDashboardStatsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/admin/analytics': {
+      id: '/api/admin/analytics'
+      path: '/api/admin/analytics'
+      fullPath: '/api/admin/analytics'
+      preLoaderRoute: typeof ApiAdminAnalyticsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/email/templates/seed-approval': {
       id: '/api/email/templates/seed-approval'
       path: '/seed-approval'
@@ -1138,6 +1179,8 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiTestServerRoute: ApiTestServerRoute,
   ApiUserFilesServerRoute: ApiUserFilesServerRoute,
   ApiUsersApprovalServerRoute: ApiUsersApprovalServerRoute,
+  ApiAdminAnalyticsServerRoute: ApiAdminAnalyticsServerRoute,
+  ApiAdminDashboardStatsServerRoute: ApiAdminDashboardStatsServerRoute,
   ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
   ApiAuthPermissionsServerRoute: ApiAuthPermissionsServerRoute,
   ApiAuthSignupPostHookServerRoute: ApiAuthSignupPostHookServerRoute,

@@ -93,6 +93,7 @@ export const user = pgTable("user", {
 	banned: boolean().default(false),
 	banReason: text(),
 	banExpires: timestamp({ mode: 'string' }),
+	approved: boolean().default(false),
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
