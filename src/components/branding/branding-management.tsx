@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Palette, Eye, Settings, Plus, Edit, Trash2, Check, Save, X, FolderOpen, Type, Upload, Image, File, Folder, FileText, MoreHorizontal } from 'lucide-react';
+import { Palette, Eye, Settings, Plus, Edit, Trash2, Check, Save, X, FolderOpen, Type, Upload, Image, File, Folder, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -40,6 +40,8 @@ interface BrandingConfig {
   textColor: string;
   fontFamily: string;
   headingFont?: string;
+  fontSize?: string;
+  lineHeight?: string;
   borderRadius?: string;
   spacing?: string;
   supportEmail?: string;
@@ -671,7 +673,7 @@ export function BrandingManagement() {
     setLogoPreview(null);
   };
 
-  const handleInputChange = (field: keyof BrandingConfig, value: string | boolean) => {
+  const handleInputChange = (field: keyof BrandingConfig, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -1566,7 +1568,7 @@ export function BrandingManagement() {
                       <div className="w-10 h-10 border rounded flex items-center justify-center bg-gray-50">
                         <img
                           src={config.logoUrl}
-                          alt={config.logoAltText || config.siteName}
+                          alt={config.logoAlt || config.siteName}
                           className="max-w-full max-h-full object-contain"
                         />
                       </div>

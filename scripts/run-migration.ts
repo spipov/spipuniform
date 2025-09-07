@@ -1,7 +1,7 @@
 import postgres from "postgres";
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 import { config } from "dotenv";
-import path from "path";
+import path from "node:path";
 
 config();
 
@@ -33,7 +33,7 @@ async function runMigration() {
 
     for (const statement of statements) {
       if (statement.trim()) {
-        console.log("Executing:", statement.substring(0, 80) + "...");
+        console.log("Executing:", `${statement.substring(0, 80)}...`);
         await client.unsafe(statement);
       }
     }
