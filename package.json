@@ -15,8 +15,8 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "create-admin": "tsx scripts/seed-admin/create-admin.ts",
-    "seed-admin": "tsx scripts/seed-better-auth.ts",
-    "db:reset": "tsx scripts/seed-admin/reset-and-seed.ts",
+    "seed": "tsx scripts/seed-database.ts",
+    "db:reset": "drizzle-kit push && tsx scripts/seed-database.ts",
     "db:migrate": "drizzle-kit push"
   },
   "dependencies": {
