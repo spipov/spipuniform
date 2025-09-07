@@ -14,7 +14,7 @@
     "format:fix": "biome format --write .",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "create-admin": "tsx scripts/seed-admin/create-admin.ts",
+    "create-admin": "tsx scripts/create-admin.ts",
     "seed": "tsx scripts/seed-database.ts",
     "db:reset": "drizzle-kit push && tsx scripts/seed-database.ts",
     "db:migrate": "drizzle-kit push"

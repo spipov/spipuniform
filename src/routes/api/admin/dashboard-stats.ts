@@ -1,6 +1,7 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { db } from '@/db';
 import { user, session, branding } from '@/db/schema';
+import { emailSettings, emailLogs } from '@/db/schema/email';
 import { count, eq, gte, sql } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { RoleService } from '@/lib/services/role-service';
@@ -65,10 +66,16 @@ export const ServerRoute = createServerFileRoute('/api/admin/dashboard-stats').m
         db.select({ count: count() }).from(user).where(eq(user.approved, false))
       ]);
 
-      // System configuration status (branding only - email tables don't exist yet)
-      const [brandingCount] = await Promise.all([
+      // System configuration status
+      const [brandingCount, emailSettingsCount, emailLogsCount, failedEmailsCount] = await Promise.all([
         // Active branding configurations
-        db.select({ count: count() }).from(branding).where(eq(branding.isActive, true))
+        db.select({ count: count() }).from(branding).where(eq(branding.isActive, true)),
+        // Active email settings
+        db.select({ count: count() }).from(emailSettings).where(eq(emailSettings.isActive, true)),
+        // Total email logs
+        db.select({ count: count() }).from(emailLogs),
+        // Failed emails
+        db.select({ count: count() }).from(emailLogs).where(eq(emailLogs.status, 'failed'))
       ]);
 
       // User growth data for charts (last 30 days)
@@ -96,12 +103,12 @@ export const ServerRoute = createServerFileRoute('/api/admin/dashboard-stats').m
           active: activeSessions[0]?.count || 0
         },
         emails: {
-          total: 0,
-          last30Days: 0,
-          failed: 0
+          total: emailLogsCount[0]?.count || 0,
+          last30Days: 0, // TODO: Add last 30 days email count
+          failed: failedEmailsCount[0]?.count || 0
         },
         system: {
-          emailConfigured: false,
+          emailConfigured: emailSettingsCount[0]?.count > 0,
           brandingConfigured: brandingCount[0]?.count > 0
         },
         charts: {
