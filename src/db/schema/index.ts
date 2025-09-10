@@ -2,7 +2,7 @@ import { pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 // Better Auth tables
 export * from './auth';
-export const sessions = auth.session;
+export { session as sessions } from './auth';
 
 // User Management System tables
 export * from './user-management';

@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { db } from '@/db';
-import { users, roles, emailTemplates, storageSettings, branding } from '@/db/schema';
+import { user as authUser, roles, emailTemplates, storageSettings, branding } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { BrandingService } from '@/lib/services/branding/branding-service';
@@ -58,8 +58,8 @@ async function seedDatabase() {
     const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD || 'Admin123!';
     const adminName = process.env.DEFAULT_ADMIN_NAME || 'System Administrator';
 
-    // Check if admin user already exists
-    const existingAdmin = await db.select().from(users).where(eq(users.email, adminEmail)).limit(1);
+    // Check if admin user already exists in Better Auth user table
+    const existingAdmin = await db.select().from(authUser).where(eq(authUser.email, adminEmail)).limit(1);
 
     if (existingAdmin.length === 0) {
       // Use Better Auth's server-side API for proper scrypt password hashing
@@ -75,19 +75,39 @@ async function seedDatabase() {
       });
 
       const response = await auth.handler(mockRequest);
-      
+
       if (response.ok) {
-        // Update the created user to admin role
-        await db.update(users).set({ role: 'admin' }).where(eq(users.email, adminEmail));
-        console.log(`✅ Created admin user with Better Auth: ${adminEmail}`);
+        // Ensure the created user is fully enabled as an admin
+        await db
+          .update(authUser)
+          .set({
+            role: 'admin',
+            emailVerified: true,
+            approved: true,
+            banned: false,
+            banReason: null,
+            updatedAt: new Date(),
+          })
+          .where(eq(authUser.email, adminEmail));
+        console.log(`✅ Created and activated admin user: ${adminEmail}`);
       } else {
         const error = await response.text();
         console.error(`❌ Failed to create admin user: ${error}`);
       }
     } else {
-      // Update existing user to admin role
-      await db.update(users).set({ role: 'admin' }).where(eq(users.email, adminEmail));
-      console.log(`ℹ️  Admin user already exists, ensured admin role: ${adminEmail}`);
+      // Ensure existing admin is fully enabled
+      await db
+        .update(authUser)
+        .set({
+          role: 'admin',
+          emailVerified: true,
+          approved: true,
+          banned: false,
+          banReason: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(authUser.email, adminEmail));
+      console.log(`ℹ️  Admin user already exists; ensured admin role and verification: ${adminEmail}`);
     }
 
     // 3. Seed default storage provider

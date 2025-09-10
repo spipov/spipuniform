@@ -37,6 +37,13 @@ const config = defineConfig({
   build: {
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
+      onwarn(warning, warn) {
+        // Suppress unused import warnings from node_modules
+        if (warning.code === 'UNUSED_EXTERNAL_IMPORT' && warning.id?.includes('node_modules')) {
+          return;
+        }
+        warn(warning);
+      },
       output: {
         manualChunks(id: string) {
           if (id && id.includes('node_modules')) {
