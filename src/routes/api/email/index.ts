@@ -1,6 +1,8 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { EmailService } from '@/lib/services/email/email-service';
 import { insertEmailTemplateSchema, updateEmailTemplateSchema } from '@/db/schema/email';
+import { db } from '@/db';
+import { emailLogs } from '@/db/schema';
 import * as v from 'valibot';
 
 export const ServerRoute = createServerFileRoute('/api/email/').methods({
@@ -15,7 +17,7 @@ export const ServerRoute = createServerFileRoute('/api/email/').methods({
       
       if (resource === 'templates' && !id) {
         // Handle /api/email/templates
-        const templates = await EmailService.getAllTemplates();
+        const templates = await EmailService.getAllEmailTemplates();
         return new Response(JSON.stringify({ success: true, data: templates }), {
           headers: { 'Content-Type': 'application/json' },
         });
@@ -29,13 +31,13 @@ export const ServerRoute = createServerFileRoute('/api/email/').methods({
         });
       } else if (resource === 'settings' && !id) {
         // Handle /api/email/settings
-        const settings = await EmailService.getAllSettings();
+        const settings = await EmailService.getAllEmailSettings();
         return new Response(JSON.stringify({ success: true, data: settings }), {
           headers: { 'Content-Type': 'application/json' },
         });
       } else {
         // Default: return all templates
-        const templates = await EmailService.getAllTemplates();
+        const templates = await EmailService.getAllEmailTemplates();
         return new Response(JSON.stringify({ success: true, data: templates }), {
           headers: { 'Content-Type': 'application/json' },
         });
@@ -61,8 +63,8 @@ export const ServerRoute = createServerFileRoute('/api/email/').methods({
       // Handle settings activation
       if (resource === 'settings' && id && action === 'activate') {
         // Set the setting as active and deactivate others
-        await EmailService.deactivateAllSettings();
-        const updatedSettings = await EmailService.updateSettings(id, { isActive: true });
+        await EmailService.deactivateAllEmailSettings();
+        const updatedSettings = await EmailService.updateEmailSetting(id, { isActive: true });
         return new Response(JSON.stringify({ success: true, data: updatedSettings }), {
           headers: { 'Content-Type': 'application/json' },
         });
@@ -73,14 +75,14 @@ export const ServerRoute = createServerFileRoute('/api/email/').methods({
       if (resource === 'templates' && !id) {
         // Handle POST /api/email/templates - Create new template
         const validatedData = v.parse(insertEmailTemplateSchema, body);
-        const newTemplate = await EmailService.createTemplate(validatedData);
+        const newTemplate = await EmailService.createEmailTemplate(validatedData);
         return new Response(JSON.stringify({ success: true, data: newTemplate }), {
           status: 201,
           headers: { 'Content-Type': 'application/json' },
         });
       } else if (resource === 'settings' && !id) {
         // Handle POST /api/email/settings - Create new settings
-        const newSettings = await EmailService.createSettings(body);
+        const newSettings = await EmailService.createEmailSetting(body);
         return new Response(JSON.stringify({ success: true, data: newSettings }), {
           status: 201,
           headers: { 'Content-Type': 'application/json' },
@@ -129,9 +131,7 @@ export const ServerRoute = createServerFileRoute('/api/email/').methods({
 
         const info = await transporter.sendMail(mailOptions);
 
-        // Import db and emailLogs for logging
-        const { db } = await import('@/db');
-        const { emailLogs } = await import('@/db/schema');
+        // Log the test email to database
 
         // Log the test email to database
         await db.insert(emailLogs).values({
@@ -190,7 +190,7 @@ export const ServerRoute = createServerFileRoute('/api/email/').methods({
       if (resource === 'templates' && id) {
         // Handle PUT /api/email/templates/123 - Update template
         const validatedData = v.parse(updateEmailTemplateSchema, body);
-        const updatedTemplate = await EmailService.updateTemplate(id, validatedData);
+        const updatedTemplate = await EmailService.updateEmailTemplate(id, validatedData);
         
         if (!updatedTemplate) {
           return new Response(
@@ -204,7 +204,7 @@ export const ServerRoute = createServerFileRoute('/api/email/').methods({
         });
       } else if (resource === 'settings' && id) {
         // Handle PUT /api/email/settings/123 - Update settings
-        const updatedSettings = await EmailService.updateSettings(id, body);
+        const updatedSettings = await EmailService.updateEmailSetting(id, body);
         
         if (!updatedSettings) {
           return new Response(

@@ -11,6 +11,10 @@ const config = defineConfig({
     strictPort: true,
   },
 
+  css: {
+    devSourcemap: false,
+  },
+
   // Define global variables for SSR compatibility
   define: {
     global: "globalThis",
@@ -28,6 +32,24 @@ const config = defineConfig({
     // Exclude Solid.js to prevent conflicts with React
     // Exclude server-only modules that shouldn't run in browser
     exclude: ["solid-js", "crypto-browserify", "browserify-sign", "readable-stream", "dotenv", "path"],
+  },
+
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id && id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('@tanstack/react-query')) {
+              return 'vendor';
+            }
+          }
+          if (id && id.includes('src/components/ui')) {
+            return 'ui';
+          }
+        },
+      },
+    },
   },
 
   plugins: [
