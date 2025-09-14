@@ -164,7 +164,7 @@ async function seedDatabase() {
           Best regards,
           The {{siteName}} Team
         `,
-        category: 'user',
+        type: 'welcome',
         isActive: true
       },
       {
@@ -191,7 +191,7 @@ async function seedDatabase() {
           Best regards,
           The {{siteName}} Team
         `,
-        category: 'auth',
+        type: 'reset_password',
         isActive: true
       }
     ];

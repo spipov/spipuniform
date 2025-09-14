@@ -22,6 +22,9 @@ export * from './auth-settings';
 // File System tables
 export * from './file-system';
 
+// SpipUniform tables
+export * from './spipuniform';
+
 
 // Export types for user management
 export type { User, NewUser, Role, NewRole, Permission, NewPermission } from './user-management';
@@ -72,3 +75,43 @@ export type {
   UploadResponse,
   UploadError
 } from './file-system';
+
+// Export types for SpipUniform
+export type {
+  County,
+  NewCounty,
+  Locality,
+  NewLocality,
+  School,
+  NewSchool,
+  Shop,
+  NewShop,
+  ProductCategory,
+  NewProductCategory,
+  ProductType,
+  NewProductType,
+  Attribute,
+  NewAttribute,
+  AttributeValue,
+  NewAttributeValue,
+  Condition,
+  NewCondition,
+  Listing,
+  NewListing,
+  ListingAttributeValue,
+  NewListingAttributeValue,
+  ListingImage,
+  NewListingImage,
+  Request,
+  NewRequest,
+  Match,
+  NewMatch,
+  Watchlist,
+  NewWatchlist,
+  Report,
+  NewReport,
+  Notification,
+  NewNotification,
+  UserProfile,
+  NewUserProfile
+} from './spipuniform';

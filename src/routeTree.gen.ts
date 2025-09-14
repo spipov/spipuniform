@@ -30,12 +30,15 @@ import { Route as DashboardUserManagementUsersRouteImport } from './routes/dashb
 import { Route as DashboardUserManagementRolesRouteImport } from './routes/dashboard/user-management/roles'
 import { Route as DashboardUserManagementPermissionsRouteImport } from './routes/dashboard/user-management/permissions'
 import { Route as DashboardUserManagementConsolidatedRouteImport } from './routes/dashboard/user-management/consolidated'
+import { Route as DashboardSpipuniformDataVerificationRouteImport } from './routes/dashboard/spipuniform/data-verification'
 import { ServerRoute as ApiUsersApprovalServerRouteImport } from './routes/api/users-approval'
 import { ServerRoute as ApiUserFilesServerRouteImport } from './routes/api/user-files'
 import { ServerRoute as ApiTestServerRouteImport } from './routes/api/test'
+import { ServerRoute as ApiSchoolsServerRouteImport } from './routes/api/schools'
 import { ServerRoute as ApiMeServerRouteImport } from './routes/api/me'
 import { ServerRoute as ApiFilesServerRouteImport } from './routes/api/files'
 import { ServerRoute as ApiCredentialsServerRouteImport } from './routes/api/credentials'
+import { ServerRoute as ApiCountiesServerRouteImport } from './routes/api/counties'
 import { ServerRoute as ApiChangePasswordServerRouteImport } from './routes/api/change-password'
 import { ServerRoute as ApiAvatarServerRouteImport } from './routes/api/avatar'
 import { ServerRoute as ApiAuthSettingsServerRouteImport } from './routes/api/auth-settings'
@@ -47,6 +50,8 @@ import { ServerRoute as ApiUsersActionsServerRouteImport } from './routes/api/us
 import { ServerRoute as ApiUsersUserIdServerRouteImport } from './routes/api/users/$userId'
 import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api/storage/settings'
 import { ServerRoute as ApiRolesRoleIdServerRouteImport } from './routes/api/roles/$roleId'
+import { ServerRoute as ApiLocalitiesSearchServerRouteImport } from './routes/api/localities/search'
+import { ServerRoute as ApiLocalitiesSplatServerRouteImport } from './routes/api/localities/$'
 import { ServerRoute as ApiEmailTestServerRouteImport } from './routes/api/email/test'
 import { ServerRoute as ApiEmailTemplatesServerRouteImport } from './routes/api/email/templates'
 import { ServerRoute as ApiEmailSettingsServerRouteImport } from './routes/api/email/settings'
@@ -59,6 +64,7 @@ import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth/
 import { ServerRoute as ApiAuthSettingsFlagServerRouteImport } from './routes/api/auth-settings.flag'
 import { ServerRoute as ApiAdminDashboardStatsServerRouteImport } from './routes/api/admin/dashboard-stats'
 import { ServerRoute as ApiAdminAnalyticsServerRouteImport } from './routes/api/admin/analytics'
+import { ServerRoute as ApiLocalitiesFetchSplatServerRouteImport } from './routes/api/localities/fetch/$'
 import { ServerRoute as ApiEmailTemplatesSeedApprovalServerRouteImport } from './routes/api/email/templates.seed-approval'
 import { ServerRoute as ApiEmailTemplatesPreviewServerRouteImport } from './routes/api/email/templates.preview'
 import { ServerRoute as ApiEmailFragmentsDefaultServerRouteImport } from './routes/api/email/fragments.default'
@@ -166,6 +172,12 @@ const DashboardUserManagementConsolidatedRoute =
     path: '/user-management/consolidated',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardSpipuniformDataVerificationRoute =
+  DashboardSpipuniformDataVerificationRouteImport.update({
+    id: '/spipuniform/data-verification',
+    path: '/spipuniform/data-verification',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const ApiUsersApprovalServerRoute = ApiUsersApprovalServerRouteImport.update({
   id: '/api/users-approval',
   path: '/api/users-approval',
@@ -181,6 +193,11 @@ const ApiTestServerRoute = ApiTestServerRouteImport.update({
   path: '/api/test',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiSchoolsServerRoute = ApiSchoolsServerRouteImport.update({
+  id: '/api/schools',
+  path: '/api/schools',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
 const ApiMeServerRoute = ApiMeServerRouteImport.update({
   id: '/api/me',
   path: '/api/me',
@@ -194,6 +211,11 @@ const ApiFilesServerRoute = ApiFilesServerRouteImport.update({
 const ApiCredentialsServerRoute = ApiCredentialsServerRouteImport.update({
   id: '/api/credentials',
   path: '/api/credentials',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiCountiesServerRoute = ApiCountiesServerRouteImport.update({
+  id: '/api/counties',
+  path: '/api/counties',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiChangePasswordServerRoute = ApiChangePasswordServerRouteImport.update({
@@ -252,6 +274,18 @@ const ApiRolesRoleIdServerRoute = ApiRolesRoleIdServerRouteImport.update({
   path: '/api/roles/$roleId',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiLocalitiesSearchServerRoute =
+  ApiLocalitiesSearchServerRouteImport.update({
+    id: '/api/localities/search',
+    path: '/api/localities/search',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiLocalitiesSplatServerRoute =
+  ApiLocalitiesSplatServerRouteImport.update({
+    id: '/api/localities/$',
+    path: '/api/localities/$',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiEmailTestServerRoute = ApiEmailTestServerRouteImport.update({
   id: '/api/email/test',
   path: '/api/email/test',
@@ -316,6 +350,12 @@ const ApiAdminAnalyticsServerRoute = ApiAdminAnalyticsServerRouteImport.update({
   path: '/api/admin/analytics',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiLocalitiesFetchSplatServerRoute =
+  ApiLocalitiesFetchSplatServerRouteImport.update({
+    id: '/api/localities/fetch/$',
+    path: '/api/localities/fetch/$',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiEmailTemplatesSeedApprovalServerRoute =
   ApiEmailTemplatesSeedApprovalServerRouteImport.update({
     id: '/seed-approval',
@@ -350,6 +390,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/spipuniform/data-verification': typeof DashboardSpipuniformDataVerificationRoute
   '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
@@ -370,6 +411,7 @@ export interface FileRoutesByTo {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/spipuniform/data-verification': typeof DashboardSpipuniformDataVerificationRoute
   '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
@@ -392,6 +434,7 @@ export interface FileRoutesById {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/spipuniform/data-verification': typeof DashboardSpipuniformDataVerificationRoute
   '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
@@ -415,6 +458,7 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/dashboard/'
+    | '/dashboard/spipuniform/data-verification'
     | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
@@ -435,6 +479,7 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/dashboard'
+    | '/dashboard/spipuniform/data-verification'
     | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
@@ -456,6 +501,7 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/dashboard/'
+    | '/dashboard/spipuniform/data-verification'
     | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
@@ -476,9 +522,11 @@ export interface FileServerRoutesByFullPath {
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/avatar': typeof ApiAvatarServerRoute
   '/api/change-password': typeof ApiChangePasswordServerRoute
+  '/api/counties': typeof ApiCountiesServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/files': typeof ApiFilesServerRoute
   '/api/me': typeof ApiMeServerRoute
+  '/api/schools': typeof ApiSchoolsServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/user-files': typeof ApiUserFilesServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
@@ -494,6 +542,8 @@ export interface FileServerRoutesByFullPath {
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
   '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
+  '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
+  '/api/localities/search': typeof ApiLocalitiesSearchServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
@@ -505,14 +555,17 @@ export interface FileServerRoutesByFullPath {
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
+  '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
 }
 export interface FileServerRoutesByTo {
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/avatar': typeof ApiAvatarServerRoute
   '/api/change-password': typeof ApiChangePasswordServerRoute
+  '/api/counties': typeof ApiCountiesServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/files': typeof ApiFilesServerRoute
   '/api/me': typeof ApiMeServerRoute
+  '/api/schools': typeof ApiSchoolsServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/user-files': typeof ApiUserFilesServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
@@ -528,6 +581,8 @@ export interface FileServerRoutesByTo {
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
   '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
+  '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
+  '/api/localities/search': typeof ApiLocalitiesSearchServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
@@ -539,15 +594,18 @@ export interface FileServerRoutesByTo {
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
+  '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/avatar': typeof ApiAvatarServerRoute
   '/api/change-password': typeof ApiChangePasswordServerRoute
+  '/api/counties': typeof ApiCountiesServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/files': typeof ApiFilesServerRoute
   '/api/me': typeof ApiMeServerRoute
+  '/api/schools': typeof ApiSchoolsServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/user-files': typeof ApiUserFilesServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
@@ -563,6 +621,8 @@ export interface FileServerRoutesById {
   '/api/email/settings': typeof ApiEmailSettingsServerRoute
   '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
+  '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
+  '/api/localities/search': typeof ApiLocalitiesSearchServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
@@ -574,6 +634,7 @@ export interface FileServerRoutesById {
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
+  '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
@@ -581,9 +642,11 @@ export interface FileServerRouteTypes {
     | '/api/auth-settings'
     | '/api/avatar'
     | '/api/change-password'
+    | '/api/counties'
     | '/api/credentials'
     | '/api/files'
     | '/api/me'
+    | '/api/schools'
     | '/api/test'
     | '/api/user-files'
     | '/api/users-approval'
@@ -599,6 +662,8 @@ export interface FileServerRouteTypes {
     | '/api/email/settings'
     | '/api/email/templates'
     | '/api/email/test'
+    | '/api/localities/$'
+    | '/api/localities/search'
     | '/api/roles/$roleId'
     | '/api/storage/settings'
     | '/api/users/$userId'
@@ -610,14 +675,17 @@ export interface FileServerRouteTypes {
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
+    | '/api/localities/fetch/$'
   fileServerRoutesByTo: FileServerRoutesByTo
   to:
     | '/api/auth-settings'
     | '/api/avatar'
     | '/api/change-password'
+    | '/api/counties'
     | '/api/credentials'
     | '/api/files'
     | '/api/me'
+    | '/api/schools'
     | '/api/test'
     | '/api/user-files'
     | '/api/users-approval'
@@ -633,6 +701,8 @@ export interface FileServerRouteTypes {
     | '/api/email/settings'
     | '/api/email/templates'
     | '/api/email/test'
+    | '/api/localities/$'
+    | '/api/localities/search'
     | '/api/roles/$roleId'
     | '/api/storage/settings'
     | '/api/users/$userId'
@@ -644,14 +714,17 @@ export interface FileServerRouteTypes {
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
+    | '/api/localities/fetch/$'
   id:
     | '__root__'
     | '/api/auth-settings'
     | '/api/avatar'
     | '/api/change-password'
+    | '/api/counties'
     | '/api/credentials'
     | '/api/files'
     | '/api/me'
+    | '/api/schools'
     | '/api/test'
     | '/api/user-files'
     | '/api/users-approval'
@@ -667,6 +740,8 @@ export interface FileServerRouteTypes {
     | '/api/email/settings'
     | '/api/email/templates'
     | '/api/email/test'
+    | '/api/localities/$'
+    | '/api/localities/search'
     | '/api/roles/$roleId'
     | '/api/storage/settings'
     | '/api/users/$userId'
@@ -678,15 +753,18 @@ export interface FileServerRouteTypes {
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
+    | '/api/localities/fetch/$'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
   ApiAuthSettingsServerRoute: typeof ApiAuthSettingsServerRouteWithChildren
   ApiAvatarServerRoute: typeof ApiAvatarServerRoute
   ApiChangePasswordServerRoute: typeof ApiChangePasswordServerRoute
+  ApiCountiesServerRoute: typeof ApiCountiesServerRoute
   ApiCredentialsServerRoute: typeof ApiCredentialsServerRoute
   ApiFilesServerRoute: typeof ApiFilesServerRoute
   ApiMeServerRoute: typeof ApiMeServerRoute
+  ApiSchoolsServerRoute: typeof ApiSchoolsServerRoute
   ApiTestServerRoute: typeof ApiTestServerRoute
   ApiUserFilesServerRoute: typeof ApiUserFilesServerRoute
   ApiUsersApprovalServerRoute: typeof ApiUsersApprovalServerRoute
@@ -701,6 +779,8 @@ export interface RootServerRouteChildren {
   ApiEmailSettingsServerRoute: typeof ApiEmailSettingsServerRoute
   ApiEmailTemplatesServerRoute: typeof ApiEmailTemplatesServerRouteWithChildren
   ApiEmailTestServerRoute: typeof ApiEmailTestServerRoute
+  ApiLocalitiesSplatServerRoute: typeof ApiLocalitiesSplatServerRoute
+  ApiLocalitiesSearchServerRoute: typeof ApiLocalitiesSearchServerRoute
   ApiRolesRoleIdServerRoute: typeof ApiRolesRoleIdServerRoute
   ApiStorageSettingsServerRoute: typeof ApiStorageSettingsServerRoute
   ApiUsersUserIdServerRoute: typeof ApiUsersUserIdServerRoute
@@ -709,6 +789,7 @@ export interface RootServerRouteChildren {
   ApiEmailIndexServerRoute: typeof ApiEmailIndexServerRoute
   ApiRolesIndexServerRoute: typeof ApiRolesIndexServerRoute
   ApiUsersIndexServerRoute: typeof ApiUsersIndexServerRoute
+  ApiLocalitiesFetchSplatServerRoute: typeof ApiLocalitiesFetchSplatServerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -846,6 +927,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardUserManagementConsolidatedRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/spipuniform/data-verification': {
+      id: '/dashboard/spipuniform/data-verification'
+      path: '/spipuniform/data-verification'
+      fullPath: '/dashboard/spipuniform/data-verification'
+      preLoaderRoute: typeof DashboardSpipuniformDataVerificationRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 declare module '@tanstack/react-start/server' {
@@ -871,6 +959,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiTestServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/schools': {
+      id: '/api/schools'
+      path: '/api/schools'
+      fullPath: '/api/schools'
+      preLoaderRoute: typeof ApiSchoolsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/me': {
       id: '/api/me'
       path: '/api/me'
@@ -890,6 +985,13 @@ declare module '@tanstack/react-start/server' {
       path: '/api/credentials'
       fullPath: '/api/credentials'
       preLoaderRoute: typeof ApiCredentialsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/counties': {
+      id: '/api/counties'
+      path: '/api/counties'
+      fullPath: '/api/counties'
+      preLoaderRoute: typeof ApiCountiesServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/change-password': {
@@ -967,6 +1069,20 @@ declare module '@tanstack/react-start/server' {
       path: '/api/roles/$roleId'
       fullPath: '/api/roles/$roleId'
       preLoaderRoute: typeof ApiRolesRoleIdServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/localities/search': {
+      id: '/api/localities/search'
+      path: '/api/localities/search'
+      fullPath: '/api/localities/search'
+      preLoaderRoute: typeof ApiLocalitiesSearchServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/localities/$': {
+      id: '/api/localities/$'
+      path: '/api/localities/$'
+      fullPath: '/api/localities/$'
+      preLoaderRoute: typeof ApiLocalitiesSplatServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/email/test': {
@@ -1053,6 +1169,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiAdminAnalyticsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/localities/fetch/$': {
+      id: '/api/localities/fetch/$'
+      path: '/api/localities/fetch/$'
+      fullPath: '/api/localities/fetch/$'
+      preLoaderRoute: typeof ApiLocalitiesFetchSplatServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/email/templates/seed-approval': {
       id: '/api/email/templates/seed-approval'
       path: '/seed-approval'
@@ -1085,6 +1208,7 @@ interface DashboardRouteChildren {
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardStorageSettingsRoute: typeof DashboardStorageSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardSpipuniformDataVerificationRoute: typeof DashboardSpipuniformDataVerificationRoute
   DashboardUserManagementConsolidatedRoute: typeof DashboardUserManagementConsolidatedRoute
   DashboardUserManagementPermissionsRoute: typeof DashboardUserManagementPermissionsRoute
   DashboardUserManagementRolesRoute: typeof DashboardUserManagementRolesRoute
@@ -1100,6 +1224,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardStorageSettingsRoute: DashboardStorageSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardSpipuniformDataVerificationRoute:
+    DashboardSpipuniformDataVerificationRoute,
   DashboardUserManagementConsolidatedRoute:
     DashboardUserManagementConsolidatedRoute,
   DashboardUserManagementPermissionsRoute:
@@ -1173,9 +1299,11 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiAuthSettingsServerRoute: ApiAuthSettingsServerRouteWithChildren,
   ApiAvatarServerRoute: ApiAvatarServerRoute,
   ApiChangePasswordServerRoute: ApiChangePasswordServerRoute,
+  ApiCountiesServerRoute: ApiCountiesServerRoute,
   ApiCredentialsServerRoute: ApiCredentialsServerRoute,
   ApiFilesServerRoute: ApiFilesServerRoute,
   ApiMeServerRoute: ApiMeServerRoute,
+  ApiSchoolsServerRoute: ApiSchoolsServerRoute,
   ApiTestServerRoute: ApiTestServerRoute,
   ApiUserFilesServerRoute: ApiUserFilesServerRoute,
   ApiUsersApprovalServerRoute: ApiUsersApprovalServerRoute,
@@ -1190,6 +1318,8 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiEmailSettingsServerRoute: ApiEmailSettingsServerRoute,
   ApiEmailTemplatesServerRoute: ApiEmailTemplatesServerRouteWithChildren,
   ApiEmailTestServerRoute: ApiEmailTestServerRoute,
+  ApiLocalitiesSplatServerRoute: ApiLocalitiesSplatServerRoute,
+  ApiLocalitiesSearchServerRoute: ApiLocalitiesSearchServerRoute,
   ApiRolesRoleIdServerRoute: ApiRolesRoleIdServerRoute,
   ApiStorageSettingsServerRoute: ApiStorageSettingsServerRoute,
   ApiUsersUserIdServerRoute: ApiUsersUserIdServerRoute,
@@ -1198,6 +1328,7 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiEmailIndexServerRoute: ApiEmailIndexServerRoute,
   ApiRolesIndexServerRoute: ApiRolesIndexServerRoute,
   ApiUsersIndexServerRoute: ApiUsersIndexServerRoute,
+  ApiLocalitiesFetchSplatServerRoute: ApiLocalitiesFetchSplatServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)

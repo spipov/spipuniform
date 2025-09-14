@@ -1,6 +1,6 @@
 import type * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive, MapPin, School } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { UserLogoutCard } from "./user-logout-card";
 import { BrandingProvider, SmartBrandingLogo } from "@/components/branding/branding-logo";
@@ -78,6 +78,15 @@ const systemAdminNavigation = [
     url: "/dashboard/file-manager",
     icon: FolderOpen,
     requiredPermission: "viewFileManager",
+  },
+] as const;
+
+const spipUniformNavigation = [
+  {
+    title: "Data Verification",
+    url: "/dashboard/spipuniform/data-verification",
+    icon: MapPin,
+    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
   },
 ] as const;
 
@@ -204,6 +213,37 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
                               >
                                 <Icon className="dashboard-sidebar__system-admin-icon size-4" />
                                 <span className="dashboard-sidebar__system-admin-text">{item.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        );
+                      })}
+                  </SidebarMenu>
+                </SidebarGroup>
+              )}
+
+              {isSignedIn && (can('viewDashboard')) && (
+                <SidebarGroup className="dashboard-sidebar__spipuniform-group">
+                  <SidebarGroupLabel className="dashboard-sidebar__group-label">
+                    SpipUniform
+                  </SidebarGroupLabel>
+                  <SidebarMenu className="dashboard-sidebar__spipuniform-menu">
+                    {spipUniformNavigation
+                      .filter((item) => can(item.requiredPermission))
+                      .map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <SidebarMenuItem
+                            key={item.title}
+                            className="dashboard-sidebar__spipuniform-item"
+                          >
+                            <SidebarMenuButton asChild className="dashboard-sidebar__spipuniform-button">
+                              <Link
+                                to={item.url}
+                                className="dashboard-sidebar__spipuniform-link font-medium"
+                              >
+                                <Icon className="dashboard-sidebar__spipuniform-icon size-4" />
+                                <span className="dashboard-sidebar__spipuniform-text">{item.title}</span>
                               </Link>
                             </SidebarMenuButton>
                           </SidebarMenuItem>

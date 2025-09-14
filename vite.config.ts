@@ -7,7 +7,7 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 const config = defineConfig({
   server: {
-    port: 3100,
+    port: 3350,
     strictPort: true,
   },
 
