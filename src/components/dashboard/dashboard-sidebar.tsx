@@ -1,6 +1,6 @@
 import type * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive, MapPin, School, ShoppingBag, Tags, Package } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive, MapPin, School, ShoppingBag, Tags, Package, Sliders } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { UserLogoutCard } from "./user-logout-card";
 import { BrandingProvider, SmartBrandingLogo } from "@/components/branding/branding-logo";
@@ -92,6 +92,12 @@ const productsNavigation = [
     title: "Product Types",
     url: "/dashboard/spipuniform/products/types",
     icon: Package,
+    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
+  },
+  {
+    title: "Attributes",
+    url: "/dashboard/spipuniform/products/attributes",
+    icon: Sliders,
     requiredPermission: "viewDashboard", // Using basic dashboard permission for now
   },
 ] as const;

@@ -33,8 +33,8 @@ import { Route as DashboardUserManagementPermissionsRouteImport } from './routes
 import { Route as DashboardUserManagementConsolidatedRouteImport } from './routes/dashboard/user-management/consolidated'
 import { Route as DashboardSpipuniformDataVerificationRouteImport } from './routes/dashboard/spipuniform/data-verification'
 import { Route as DashboardSpipuniformProductsTypesRouteImport } from './routes/dashboard/spipuniform/products/types'
-import { Route as DashboardSpipuniformProductsCategoriesOldRouteImport } from './routes/dashboard/spipuniform/products/categories-old'
 import { Route as DashboardSpipuniformProductsCategoriesRouteImport } from './routes/dashboard/spipuniform/products/categories'
+import { Route as DashboardSpipuniformProductsAttributesRouteImport } from './routes/dashboard/spipuniform/products/attributes'
 import { ServerRoute as ApiUsersApprovalServerRouteImport } from './routes/api/users-approval'
 import { ServerRoute as ApiUserFilesServerRouteImport } from './routes/api/user-files'
 import { ServerRoute as ApiTestServerRouteImport } from './routes/api/test'
@@ -74,8 +74,12 @@ import { ServerRoute as ApiEmailTemplatesPreviewServerRouteImport } from './rout
 import { ServerRoute as ApiEmailFragmentsDefaultServerRouteImport } from './routes/api/email/fragments.default'
 import { ServerRoute as ApiSpipuniformAdminProductTypesIndexServerRouteImport } from './routes/api/spipuniform/admin/product-types/index'
 import { ServerRoute as ApiSpipuniformAdminCategoriesIndexServerRouteImport } from './routes/api/spipuniform/admin/categories/index'
+import { ServerRoute as ApiSpipuniformAdminAttributesIndexServerRouteImport } from './routes/api/spipuniform/admin/attributes/index'
+import { ServerRoute as ApiSpipuniformAdminAttributeValuesIndexServerRouteImport } from './routes/api/spipuniform/admin/attribute-values/index'
 import { ServerRoute as ApiSpipuniformAdminProductTypesTypeIdServerRouteImport } from './routes/api/spipuniform/admin/product-types/[typeId]'
 import { ServerRoute as ApiSpipuniformAdminCategoriesCategoryIdServerRouteImport } from './routes/api/spipuniform/admin/categories/[categoryId]'
+import { ServerRoute as ApiSpipuniformAdminAttributesAttributeIdServerRouteImport } from './routes/api/spipuniform/admin/attributes/[attributeId]'
+import { ServerRoute as ApiSpipuniformAdminAttributeValuesValueIdServerRouteImport } from './routes/api/spipuniform/admin/attribute-values/[valueId]'
 
 const rootServerRouteImport = createServerRootRoute()
 
@@ -198,16 +202,16 @@ const DashboardSpipuniformProductsTypesRoute =
     path: '/spipuniform/products/types',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardSpipuniformProductsCategoriesOldRoute =
-  DashboardSpipuniformProductsCategoriesOldRouteImport.update({
-    id: '/spipuniform/products/categories-old',
-    path: '/spipuniform/products/categories-old',
-    getParentRoute: () => DashboardRoute,
-  } as any)
 const DashboardSpipuniformProductsCategoriesRoute =
   DashboardSpipuniformProductsCategoriesRouteImport.update({
     id: '/spipuniform/products/categories',
     path: '/spipuniform/products/categories',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardSpipuniformProductsAttributesRoute =
+  DashboardSpipuniformProductsAttributesRouteImport.update({
+    id: '/spipuniform/products/attributes',
+    path: '/spipuniform/products/attributes',
     getParentRoute: () => DashboardRoute,
   } as any)
 const ApiUsersApprovalServerRoute = ApiUsersApprovalServerRouteImport.update({
@@ -420,6 +424,18 @@ const ApiSpipuniformAdminCategoriesIndexServerRoute =
     path: '/api/spipuniform/admin/categories/',
     getParentRoute: () => rootServerRouteImport,
   } as any)
+const ApiSpipuniformAdminAttributesIndexServerRoute =
+  ApiSpipuniformAdminAttributesIndexServerRouteImport.update({
+    id: '/api/spipuniform/admin/attributes/',
+    path: '/api/spipuniform/admin/attributes/',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiSpipuniformAdminAttributeValuesIndexServerRoute =
+  ApiSpipuniformAdminAttributeValuesIndexServerRouteImport.update({
+    id: '/api/spipuniform/admin/attribute-values/',
+    path: '/api/spipuniform/admin/attribute-values/',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiSpipuniformAdminProductTypesTypeIdServerRoute =
   ApiSpipuniformAdminProductTypesTypeIdServerRouteImport.update({
     id: '/api/spipuniform/admin/product-types/typeId',
@@ -430,6 +446,18 @@ const ApiSpipuniformAdminCategoriesCategoryIdServerRoute =
   ApiSpipuniformAdminCategoriesCategoryIdServerRouteImport.update({
     id: '/api/spipuniform/admin/categories/categoryId',
     path: '/api/spipuniform/admin/categories/categoryId',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiSpipuniformAdminAttributesAttributeIdServerRoute =
+  ApiSpipuniformAdminAttributesAttributeIdServerRouteImport.update({
+    id: '/api/spipuniform/admin/attributes/attributeId',
+    path: '/api/spipuniform/admin/attributes/attributeId',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiSpipuniformAdminAttributeValuesValueIdServerRoute =
+  ApiSpipuniformAdminAttributeValuesValueIdServerRouteImport.update({
+    id: '/api/spipuniform/admin/attribute-values/valueId',
+    path: '/api/spipuniform/admin/attribute-values/valueId',
     getParentRoute: () => rootServerRouteImport,
   } as any)
 
@@ -455,8 +483,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
   '/dashboard/spipuniform': typeof DashboardSpipuniformIndexRoute
   '/dashboard/user-management': typeof DashboardUserManagementIndexRoute
+  '/dashboard/spipuniform/products/attributes': typeof DashboardSpipuniformProductsAttributesRoute
   '/dashboard/spipuniform/products/categories': typeof DashboardSpipuniformProductsCategoriesRoute
-  '/dashboard/spipuniform/products/categories-old': typeof DashboardSpipuniformProductsCategoriesOldRoute
   '/dashboard/spipuniform/products/types': typeof DashboardSpipuniformProductsTypesRoute
 }
 export interface FileRoutesByTo {
@@ -480,8 +508,8 @@ export interface FileRoutesByTo {
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
   '/dashboard/spipuniform': typeof DashboardSpipuniformIndexRoute
   '/dashboard/user-management': typeof DashboardUserManagementIndexRoute
+  '/dashboard/spipuniform/products/attributes': typeof DashboardSpipuniformProductsAttributesRoute
   '/dashboard/spipuniform/products/categories': typeof DashboardSpipuniformProductsCategoriesRoute
-  '/dashboard/spipuniform/products/categories-old': typeof DashboardSpipuniformProductsCategoriesOldRoute
   '/dashboard/spipuniform/products/types': typeof DashboardSpipuniformProductsTypesRoute
 }
 export interface FileRoutesById {
@@ -507,8 +535,8 @@ export interface FileRoutesById {
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
   '/dashboard/spipuniform/': typeof DashboardSpipuniformIndexRoute
   '/dashboard/user-management/': typeof DashboardUserManagementIndexRoute
+  '/dashboard/spipuniform/products/attributes': typeof DashboardSpipuniformProductsAttributesRoute
   '/dashboard/spipuniform/products/categories': typeof DashboardSpipuniformProductsCategoriesRoute
-  '/dashboard/spipuniform/products/categories-old': typeof DashboardSpipuniformProductsCategoriesOldRoute
   '/dashboard/spipuniform/products/types': typeof DashboardSpipuniformProductsTypesRoute
 }
 export interface FileRouteTypes {
@@ -535,8 +563,8 @@ export interface FileRouteTypes {
     | '/dashboard/user-management/users'
     | '/dashboard/spipuniform'
     | '/dashboard/user-management'
+    | '/dashboard/spipuniform/products/attributes'
     | '/dashboard/spipuniform/products/categories'
-    | '/dashboard/spipuniform/products/categories-old'
     | '/dashboard/spipuniform/products/types'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -560,8 +588,8 @@ export interface FileRouteTypes {
     | '/dashboard/user-management/users'
     | '/dashboard/spipuniform'
     | '/dashboard/user-management'
+    | '/dashboard/spipuniform/products/attributes'
     | '/dashboard/spipuniform/products/categories'
-    | '/dashboard/spipuniform/products/categories-old'
     | '/dashboard/spipuniform/products/types'
   id:
     | '__root__'
@@ -586,8 +614,8 @@ export interface FileRouteTypes {
     | '/dashboard/user-management/users'
     | '/dashboard/spipuniform/'
     | '/dashboard/user-management/'
+    | '/dashboard/spipuniform/products/attributes'
     | '/dashboard/spipuniform/products/categories'
-    | '/dashboard/spipuniform/products/categories-old'
     | '/dashboard/spipuniform/products/types'
   fileRoutesById: FileRoutesById
 }
@@ -638,8 +666,12 @@ export interface FileServerRoutesByFullPath {
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/spipuniform/counties': typeof ApiSpipuniformCountiesIndexServerRoute
   '/api/spipuniform/schools': typeof ApiSpipuniformSchoolsIndexServerRoute
+  '/api/spipuniform/admin/attribute-values/valueId': typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
+  '/api/spipuniform/admin/attributes/attributeId': typeof ApiSpipuniformAdminAttributesAttributeIdServerRoute
   '/api/spipuniform/admin/categories/categoryId': typeof ApiSpipuniformAdminCategoriesCategoryIdServerRoute
   '/api/spipuniform/admin/product-types/typeId': typeof ApiSpipuniformAdminProductTypesTypeIdServerRoute
+  '/api/spipuniform/admin/attribute-values': typeof ApiSpipuniformAdminAttributeValuesIndexServerRoute
+  '/api/spipuniform/admin/attributes': typeof ApiSpipuniformAdminAttributesIndexServerRoute
   '/api/spipuniform/admin/categories': typeof ApiSpipuniformAdminCategoriesIndexServerRoute
   '/api/spipuniform/admin/product-types': typeof ApiSpipuniformAdminProductTypesIndexServerRoute
 }
@@ -681,8 +713,12 @@ export interface FileServerRoutesByTo {
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/spipuniform/counties': typeof ApiSpipuniformCountiesIndexServerRoute
   '/api/spipuniform/schools': typeof ApiSpipuniformSchoolsIndexServerRoute
+  '/api/spipuniform/admin/attribute-values/valueId': typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
+  '/api/spipuniform/admin/attributes/attributeId': typeof ApiSpipuniformAdminAttributesAttributeIdServerRoute
   '/api/spipuniform/admin/categories/categoryId': typeof ApiSpipuniformAdminCategoriesCategoryIdServerRoute
   '/api/spipuniform/admin/product-types/typeId': typeof ApiSpipuniformAdminProductTypesTypeIdServerRoute
+  '/api/spipuniform/admin/attribute-values': typeof ApiSpipuniformAdminAttributeValuesIndexServerRoute
+  '/api/spipuniform/admin/attributes': typeof ApiSpipuniformAdminAttributesIndexServerRoute
   '/api/spipuniform/admin/categories': typeof ApiSpipuniformAdminCategoriesIndexServerRoute
   '/api/spipuniform/admin/product-types': typeof ApiSpipuniformAdminProductTypesIndexServerRoute
 }
@@ -725,8 +761,12 @@ export interface FileServerRoutesById {
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/spipuniform/counties/': typeof ApiSpipuniformCountiesIndexServerRoute
   '/api/spipuniform/schools/': typeof ApiSpipuniformSchoolsIndexServerRoute
+  '/api/spipuniform/admin/attribute-values/valueId': typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
+  '/api/spipuniform/admin/attributes/attributeId': typeof ApiSpipuniformAdminAttributesAttributeIdServerRoute
   '/api/spipuniform/admin/categories/categoryId': typeof ApiSpipuniformAdminCategoriesCategoryIdServerRoute
   '/api/spipuniform/admin/product-types/typeId': typeof ApiSpipuniformAdminProductTypesTypeIdServerRoute
+  '/api/spipuniform/admin/attribute-values/': typeof ApiSpipuniformAdminAttributeValuesIndexServerRoute
+  '/api/spipuniform/admin/attributes/': typeof ApiSpipuniformAdminAttributesIndexServerRoute
   '/api/spipuniform/admin/categories/': typeof ApiSpipuniformAdminCategoriesIndexServerRoute
   '/api/spipuniform/admin/product-types/': typeof ApiSpipuniformAdminProductTypesIndexServerRoute
 }
@@ -770,8 +810,12 @@ export interface FileServerRouteTypes {
     | '/api/spipuniform/localities/search'
     | '/api/spipuniform/counties'
     | '/api/spipuniform/schools'
+    | '/api/spipuniform/admin/attribute-values/valueId'
+    | '/api/spipuniform/admin/attributes/attributeId'
     | '/api/spipuniform/admin/categories/categoryId'
     | '/api/spipuniform/admin/product-types/typeId'
+    | '/api/spipuniform/admin/attribute-values'
+    | '/api/spipuniform/admin/attributes'
     | '/api/spipuniform/admin/categories'
     | '/api/spipuniform/admin/product-types'
   fileServerRoutesByTo: FileServerRoutesByTo
@@ -813,8 +857,12 @@ export interface FileServerRouteTypes {
     | '/api/spipuniform/localities/search'
     | '/api/spipuniform/counties'
     | '/api/spipuniform/schools'
+    | '/api/spipuniform/admin/attribute-values/valueId'
+    | '/api/spipuniform/admin/attributes/attributeId'
     | '/api/spipuniform/admin/categories/categoryId'
     | '/api/spipuniform/admin/product-types/typeId'
+    | '/api/spipuniform/admin/attribute-values'
+    | '/api/spipuniform/admin/attributes'
     | '/api/spipuniform/admin/categories'
     | '/api/spipuniform/admin/product-types'
   id:
@@ -856,8 +904,12 @@ export interface FileServerRouteTypes {
     | '/api/spipuniform/localities/search'
     | '/api/spipuniform/counties/'
     | '/api/spipuniform/schools/'
+    | '/api/spipuniform/admin/attribute-values/valueId'
+    | '/api/spipuniform/admin/attributes/attributeId'
     | '/api/spipuniform/admin/categories/categoryId'
     | '/api/spipuniform/admin/product-types/typeId'
+    | '/api/spipuniform/admin/attribute-values/'
+    | '/api/spipuniform/admin/attributes/'
     | '/api/spipuniform/admin/categories/'
     | '/api/spipuniform/admin/product-types/'
   fileServerRoutesById: FileServerRoutesById
@@ -896,8 +948,12 @@ export interface RootServerRouteChildren {
   ApiSpipuniformLocalitiesSearchServerRoute: typeof ApiSpipuniformLocalitiesSearchServerRoute
   ApiSpipuniformCountiesIndexServerRoute: typeof ApiSpipuniformCountiesIndexServerRoute
   ApiSpipuniformSchoolsIndexServerRoute: typeof ApiSpipuniformSchoolsIndexServerRoute
+  ApiSpipuniformAdminAttributeValuesValueIdServerRoute: typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
+  ApiSpipuniformAdminAttributesAttributeIdServerRoute: typeof ApiSpipuniformAdminAttributesAttributeIdServerRoute
   ApiSpipuniformAdminCategoriesCategoryIdServerRoute: typeof ApiSpipuniformAdminCategoriesCategoryIdServerRoute
   ApiSpipuniformAdminProductTypesTypeIdServerRoute: typeof ApiSpipuniformAdminProductTypesTypeIdServerRoute
+  ApiSpipuniformAdminAttributeValuesIndexServerRoute: typeof ApiSpipuniformAdminAttributeValuesIndexServerRoute
+  ApiSpipuniformAdminAttributesIndexServerRoute: typeof ApiSpipuniformAdminAttributesIndexServerRoute
   ApiSpipuniformAdminCategoriesIndexServerRoute: typeof ApiSpipuniformAdminCategoriesIndexServerRoute
   ApiSpipuniformAdminProductTypesIndexServerRoute: typeof ApiSpipuniformAdminProductTypesIndexServerRoute
 }
@@ -1058,18 +1114,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSpipuniformProductsTypesRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/spipuniform/products/categories-old': {
-      id: '/dashboard/spipuniform/products/categories-old'
-      path: '/spipuniform/products/categories-old'
-      fullPath: '/dashboard/spipuniform/products/categories-old'
-      preLoaderRoute: typeof DashboardSpipuniformProductsCategoriesOldRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/dashboard/spipuniform/products/categories': {
       id: '/dashboard/spipuniform/products/categories'
       path: '/spipuniform/products/categories'
       fullPath: '/dashboard/spipuniform/products/categories'
       preLoaderRoute: typeof DashboardSpipuniformProductsCategoriesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/spipuniform/products/attributes': {
+      id: '/dashboard/spipuniform/products/attributes'
+      path: '/spipuniform/products/attributes'
+      fullPath: '/dashboard/spipuniform/products/attributes'
+      preLoaderRoute: typeof DashboardSpipuniformProductsAttributesRouteImport
       parentRoute: typeof DashboardRoute
     }
   }
@@ -1349,6 +1405,20 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiSpipuniformAdminCategoriesIndexServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/spipuniform/admin/attributes/': {
+      id: '/api/spipuniform/admin/attributes/'
+      path: '/api/spipuniform/admin/attributes'
+      fullPath: '/api/spipuniform/admin/attributes'
+      preLoaderRoute: typeof ApiSpipuniformAdminAttributesIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/spipuniform/admin/attribute-values/': {
+      id: '/api/spipuniform/admin/attribute-values/'
+      path: '/api/spipuniform/admin/attribute-values'
+      fullPath: '/api/spipuniform/admin/attribute-values'
+      preLoaderRoute: typeof ApiSpipuniformAdminAttributeValuesIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/spipuniform/admin/product-types/typeId': {
       id: '/api/spipuniform/admin/product-types/typeId'
       path: '/api/spipuniform/admin/product-types/typeId'
@@ -1361,6 +1431,20 @@ declare module '@tanstack/react-start/server' {
       path: '/api/spipuniform/admin/categories/categoryId'
       fullPath: '/api/spipuniform/admin/categories/categoryId'
       preLoaderRoute: typeof ApiSpipuniformAdminCategoriesCategoryIdServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/spipuniform/admin/attributes/attributeId': {
+      id: '/api/spipuniform/admin/attributes/attributeId'
+      path: '/api/spipuniform/admin/attributes/attributeId'
+      fullPath: '/api/spipuniform/admin/attributes/attributeId'
+      preLoaderRoute: typeof ApiSpipuniformAdminAttributesAttributeIdServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/spipuniform/admin/attribute-values/valueId': {
+      id: '/api/spipuniform/admin/attribute-values/valueId'
+      path: '/api/spipuniform/admin/attribute-values/valueId'
+      fullPath: '/api/spipuniform/admin/attribute-values/valueId'
+      preLoaderRoute: typeof ApiSpipuniformAdminAttributeValuesValueIdServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
   }
@@ -1381,8 +1465,8 @@ interface DashboardRouteChildren {
   DashboardUserManagementUsersRoute: typeof DashboardUserManagementUsersRoute
   DashboardSpipuniformIndexRoute: typeof DashboardSpipuniformIndexRoute
   DashboardUserManagementIndexRoute: typeof DashboardUserManagementIndexRoute
+  DashboardSpipuniformProductsAttributesRoute: typeof DashboardSpipuniformProductsAttributesRoute
   DashboardSpipuniformProductsCategoriesRoute: typeof DashboardSpipuniformProductsCategoriesRoute
-  DashboardSpipuniformProductsCategoriesOldRoute: typeof DashboardSpipuniformProductsCategoriesOldRoute
   DashboardSpipuniformProductsTypesRoute: typeof DashboardSpipuniformProductsTypesRoute
 }
 
@@ -1404,10 +1488,10 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardUserManagementUsersRoute: DashboardUserManagementUsersRoute,
   DashboardSpipuniformIndexRoute: DashboardSpipuniformIndexRoute,
   DashboardUserManagementIndexRoute: DashboardUserManagementIndexRoute,
+  DashboardSpipuniformProductsAttributesRoute:
+    DashboardSpipuniformProductsAttributesRoute,
   DashboardSpipuniformProductsCategoriesRoute:
     DashboardSpipuniformProductsCategoriesRoute,
-  DashboardSpipuniformProductsCategoriesOldRoute:
-    DashboardSpipuniformProductsCategoriesOldRoute,
   DashboardSpipuniformProductsTypesRoute:
     DashboardSpipuniformProductsTypesRoute,
 }
@@ -1508,10 +1592,18 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiSpipuniformCountiesIndexServerRoute:
     ApiSpipuniformCountiesIndexServerRoute,
   ApiSpipuniformSchoolsIndexServerRoute: ApiSpipuniformSchoolsIndexServerRoute,
+  ApiSpipuniformAdminAttributeValuesValueIdServerRoute:
+    ApiSpipuniformAdminAttributeValuesValueIdServerRoute,
+  ApiSpipuniformAdminAttributesAttributeIdServerRoute:
+    ApiSpipuniformAdminAttributesAttributeIdServerRoute,
   ApiSpipuniformAdminCategoriesCategoryIdServerRoute:
     ApiSpipuniformAdminCategoriesCategoryIdServerRoute,
   ApiSpipuniformAdminProductTypesTypeIdServerRoute:
     ApiSpipuniformAdminProductTypesTypeIdServerRoute,
+  ApiSpipuniformAdminAttributeValuesIndexServerRoute:
+    ApiSpipuniformAdminAttributeValuesIndexServerRoute,
+  ApiSpipuniformAdminAttributesIndexServerRoute:
+    ApiSpipuniformAdminAttributesIndexServerRoute,
   ApiSpipuniformAdminCategoriesIndexServerRoute:
     ApiSpipuniformAdminCategoriesIndexServerRoute,
   ApiSpipuniformAdminProductTypesIndexServerRoute:
