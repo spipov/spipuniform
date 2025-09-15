@@ -10,7 +10,21 @@ export const listingStatus = pgEnum("listing_status", ['active', 'pending', 'sol
 export const requestStatus = pgEnum("request_status", ['open', 'fulfilled', 'closed']);
 export const reportStatus = pgEnum("report_status", ['open', 'reviewing', 'resolved', 'dismissed']);
 export const membershipStatus = pgEnum("membership_status", ['active', 'pending', 'cancelled', 'expired']);
-export const attributeInputType = pgEnum("attribute_input_type", ['select', 'multiselect', 'text', 'number', 'boolean']);
+export const attributeInputType = pgEnum("attribute_input_type", [
+  'alpha_sizes',        // Letter-based sizes: 
+  'numeric_sizes',      // Number-based sizes: 
+  'age_ranges',         // Age ranges: 
+  'age_numeric',        // Numeric ages: 
+  'shoe_sizes_uk',      // UK shoe sizes
+  'shoe_sizes_eu',      // EU shoe sizes  
+  'waist_inseam',       // Trouser sizing: waist x inseam format
+  'neck_size',          // Shirt neck sizing in inches/cm
+  'chest_size',         // Chest measurements with fit indicators
+  'text_input',         // Free text input
+  'color_select',       // Color options
+  'gender_select',      // Gender options
+  'material_select'     // Material types
+]);
 export const notificationType = pgEnum("notification_type", ['match_found', 'request_fulfilled', 'listing_expired', 'message_received']);
 
 // Geographic and School Data

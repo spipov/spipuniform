@@ -12,7 +12,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Sliders, Plus, Edit, Trash2, Search, MoreHorizontal, Package, Tags, Eye, Settings } from 'lucide-react';
+import { Sliders, Plus, Edit, Trash2, Search, MoreHorizontal, Package, Tags, Eye, Settings, ArrowRightLeft, X } from 'lucide-react';
+import { getSizeWithConversion } from '@/lib/conversions/shoe-sizes';
 
 export const Route = createFileRoute('/dashboard/spipuniform/products/attributes')({
   component: AttributesPage,
@@ -53,13 +54,19 @@ interface AttributeValue {
 }
 
 const INPUT_TYPES = [
-  { value: 'text', label: 'Text Input' },
-  { value: 'select', label: 'Dropdown Select' },
-  { value: 'multiselect', label: 'Multi-select' },
-  { value: 'number', label: 'Number Input' },
-  { value: 'textarea', label: 'Text Area' },
-  { value: 'checkbox', label: 'Checkbox' },
-  { value: 'radio', label: 'Radio Buttons' }
+  { value: 'alpha_sizes', label: 'Alpha Sizes (XXS, XS, S, M, L, XL, XXL, XXXL)' },
+  { value: 'numeric_sizes', label: 'Numeric Sizes (00, 0, 2, 4, 6, 8, 10, 12, 14, 16)' },
+  { value: 'age_ranges', label: 'Age Ranges (3-4 years, 4-5 years, 5-6 years)' },
+  { value: 'age_numeric', label: 'Numeric Ages (3, 4, 5, 6, 7, 8, 9, 10, etc.)' },
+  { value: 'shoe_sizes_uk', label: 'UK Shoe Sizes (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)' },
+  { value: 'shoe_sizes_eu', label: 'EU Shoe Sizes (33, 34, 35, 36, 37, 38, 39, 40)' },
+  { value: 'waist_inseam', label: 'Waist x Inseam (28x30, 30x32, 32x34, 34x36)' },
+  { value: 'neck_size', label: 'Neck Size (14.5", 15", 15.5", 16", 16.5", 17")' },
+  { value: 'chest_size', label: 'Chest Size (36R, 38R, 40L, 42L, 44XL)' },
+  { value: 'color_select', label: 'Color Options (Navy, White, Blue, Black)' },
+  { value: 'gender_select', label: 'Gender (Boys, Girls, Unisex)' },
+  { value: 'material_select', label: 'Material (Cotton, Polyester, Cotton/Poly Blend)' },
+  { value: 'text_input', label: 'Text Input (Free text)' }
 ];
 
 function AttributesPage() {
@@ -82,6 +89,107 @@ function AttributesPage() {
     placeholder: '',
     helpText: ''
   });
+  
+  const [initialValues, setInitialValues] = useState<Array<{value: string, displayName: string, sortOrder: number}>>([]);
+  const [tempValue, setTempValue] = useState('');
+  const [tempDisplayName, setTempDisplayName] = useState('');
+  
+  const addInitialValue = (value: string, displayName: string = '') => {
+    const newValue = {
+      value: value,
+      displayName: displayName || value,
+      sortOrder: initialValues.length
+    };
+    setInitialValues([...initialValues, newValue]);
+  };
+  
+  const removeInitialValue = (index: number) => {
+    setInitialValues(initialValues.filter((_, i) => i !== index));
+  };
+  
+  const getPlaceholderForInputType = (inputType: string, field: 'value' | 'display'): string => {
+    const placeholders = {
+      'age_range': {
+        value: 'e.g., 18-25',
+        display: 'e.g., Young Adult'
+      },
+      'waist_inseam': {
+        value: 'e.g., 32x34',
+        display: 'e.g., 32W x 34L'
+      },
+      'shoe_size': {
+        value: 'e.g., 9.5',
+        display: 'e.g., Size 9.5'
+      },
+      'alpha_size': {
+        value: 'e.g., M',
+        display: 'e.g., Medium'
+      },
+      'numeric_size': {
+        value: 'e.g., 42',
+        display: 'e.g., Size 42'
+      },
+      'text': {
+        value: 'e.g., Red',
+        display: 'e.g., Bright Red'
+      },
+      'color': {
+        value: 'e.g., #FF0000',
+        display: 'e.g., Red'
+      }
+    };
+    
+    return placeholders[inputType as keyof typeof placeholders]?.[field] || 'Enter value';
+  };
+  
+  const handleAddValue = () => {
+    if (!tempValue.trim()) return;
+    addInitialValue(tempValue.trim(), tempDisplayName.trim());
+    setTempValue('');
+    setTempDisplayName('');
+  };
+  
+  const resetFormState = () => {
+    setFormData({ 
+      productTypeId: '', 
+      name: '', 
+      slug: '', 
+      inputType: '', 
+      required: false, 
+      order: 0, 
+      placeholder: '', 
+      helpText: '' 
+    });
+    setInitialValues([]);
+    setTempValue('');
+    setTempDisplayName('');
+    setEditingAttribute(null);
+  };
+  
+  const handleCreate = () => {
+    resetFormState();
+    setIsDialogOpen(true);
+  };
+  
+  const handleEdit = (attribute: Attribute) => {
+    setFormData({
+      productTypeId: attribute.productTypeId,
+      name: attribute.name,
+      slug: attribute.slug,
+      inputType: attribute.inputType,
+      required: attribute.required,
+      order: attribute.order,
+      placeholder: attribute.placeholder || '',
+      helpText: attribute.helpText || ''
+    });
+    setEditingAttribute(attribute);
+    // Don't pre-populate initial values when editing
+    setInitialValues([]);
+    setTempValue('');
+    setTempDisplayName('');
+    setIsDialogOpen(true);
+  };
+  
   
   const filteredAttributes = attributes.filter(attribute => {
     const matchesSearch = attribute.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -168,19 +276,35 @@ function AttributesPage() {
       const data = await response.json();
       
       if (data.success) {
-        toast.success(editingAttribute ? 'Attribute updated successfully' : 'Attribute created successfully');
+        // If creating a new attribute and there are initial values, create them
+        if (!editingAttribute && initialValues.length > 0) {
+          for (const value of initialValues) {
+            try {
+              await fetch('/api/spipuniform/admin/attribute-values/', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  attributeId: data.attribute.id,
+                  value: value.value,
+                  displayName: value.displayName,
+                  sortOrder: value.sortOrder
+                }),
+              });
+            } catch (valueError) {
+              console.error('Error creating attribute value:', valueError);
+            }
+          }
+        }
+        
+        const successMessage = editingAttribute 
+          ? 'Attribute updated successfully' 
+          : `Attribute created successfully${initialValues.length > 0 ? ` with ${initialValues.length} initial values` : ''}`;
+        
+        toast.success(successMessage);
         setIsDialogOpen(false);
-        setEditingAttribute(null);
-        setFormData({ 
-          productTypeId: '', 
-          name: '', 
-          slug: '', 
-          inputType: '', 
-          required: false, 
-          order: 0, 
-          placeholder: '', 
-          helpText: '' 
-        });
+        resetFormState();
         fetchAttributes();
       } else {
         toast.error(data.error || 'Failed to save attribute');
@@ -211,36 +335,6 @@ function AttributesPage() {
       console.error('Error deleting attribute:', error);
       toast.error('Failed to delete attribute');
     }
-  };
-
-  const handleEdit = (attribute: Attribute) => {
-    setEditingAttribute(attribute);
-    setFormData({
-      productTypeId: attribute.productTypeId,
-      name: attribute.name,
-      slug: attribute.slug,
-      inputType: attribute.inputType,
-      required: attribute.required,
-      order: attribute.order,
-      placeholder: attribute.placeholder || '',
-      helpText: attribute.helpText || ''
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handleCreate = () => {
-    setEditingAttribute(null);
-    setFormData({ 
-      productTypeId: selectedProductType !== 'all' ? selectedProductType : '',
-      name: '', 
-      slug: '', 
-      inputType: '', 
-      required: false, 
-      order: attributes.length + 1, 
-      placeholder: '', 
-      helpText: '' 
-    });
-    setIsDialogOpen(true);
   };
 
   const handleManageValues = (attribute: Attribute) => {
@@ -440,7 +534,12 @@ function AttributesPage() {
       </Card>
 
       {/* Create/Edit Attribute Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        setIsDialogOpen(open);
+        if (!open) {
+          resetFormState();
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
@@ -552,10 +651,86 @@ function AttributesPage() {
                 rows={3}
               />
             </div>
+            
+            {/* Dynamic Value Input Section */}
+            {formData.inputType && !editingAttribute && (
+              <div className="space-y-4 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">Initial Values</h4>
+                  <span className="text-xs text-muted-foreground">
+                    Add some initial values for this attribute
+                  </span>
+                </div>
+                
+                {/* Display existing values */}
+                {initialValues.length > 0 && (
+                  <div className="space-y-2">
+                    {initialValues.map((item, index) => (
+                      <div key={index} className="flex items-center justify-between bg-muted/30 rounded-md p-2">
+                        <div className="flex-1">
+                          <span className="text-sm font-medium">{item.displayName}</span>
+                          {item.value !== item.displayName && (
+                            <span className="text-xs text-muted-foreground ml-2">({item.value})</span>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeInitialValue(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Add new value form */}
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="temp-value" className="text-xs">Value</Label>
+                      <Input
+                        id="temp-value"
+                        value={tempValue}
+                        onChange={(e) => setTempValue(e.target.value)}
+                        placeholder={getPlaceholderForInputType(formData.inputType, 'value')}
+                        className="h-8"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="temp-display" className="text-xs">Display Name (Optional)</Label>
+                      <Input
+                        id="temp-display"
+                        value={tempDisplayName}
+                        onChange={(e) => setTempDisplayName(e.target.value)}
+                        placeholder={getPlaceholderForInputType(formData.inputType, 'display')}
+                        className="h-8"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddValue}
+                    disabled={!tempValue.trim()}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Value
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
           
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => {
+              setIsDialogOpen(false);
+              resetFormState();
+            }}>
               Cancel
             </Button>
             <Button onClick={handleSubmit}>
@@ -721,6 +896,308 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
     setIsAddDialogOpen(true);
   };
 
+  const getSizeConversionDisplay = (value: AttributeValue) => {
+    const numericValue = parseFloat(value.value);
+    if (isNaN(numericValue)) return null;
+    
+    if (attribute.inputType === 'shoe_sizes_eu') {
+      return getSizeWithConversion(numericValue, 'EU');
+    } else if (attribute.inputType === 'shoe_sizes_uk') {
+      return getSizeWithConversion(numericValue, 'UK');
+    }
+    return null;
+  };
+
+  const renderValueInputFields = () => {
+    switch (attribute.inputType) {
+      case 'age_ranges':
+        return (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="ageFrom">From Age *</Label>
+                <Input
+                  id="ageFrom"
+                  type="number"
+                  placeholder="e.g. 3"
+                  min="3"
+                  max="18"
+                  onChange={(e) => updateAgeRange(e.target.value, 'from')}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="ageTo">To Age *</Label>
+                <Input
+                  id="ageTo"
+                  type="number"
+                  placeholder="e.g. 4"
+                  min="3"
+                  max="18"
+                  onChange={(e) => updateAgeRange(e.target.value, 'to')}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="displayName">Display Name *</Label>
+              <Input
+                id="displayName"
+                value={formData.displayName}
+                onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                placeholder="e.g. 3-4 years"
+                required
+              />
+            </div>
+          </>
+        );
+      
+      case 'waist_inseam':
+        return (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="waistSize">Waist Size *</Label>
+                <Input
+                  id="waistSize"
+                  type="number"
+                  placeholder="e.g. 32"
+                  min="24"
+                  max="50"
+                  onChange={(e) => updateWaistInseam(e.target.value, 'waist')}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="inseamLength">Inseam Length *</Label>
+                <Input
+                  id="inseamLength"
+                  type="number"
+                  placeholder="e.g. 30"
+                  min="26"
+                  max="38"
+                  onChange={(e) => updateWaistInseam(e.target.value, 'inseam')}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="displayName">Display Name *</Label>
+              <Input
+                id="displayName"
+                value={formData.displayName}
+                onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                placeholder="e.g. 32x30"
+                required
+              />
+            </div>
+          </>
+        );
+      
+      case 'shoe_sizes_eu':
+      case 'shoe_sizes_uk':
+        const sizeType = attribute.inputType === 'shoe_sizes_eu' ? 'EU' : 'UK';
+        return (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="shoeSize">{sizeType} Shoe Size *</Label>
+              <Input
+                id="shoeSize"
+                type="number"
+                step="0.5"
+                placeholder={sizeType === 'EU' ? 'e.g. 38' : 'e.g. 5'}
+                min={sizeType === 'EU' ? '33' : '1'}
+                max={sizeType === 'EU' ? '50' : '14'}
+                value={formData.value}
+                onChange={(e) => {
+                  const size = parseFloat(e.target.value);
+                  setFormData({ 
+                    ...formData, 
+                    value: e.target.value,
+                    displayName: e.target.value ? `${sizeType} ${e.target.value}` : ''
+                  });
+                }}
+                required
+              />
+              {formData.value && (
+                <p className="text-sm text-muted-foreground">
+                  Conversion: {getSizeWithConversion(parseFloat(formData.value), sizeType)}
+                </p>
+              )}
+            </div>
+          </>
+        );
+      
+      case 'alpha_sizes':
+        return (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="alphaSize">Alpha Size *</Label>
+              <Select value={formData.value} onValueChange={(value) => setFormData({...formData, value, displayName: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select size" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="xxs">XXS</SelectItem>
+                  <SelectItem value="xs">XS</SelectItem>
+                  <SelectItem value="s">S</SelectItem>
+                  <SelectItem value="m">M</SelectItem>
+                  <SelectItem value="l">L</SelectItem>
+                  <SelectItem value="xl">XL</SelectItem>
+                  <SelectItem value="xxl">XXL</SelectItem>
+                  <SelectItem value="xxxl">XXXL</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        );
+      
+      case 'numeric_sizes':
+        return (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="numericSize">Numeric Size *</Label>
+              <Input
+                id="numericSize"
+                type="number"
+                step="2"
+                placeholder="e.g. 8"
+                min="0"
+                max="20"
+                value={formData.value}
+                onChange={(e) => setFormData({ ...formData, value: e.target.value, displayName: e.target.value })}
+                required
+              />
+            </div>
+          </>
+        );
+      
+      case 'age_numeric':
+        return (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="age">Age *</Label>
+              <Input
+                id="age"
+                type="number"
+                placeholder="e.g. 8"
+                min="3"
+                max="18"
+                value={formData.value}
+                onChange={(e) => setFormData({ ...formData, value: e.target.value, displayName: `${e.target.value} years` })}
+                required
+              />
+            </div>
+          </>
+        );
+      
+      case 'color_select':
+        return (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="colorName">Color Name *</Label>
+              <Input
+                id="colorName"
+                placeholder="e.g. Navy Blue"
+                value={formData.displayName}
+                onChange={(e) => setFormData({ ...formData, displayName: e.target.value, value: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
+                required
+              />
+            </div>
+          </>
+        );
+      
+      case 'gender_select':
+        return (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="gender">Gender *</Label>
+              <Select value={formData.value} onValueChange={(value) => {
+                const displayNames = { boys: 'Boys', girls: 'Girls', unisex: 'Unisex' };
+                setFormData({...formData, value, displayName: displayNames[value as keyof typeof displayNames] || value});
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="boys">Boys</SelectItem>
+                  <SelectItem value="girls">Girls</SelectItem>
+                  <SelectItem value="unisex">Unisex</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        );
+      
+      default:
+        return (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="displayName">Display Name *</Label>
+              <Input
+                id="displayName"
+                value={formData.displayName}
+                onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                placeholder="e.g. Extra Small"
+                required
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="value">Value *</Label>
+              <Input
+                id="value"
+                value={formData.value}
+                onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                placeholder="e.g. xs"
+                required
+              />
+            </div>
+          </>
+        );
+    }
+  };
+
+  const updateAgeRange = (value: string, type: 'from' | 'to') => {
+    const currentValue = formData.value;
+    const parts = currentValue.split('-');
+    if (type === 'from') {
+      const newValue = `${value}-${parts[1] || ''}`;
+      setFormData({ 
+        ...formData, 
+        value: newValue,
+        displayName: parts[1] ? `${value}-${parts[1]} years` : ''
+      });
+    } else {
+      const newValue = `${parts[0] || ''}-${value}`;
+      setFormData({ 
+        ...formData, 
+        value: newValue,
+        displayName: parts[0] ? `${parts[0]}-${value} years` : ''
+      });
+    }
+  };
+
+  const updateWaistInseam = (value: string, type: 'waist' | 'inseam') => {
+    const currentValue = formData.value;
+    const parts = currentValue.split('x');
+    if (type === 'waist') {
+      const newValue = `${value}x${parts[1] || ''}`;
+      setFormData({ 
+        ...formData, 
+        value: newValue,
+        displayName: parts[1] ? `${value}x${parts[1]}` : ''
+      });
+    } else {
+      const newValue = `${parts[0] || ''}x${value}`;
+      setFormData({ 
+        ...formData, 
+        value: newValue,
+        displayName: parts[0] ? `${parts[0]}x${value}` : ''
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -743,26 +1220,43 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
             <TableRow>
               <TableHead>Display Name</TableHead>
               <TableHead>Value</TableHead>
+              {(attribute.inputType === 'shoe_sizes_eu' || attribute.inputType === 'shoe_sizes_uk') && (
+                <TableHead>Size Conversion</TableHead>
+              )}
               <TableHead>Order</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {values.map((value) => (
-              <TableRow key={value.id}>
-                <TableCell className="font-medium">{value.displayName}</TableCell>
-                <TableCell>
-                  <code className="bg-muted px-2 py-1 rounded text-sm">{value.value}</code>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">{value.sortOrder}</Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={value.isActive ? 'default' : 'secondary'}>
-                    {value.isActive ? 'Active' : 'Inactive'}
-                  </Badge>
-                </TableCell>
+            {values.map((value) => {
+              const sizeConversion = getSizeConversionDisplay(value);
+              return (
+                <TableRow key={value.id}>
+                  <TableCell className="font-medium">{value.displayName}</TableCell>
+                  <TableCell>
+                    <code className="bg-muted px-2 py-1 rounded text-sm">{value.value}</code>
+                  </TableCell>
+                  {(attribute.inputType === 'shoe_sizes_eu' || attribute.inputType === 'shoe_sizes_uk') && (
+                    <TableCell>
+                      {sizeConversion ? (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <ArrowRightLeft className="h-3 w-3" />
+                          {sizeConversion}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">-</span>
+                      )}
+                    </TableCell>
+                  )}
+                  <TableCell>
+                    <Badge variant="outline">{value.sortOrder}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={value.isActive ? 'default' : 'secondary'}>
+                      {value.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -775,7 +1269,7 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => handleDeleteValue(value.id)}
                         className="text-destructive"
                       >
@@ -786,8 +1280,9 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
+            );
+          })}
+        </TableBody>
         </Table>
       )}
 
@@ -814,28 +1309,8 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="displayName">Display Name *</Label>
-              <Input
-                id="displayName"
-                value={formData.displayName}
-                onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                placeholder="e.g. Extra Small"
-                required
-              />
-            </div>
+            {renderValueInputFields()}
             
-            <div className="grid gap-2">
-              <Label htmlFor="value">Value *</Label>
-              <Input
-                id="value"
-                value={formData.value}
-                onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                placeholder="e.g. xs"
-                required
-              />
-            </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="sortOrder">Sort Order</Label>
