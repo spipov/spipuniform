@@ -14,10 +14,11 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/categor
           slug: productCategories.slug,
           description: productCategories.description,
           sortOrder: productCategories.sortOrder,
-          isActive: productCategories.isActive
+          isActive: productCategories.isActive,
+          createdAt: productCategories.createdAt,
+          updatedAt: productCategories.updatedAt
         })
         .from(productCategories)
-        .where(eq(productCategories.isActive, true))
         .orderBy(productCategories.sortOrder);
 
       // Fetch all product types
@@ -28,10 +29,11 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/categor
           name: productTypes.name,
           slug: productTypes.slug,
           description: productTypes.description,
-          isActive: productTypes.isActive
+          isActive: productTypes.isActive,
+          createdAt: productTypes.createdAt,
+          updatedAt: productTypes.updatedAt
         })
-        .from(productTypes)
-        .where(eq(productTypes.isActive, true));
+        .from(productTypes);
 
       // Fetch all attributes
       const attrs = await db
@@ -115,4 +117,42 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/categor
       );
     }
   },
+
+  POST: async ({ request }) => {
+    try {
+      const body = await request.json();
+      const { name, slug, description, sortOrder } = body;
+
+      if (!name || !slug) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Name and slug are required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const created = await db
+        .insert(productCategories)
+        .values({
+          name,
+          slug,
+          description,
+          sortOrder: sortOrder || 0,
+          isActive: true
+        })
+        .returning();
+
+      return new Response(JSON.stringify({
+        success: true,
+        category: created[0]
+      }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error('Error creating category:', error);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to create category' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+  }
 });

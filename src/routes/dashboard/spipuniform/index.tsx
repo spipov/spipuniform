@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { createFileRoute } from '@tanstack/react-router';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { 
   ShoppingBag, 
   Tags, 
@@ -13,11 +13,11 @@ import {
   Plus,
   Database,
   MapPin
-} from "lucide-react";
-import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+} from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
 
-export const Route = createFileRoute("/dashboard/")({
+export const Route = createFileRoute('/dashboard/spipuniform/')({
   component: SpipUniformDashboard,
 });
 

@@ -1,6 +1,6 @@
 import type * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive, MapPin, School } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive, MapPin, School, ShoppingBag, Tags, Package } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { UserLogoutCard } from "./user-logout-card";
 import { BrandingProvider, SmartBrandingLogo } from "@/components/branding/branding-logo";
@@ -78,6 +78,21 @@ const systemAdminNavigation = [
     url: "/dashboard/file-manager",
     icon: FolderOpen,
     requiredPermission: "viewFileManager",
+  },
+] as const;
+
+const productsNavigation = [
+  {
+    title: "Categories",
+    url: "/dashboard/spipuniform/products/categories",
+    icon: Tags,
+    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
+  },
+  {
+    title: "Product Types",
+    url: "/dashboard/spipuniform/products/types",
+    icon: Package,
+    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
   },
 ] as const;
 
@@ -223,9 +238,40 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
               )}
 
               {isSignedIn && (can('viewDashboard')) && (
+                <SidebarGroup className="dashboard-sidebar__products-group">
+                  <SidebarGroupLabel className="dashboard-sidebar__group-label">
+                    Product Management
+                  </SidebarGroupLabel>
+                  <SidebarMenu className="dashboard-sidebar__products-menu">
+                    {productsNavigation
+                      .filter((item) => can(item.requiredPermission))
+                      .map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <SidebarMenuItem
+                            key={item.title}
+                            className="dashboard-sidebar__products-item"
+                          >
+                            <SidebarMenuButton asChild className="dashboard-sidebar__products-button">
+                              <Link
+                                to={item.url}
+                                className="dashboard-sidebar__products-link font-medium"
+                              >
+                                <Icon className="dashboard-sidebar__products-icon size-4" />
+                                <span className="dashboard-sidebar__products-text">{item.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        );
+                      })}
+                  </SidebarMenu>
+                </SidebarGroup>
+              )}
+
+              {isSignedIn && (can('viewDashboard')) && (
                 <SidebarGroup className="dashboard-sidebar__spipuniform-group">
                   <SidebarGroupLabel className="dashboard-sidebar__group-label">
-                    SpipUniform
+                    Geographic Data
                   </SidebarGroupLabel>
                   <SidebarMenu className="dashboard-sidebar__spipuniform-menu">
                     {spipUniformNavigation
