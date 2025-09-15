@@ -108,45 +108,257 @@ function AttributesPage() {
   };
   
   const getPlaceholderForInputType = (inputType: string, field: 'value' | 'display'): string => {
-    const placeholders = {
-      'age_range': {
-        value: 'e.g., 18-25',
-        display: 'e.g., Young Adult'
+    const placeholders: Record<string, { value: string; display: string }> = {
+      'alpha_sizes': {
+        value: 'e.g., XS, S, M, L, XL',
+        display: 'e.g., Extra Small, Small, Medium'
+      },
+      'numeric_sizes': {
+        value: 'e.g., 2, 4, 6, 8, 10',
+        display: 'e.g., Size 2, Size 4'
+      },
+      'age_ranges': {
+        value: 'e.g., 3-4',
+        display: 'e.g., 3-4 years'
+      },
+      'age_numeric': {
+        value: 'e.g., 3, 4, 5',
+        display: 'e.g., 3 years, 4 years'
+      },
+      'shoe_sizes_uk': {
+        value: 'e.g., 1, 2, 3, 4',
+        display: 'e.g., UK 1, UK 2'
+      },
+      'shoe_sizes_eu': {
+        value: 'e.g., 33, 34, 35, 36',
+        display: 'e.g., EU 33, EU 34'
       },
       'waist_inseam': {
-        value: 'e.g., 32x34',
-        display: 'e.g., 32W x 34L'
+        value: 'e.g., 28x30, 30x32',
+        display: 'e.g., 28W x 30L'
       },
-      'shoe_size': {
-        value: 'e.g., 9.5',
-        display: 'e.g., Size 9.5'
+      'neck_size': {
+        value: 'e.g., 14.5, 15, 15.5',
+        display: 'e.g., 14.5", 15"'
       },
-      'alpha_size': {
-        value: 'e.g., M',
-        display: 'e.g., Medium'
+      'chest_size': {
+        value: 'e.g., 36R, 38R, 40L',
+        display: 'e.g., 36" Regular'
       },
-      'numeric_size': {
-        value: 'e.g., 42',
-        display: 'e.g., Size 42'
+      'color_select': {
+        value: 'e.g., navy, white',
+        display: 'e.g., Navy, White'
       },
-      'text': {
-        value: 'e.g., Red',
-        display: 'e.g., Bright Red'
+      'gender_select': {
+        value: 'e.g., boys, girls',
+        display: 'e.g., Boys, Girls'
       },
-      'color': {
-        value: 'e.g., #FF0000',
-        display: 'e.g., Red'
+      'material_select': {
+        value: 'e.g., cotton, polyester',
+        display: 'e.g., Cotton, Polyester'
+      },
+      'text_input': {
+        value: 'e.g., custom text',
+        display: 'e.g., Custom Value'
       }
     };
     
-    return placeholders[inputType as keyof typeof placeholders]?.[field] || 'Enter value';
+    return placeholders[inputType]?.[field] || 'Enter value';
   };
   
   const handleAddValue = () => {
     if (!tempValue.trim()) return;
-    addInitialValue(tempValue.trim(), tempDisplayName.trim());
+    addInitialValue(tempValue.trim(), tempDisplayName.trim() || tempValue.trim());
     setTempValue('');
     setTempDisplayName('');
+  };
+
+  const updateInitialAgeRange = (value: string, type: 'from' | 'to') => {
+    const currentValue = tempValue;
+    const parts = currentValue.split('-');
+    if (type === 'from') {
+      const newValue = `${value}-${parts[1] || ''}`;
+      setTempValue(newValue);
+      setTempDisplayName(parts[1] ? `${value}-${parts[1]} years` : '');
+    } else {
+      const newValue = `${parts[0] || ''}-${value}`;
+      setTempValue(newValue);
+      setTempDisplayName(parts[0] ? `${parts[0]}-${value} years` : '');
+    }
+  };
+
+  const updateInitialWaistInseam = (value: string, type: 'waist' | 'inseam') => {
+    const currentValue = tempValue;
+    const parts = currentValue.split('x');
+    if (type === 'waist') {
+      const newValue = `${value}x${parts[1] || ''}`;
+      setTempValue(newValue);
+      setTempDisplayName(parts[1] ? `${value}x${parts[1]}` : '');
+    } else {
+      const newValue = `${parts[0] || ''}x${value}`;
+      setTempValue(newValue);
+      setTempDisplayName(parts[0] ? `${parts[0]}x${value}` : '');
+    }
+  };
+
+  const renderInitialValueFields = () => {
+    const inputType = formData.inputType;
+    switch (inputType) {
+      case 'age_ranges':
+        return (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="temp-age-from" className="text-xs">From Age</Label>
+                <Input
+                  id="temp-age-from"
+                  type="number"
+                  value={tempValue.split('-')[0] || ''}
+                  onChange={(e) => updateInitialAgeRange(e.target.value, 'from')}
+                  placeholder="3"
+                  className="h-8"
+                  min="0"
+                  max="18"
+                />
+              </div>
+              <div>
+                <Label htmlFor="temp-age-to" className="text-xs">To Age</Label>
+                <Input
+                  id="temp-age-to"
+                  type="number"
+                  value={tempValue.split('-')[1] || ''}
+                  onChange={(e) => updateInitialAgeRange(e.target.value, 'to')}
+                  placeholder="4"
+                  className="h-8"
+                  min="0"
+                  max="18"
+                />
+              </div>
+            </div>
+            <Input
+              value={tempDisplayName}
+              onChange={(e) => setTempDisplayName(e.target.value)}
+              placeholder="e.g., 3-4 years"
+              className="h-8 mt-2"
+            />
+          </>
+        );
+      
+      case 'waist_inseam':
+        return (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="temp-waist" className="text-xs">Waist</Label>
+                <Input
+                  id="temp-waist"
+                  type="number"
+                  value={tempValue.split('x')[0] || ''}
+                  onChange={(e) => updateInitialWaistInseam(e.target.value, 'waist')}
+                  placeholder="28"
+                  className="h-8"
+                  min="24"
+                  max="50"
+                />
+              </div>
+              <div>
+                <Label htmlFor="temp-inseam" className="text-xs">Inseam</Label>
+                <Input
+                  id="temp-inseam"
+                  type="number"
+                  value={tempValue.split('x')[1] || ''}
+                  onChange={(e) => updateInitialWaistInseam(e.target.value, 'inseam')}
+                  placeholder="30"
+                  className="h-8"
+                  min="26"
+                  max="38"
+                />
+              </div>
+            </div>
+            <Input
+              value={tempDisplayName}
+              onChange={(e) => setTempDisplayName(e.target.value)}
+              placeholder="e.g., 28W x 30L"
+              className="h-8 mt-2"
+            />
+          </>
+        );
+      
+      case 'alpha_sizes':
+        return (
+          <Input
+            value={tempValue}
+            onChange={(e) => setTempValue(e.target.value.toUpperCase())}
+            placeholder="e.g., XS, S, M, L, XL"
+            className="h-8"
+          />
+        );
+      
+      case 'numeric_sizes':
+      case 'age_numeric':
+      case 'shoe_sizes_uk':
+      case 'shoe_sizes_eu':
+        return (
+          <Input
+            type="number"
+            step={inputType.includes('shoe') ? '0.5' : '1'}
+            value={tempValue}
+            onChange={(e) => {
+              setTempValue(e.target.value);
+              setTempDisplayName(e.target.value ? `Size ${e.target.value}` : '');
+            }}
+            placeholder={getPlaceholderForInputType(inputType, 'value')}
+            className="h-8"
+            min="0"
+          />
+        );
+      
+      case 'neck_size':
+      case 'chest_size':
+        return (
+          <Input
+            type="text"
+            step="0.5"
+            value={tempValue}
+            onChange={(e) => setTempValue(e.target.value)}
+            placeholder={getPlaceholderForInputType(inputType, 'value')}
+            className="h-8"
+          />
+        );
+      
+      case 'color_select':
+      case 'gender_select':
+      case 'material_select':
+        return (
+          <Input
+            value={tempValue}
+            onChange={(e) => {
+              setTempValue(e.target.value.toLowerCase().replace(/\s+/g, '_'));
+              setTempDisplayName(e.target.value);
+            }}
+            placeholder={getPlaceholderForInputType(inputType, 'display')}
+            className="h-8"
+          />
+        );
+      
+      default:
+        return (
+          <>
+            <Input
+              value={tempValue}
+              onChange={(e) => setTempValue(e.target.value)}
+              placeholder={getPlaceholderForInputType(inputType, 'value')}
+              className="h-8"
+            />
+            <Input
+              value={tempDisplayName}
+              onChange={(e) => setTempDisplayName(e.target.value)}
+              placeholder={getPlaceholderForInputType(inputType, 'display')}
+              className="h-8 mt-2"
+            />
+          </>
+        );
+    }
   };
   
   const resetFormState = () => {
@@ -688,34 +900,19 @@ function AttributesPage() {
                 
                 {/* Add new value form */}
                 <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label htmlFor="temp-value" className="text-xs">Value</Label>
-                      <Input
-                        id="temp-value"
-                        value={tempValue}
-                        onChange={(e) => setTempValue(e.target.value)}
-                        placeholder={getPlaceholderForInputType(formData.inputType, 'value')}
-                        className="h-8"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="temp-display" className="text-xs">Display Name (Optional)</Label>
-                      <Input
-                        id="temp-display"
-                        value={tempDisplayName}
-                        onChange={(e) => setTempDisplayName(e.target.value)}
-                        placeholder={getPlaceholderForInputType(formData.inputType, 'display')}
-                        className="h-8"
-                      />
-                    </div>
-                  </div>
+                  {renderInitialValueFields()}
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={handleAddValue}
-                    disabled={!tempValue.trim()}
+                    disabled={
+                      formData.inputType === 'age_ranges'
+                        ? !tempValue.split('-').every(part => part.trim())
+                        : formData.inputType === 'waist_inseam'
+                        ? !tempValue.split('x').every(part => part.trim())
+                        : !tempValue.trim()
+                    }
                     className="w-full"
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -909,7 +1106,8 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
   };
 
   const renderValueInputFields = () => {
-    switch (attribute.inputType) {
+    const inputType = attribute.inputType;
+    switch (inputType) {
       case 'age_ranges':
         return (
           <>
@@ -920,8 +1118,9 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
                   id="ageFrom"
                   type="number"
                   placeholder="e.g. 3"
-                  min="3"
+                  min="0"
                   max="18"
+                  value={formData.value.split('-')[0] || ''}
                   onChange={(e) => updateAgeRange(e.target.value, 'from')}
                   required
                 />
@@ -932,8 +1131,9 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
                   id="ageTo"
                   type="number"
                   placeholder="e.g. 4"
-                  min="3"
+                  min="0"
                   max="18"
+                  value={formData.value.split('-')[1] || ''}
                   onChange={(e) => updateAgeRange(e.target.value, 'to')}
                   required
                 />
@@ -964,6 +1164,7 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
                   placeholder="e.g. 32"
                   min="24"
                   max="50"
+                  value={formData.value.split('x')[0] || ''}
                   onChange={(e) => updateWaistInseam(e.target.value, 'waist')}
                   required
                 />
@@ -976,6 +1177,7 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
                   placeholder="e.g. 30"
                   min="26"
                   max="38"
+                  value={formData.value.split('x')[1] || ''}
                   onChange={(e) => updateWaistInseam(e.target.value, 'inseam')}
                   required
                 />
@@ -987,7 +1189,7 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
                 id="displayName"
                 value={formData.displayName}
                 onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                placeholder="e.g. 32x30"
+                placeholder="e.g. 32W x 30L"
                 required
               />
             </div>
@@ -996,7 +1198,10 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
       
       case 'shoe_sizes_eu':
       case 'shoe_sizes_uk':
-        const sizeType = attribute.inputType === 'shoe_sizes_eu' ? 'EU' : 'UK';
+        const sizeType = inputType === 'shoe_sizes_eu' ? 'EU' : 'UK';
+        const minSize = sizeType === 'EU' ? 33 : 1;
+        const maxSize = sizeType === 'EU' ? 50 : 14;
+        const placeholder = sizeType === 'EU' ? 'e.g. 38' : 'e.g. 5';
         return (
           <>
             <div className="grid gap-2">
@@ -1005,14 +1210,14 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
                 id="shoeSize"
                 type="number"
                 step="0.5"
-                placeholder={sizeType === 'EU' ? 'e.g. 38' : 'e.g. 5'}
-                min={sizeType === 'EU' ? '33' : '1'}
-                max={sizeType === 'EU' ? '50' : '14'}
+                placeholder={placeholder}
+                min={minSize}
+                max={maxSize}
                 value={formData.value}
                 onChange={(e) => {
                   const size = parseFloat(e.target.value);
-                  setFormData({ 
-                    ...formData, 
+                  setFormData({
+                    ...formData,
                     value: e.target.value,
                     displayName: e.target.value ? `${sizeType} ${e.target.value}` : ''
                   });
@@ -1033,21 +1238,13 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
           <>
             <div className="grid gap-2">
               <Label htmlFor="alphaSize">Alpha Size *</Label>
-              <Select value={formData.value} onValueChange={(value) => setFormData({...formData, value, displayName: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select size" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="xxs">XXS</SelectItem>
-                  <SelectItem value="xs">XS</SelectItem>
-                  <SelectItem value="s">S</SelectItem>
-                  <SelectItem value="m">M</SelectItem>
-                  <SelectItem value="l">L</SelectItem>
-                  <SelectItem value="xl">XL</SelectItem>
-                  <SelectItem value="xxl">XXL</SelectItem>
-                  <SelectItem value="xxxl">XXXL</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                id="alphaSize"
+                value={formData.value}
+                onChange={(e) => setFormData({ ...formData, value: e.target.value.toUpperCase(), displayName: e.target.value })}
+                placeholder="e.g., XS, S, M, L, XL, XXL"
+                required
+              />
             </div>
           </>
         );
@@ -1060,12 +1257,12 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
               <Input
                 id="numericSize"
                 type="number"
-                step="2"
-                placeholder="e.g. 8"
+                step="1"
+                placeholder="e.g. 2, 4, 6, 8, 10, 12"
                 min="0"
-                max="20"
+                max="30"
                 value={formData.value}
-                onChange={(e) => setFormData({ ...formData, value: e.target.value, displayName: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, value: e.target.value, displayName: `Size ${e.target.value}` })}
                 required
               />
             </div>
@@ -1080,11 +1277,48 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
               <Input
                 id="age"
                 type="number"
-                placeholder="e.g. 8"
-                min="3"
+                placeholder="e.g. 3, 4, 5, 6"
+                min="0"
                 max="18"
                 value={formData.value}
                 onChange={(e) => setFormData({ ...formData, value: e.target.value, displayName: `${e.target.value} years` })}
+                required
+              />
+            </div>
+          </>
+        );
+
+      case 'neck_size':
+        return (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="neckSize">Neck Size *</Label>
+              <Input
+                id="neckSize"
+                type="number"
+                step="0.5"
+                placeholder="e.g. 14.5, 15, 15.5"
+                min="13"
+                max="20"
+                value={formData.value}
+                onChange={(e) => setFormData({ ...formData, value: e.target.value, displayName: `${e.target.value}"` })}
+                required
+              />
+            </div>
+          </>
+        );
+
+      case 'chest_size':
+        return (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="chestSize">Chest Size *</Label>
+              <Input
+                id="chestSize"
+                type="text"
+                placeholder="e.g. 36R, 38R, 40L, 42XL"
+                value={formData.value}
+                onChange={(e) => setFormData({ ...formData, value: e.target.value, displayName: e.target.value })}
                 required
               />
             </div>
@@ -1098,7 +1332,45 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
               <Label htmlFor="colorName">Color Name *</Label>
               <Input
                 id="colorName"
-                placeholder="e.g. Navy Blue"
+                placeholder="e.g. Navy, White, Blue"
+                value={formData.displayName}
+                onChange={(e) => setFormData({ ...formData, displayName: e.target.value, value: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
+                required
+              />
+            </div>
+          </>
+        );
+
+      case 'gender_select':
+        return (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="gender">Gender *</Label>
+              <Select value={formData.value} onValueChange={(value) => {
+                const displayNames = { boys: 'Boys', girls: 'Girls', unisex: 'Unisex' };
+                setFormData({...formData, value, displayName: displayNames[value as keyof typeof displayNames] || value});
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="boys">Boys</SelectItem>
+                  <SelectItem value="girls">Girls</SelectItem>
+                  <SelectItem value="unisex">Unisex</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        );
+
+      case 'material_select':
+        return (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="material">Material *</Label>
+              <Input
+                id="material"
+                placeholder="e.g. Cotton, Polyester, Blend"
                 value={formData.displayName}
                 onChange={(e) => setFormData({ ...formData, displayName: e.target.value, value: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
                 required
@@ -1129,6 +1401,22 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
           </>
         );
       
+      case 'text_input':
+        return (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="textValue">Value *</Label>
+              <Input
+                id="textValue"
+                value={formData.value}
+                onChange={(e) => setFormData({ ...formData, value: e.target.value, displayName: e.target.value })}
+                placeholder="e.g. Custom text input"
+                required
+              />
+            </div>
+          </>
+        );
+
       default:
         return (
           <>
@@ -1138,7 +1426,7 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
                 id="displayName"
                 value={formData.displayName}
                 onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                placeholder="e.g. Extra Small"
+                placeholder="e.g. Custom Option"
                 required
               />
             </div>
@@ -1149,7 +1437,7 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
                 id="value"
                 value={formData.value}
                 onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                placeholder="e.g. xs"
+                placeholder="e.g. custom_value"
                 required
               />
             </div>
@@ -1163,17 +1451,19 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
     const parts = currentValue.split('-');
     if (type === 'from') {
       const newValue = `${value}-${parts[1] || ''}`;
-      setFormData({ 
-        ...formData, 
+      const newDisplay = parts[1] ? `${value}-${parts[1]} years` : value;
+      setFormData({
+        ...formData,
         value: newValue,
-        displayName: parts[1] ? `${value}-${parts[1]} years` : ''
+        displayName: formData.displayName || newDisplay
       });
     } else {
       const newValue = `${parts[0] || ''}-${value}`;
-      setFormData({ 
-        ...formData, 
+      const newDisplay = parts[0] ? `${parts[0]}-${value} years` : value;
+      setFormData({
+        ...formData,
         value: newValue,
-        displayName: parts[0] ? `${parts[0]}-${value} years` : ''
+        displayName: formData.displayName || newDisplay
       });
     }
   };
@@ -1183,17 +1473,19 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
     const parts = currentValue.split('x');
     if (type === 'waist') {
       const newValue = `${value}x${parts[1] || ''}`;
-      setFormData({ 
-        ...formData, 
+      const newDisplay = parts[1] ? `${value}W x ${parts[1]}L` : value;
+      setFormData({
+        ...formData,
         value: newValue,
-        displayName: parts[1] ? `${value}x${parts[1]}` : ''
+        displayName: formData.displayName || newDisplay
       });
     } else {
       const newValue = `${parts[0] || ''}x${value}`;
-      setFormData({ 
-        ...formData, 
+      const newDisplay = parts[0] ? `${parts[0]}W x ${value}L` : value;
+      setFormData({
+        ...formData,
         value: newValue,
-        displayName: parts[0] ? `${parts[0]}x${value}` : ''
+        displayName: formData.displayName || newDisplay
       });
     }
   };
