@@ -4,7 +4,7 @@ import { db } from '@/db';
 import { counties } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
-export const ServerRoute = createServerFileRoute('/api/localities/search').methods({
+export const ServerRoute = createServerFileRoute('/api/spipuniform/localities/search').methods({
   GET: async ({ request }) => {
     try {
       const url = new URL(request.url);

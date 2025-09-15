@@ -3,7 +3,7 @@ import { db } from '@/db';
 import { schools, localities, counties } from '@/db/schema';
 import { eq, and, isNull, like, or } from 'drizzle-orm';
 
-export const ServerRoute = createServerFileRoute('/api/schools').methods({
+export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').methods({
   GET: async ({ request }) => {
     try {
       const url = new URL(request.url);

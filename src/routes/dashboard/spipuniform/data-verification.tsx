@@ -67,7 +67,7 @@ function DataVerificationPage() {
 
   const fetchCounties = async () => {
     try {
-      const response = await fetch('/api/counties');
+      const response = await fetch('/api/spipuniform/counties');
       const data = await response.json();
       if (data.success) {
         setCounties(data.counties);
@@ -85,7 +85,7 @@ function DataVerificationPage() {
         params.append('q', query.trim());
       }
       
-      const response = await fetch(`/api/localities/search?${params}`);
+      const response = await fetch(`/api/spipuniform/localities/search?${params}`);
       const data = await response.json();
       
       if (data.success) {
@@ -116,7 +116,7 @@ function DataVerificationPage() {
         params.append('q', query.trim());
       }
       
-      const response = await fetch(`/api/schools?${params}`);
+      const response = await fetch(`/api/spipuniform/schools?${params}`);
       const data = await response.json();
       
       if (data.success) {
@@ -193,7 +193,7 @@ function DataVerificationPage() {
         finalAddress = selectedLocalityData.name;
       }
       
-      const response = await fetch('/api/schools', {
+      const response = await fetch('/api/spipuniform/schools', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
