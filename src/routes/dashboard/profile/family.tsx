@@ -83,7 +83,7 @@ function FamilyPage() {
 
   const fetchFamilyMembers = async () => {
     try {
-      const response = await fetch('/api/profiles/family-members', {
+      const response = await fetch('/api/family-members', {
         credentials: 'include'
       });
       const data = await response.json();
@@ -152,9 +152,9 @@ function FamilyPage() {
     setSaving(true);
     
     try {
-      const url = editingMember
-        ? `/api/profiles/family-members/${editingMember.id}`
-        : '/api/profiles/family-members';
+      const url = editingMember 
+        ? `/api/family-members/${editingMember.id}`
+        : '/api/family-members';
       
       const method = editingMember ? 'PUT' : 'POST';
       
@@ -189,7 +189,7 @@ function FamilyPage() {
     if (!confirm('Are you sure you want to remove this family member?')) return;
     
     try {
-      const response = await fetch(`/api/profiles/family-members/${id}`, {
+      const response = await fetch(`/api/family-members/${id}`, {
         method: 'DELETE',
         credentials: 'include'
       });

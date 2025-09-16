@@ -1,31 +1,26 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { db } from '@/db';
-import { userProfiles, user } from '@/db/schema';
+import { familyMembers, userProfiles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 
 // Validation schemas
-const updateUserProfileSchema = z.object({
-  phone: z.string().optional(),
-  primarySchoolId: z.string().uuid().optional().nullable(),
-  additionalSchools: z.array(z.string().uuid()).optional(),
-  localityId: z.string().uuid().optional().nullable(),
-  preferredContactMethod: z.enum(['phone', 'email', 'app']).optional(),
-  availability: z.string().optional(),
-  specificArea: z.string().optional(),
-  preferredBrands: z.array(z.string()).optional(),
-  preferredConditions: z.array(z.string().uuid()).optional(),
-  notificationPreferences: z.object({
-    emailNotifications: z.boolean().optional(),
-    appNotifications: z.boolean().optional(),
-    matchFound: z.boolean().optional(),
-    requestFulfilled: z.boolean().optional(),
-    messageReceived: z.boolean().optional()
-  }).optional()
+const createFamilyMemberSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().optional(),
+  dateOfBirth: z.string().optional(), // ISO date string
+  schoolId: z.string().uuid().optional().nullable(),
+  schoolYear: z.string().optional(),
+  currentSizes: z.record(z.string()).optional(), // {"shirt": "Age 7-8", "trousers": "Age 8"}
+  growthNotes: z.string().optional(),
+  showInProfile: z.boolean().default(true),
+  isActive: z.boolean().default(true)
 });
 
-export const ServerRoute = createServerFileRoute('/api/profiles/').methods({
+const updateFamilyMemberSchema = createFamilyMemberSchema.partial();
+
+export const ServerRoute = createServerFileRoute('/api/family-members').methods({
   GET: async ({ request }) => {
     try {
       // Validate session using Better Auth
@@ -42,32 +37,15 @@ export const ServerRoute = createServerFileRoute('/api/profiles/').methods({
 
       const userId = session.user.id;
 
-      const [profile] = await db
-        .select({
-          id: userProfiles.id,
-          userId: userProfiles.userId,
-          phone: userProfiles.phone,
-          primarySchoolId: userProfiles.primarySchoolId,
-          additionalSchools: userProfiles.additionalSchools,
-          localityId: userProfiles.localityId,
-          preferredContactMethod: userProfiles.preferredContactMethod,
-          availability: userProfiles.availability,
-          specificArea: userProfiles.specificArea,
-          preferredBrands: userProfiles.preferredBrands,
-          preferredConditions: userProfiles.preferredConditions,
-          notificationPreferences: userProfiles.notificationPreferences,
-          verificationStatus: userProfiles.verificationStatus,
-          totalRating: userProfiles.totalRating,
-          ratingCount: userProfiles.ratingCount,
-          createdAt: userProfiles.createdAt,
-          updatedAt: userProfiles.updatedAt
-        })
+      // First get user's profile to get the profile ID
+      const [userProfile] = await db
+        .select({ id: userProfiles.id })
         .from(userProfiles)
         .where(eq(userProfiles.userId, userId))
         .limit(1);
       
-      if (!profile) {
-        // Create a basic profile if one doesn't exist
+      if (!userProfile) {
+        // Create a basic user profile if it doesn't exist
         const [newProfile] = await db
           .insert(userProfiles)
           .values({
@@ -78,34 +56,42 @@ export const ServerRoute = createServerFileRoute('/api/profiles/').methods({
           })
           .returning();
         
+        // Return empty family members list for new profile
         return new Response(JSON.stringify({
           success: true,
-          profile: newProfile
+          familyMembers: []
         }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' }
         });
       }
+
+      // Get all family members for this user profile
+      const familyMembersData = await db
+        .select()
+        .from(familyMembers)
+        .where(eq(familyMembers.userProfileId, userProfile.id));
       
       return new Response(JSON.stringify({
         success: true,
-        profile
+        familyMembers: familyMembersData
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
       });
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('Error fetching family members:', error);
       return new Response(JSON.stringify({
         success: false,
-        error: 'Failed to fetch user profile'
+        error: 'Failed to fetch family members'
       }), { 
         status: 500,
         headers: { 'Content-Type': 'application/json' }
       });
     }
   },
-  PUT: async ({ request }) => {
+
+  POST: async ({ request }) => {
     try {
       // Validate session using Better Auth
       const session = await auth.api.getSession({ headers: request.headers });
@@ -122,50 +108,62 @@ export const ServerRoute = createServerFileRoute('/api/profiles/').methods({
       const userId = session.user.id;
 
       const body = await request.json();
-      const validatedData = updateUserProfileSchema.parse(body);
+      const validatedData = createFamilyMemberSchema.parse(body);
       
-      // Check if profile exists
-      const [existingProfile] = await db
-        .select()
+      // Get user's profile ID
+      const [userProfile] = await db
+        .select({ id: userProfiles.id })
         .from(userProfiles)
         .where(eq(userProfiles.userId, userId))
         .limit(1);
       
-      let updatedProfile;
-      
-      if (existingProfile) {
-        // Update existing profile
-        [updatedProfile] = await db
-          .update(userProfiles)
-          .set({
-            ...validatedData,
-            updatedAt: new Date().toISOString()
-          })
-          .where(eq(userProfiles.userId, userId))
-          .returning();
-      } else {
-        // Create new profile
-        [updatedProfile] = await db
+      if (!userProfile) {
+        // Create user profile first
+        const [newProfile] = await db
           .insert(userProfiles)
           .values({
             userId,
-            ...validatedData,
             verificationStatus: 'unverified',
             totalRating: '0',
             ratingCount: 0
           })
           .returning();
+          
+        // Use the new profile ID
+        const [newFamilyMember] = await db
+          .insert(familyMembers)
+          .values({
+            userProfileId: newProfile.id,
+            ...validatedData
+          })
+          .returning();
+        
+        return new Response(JSON.stringify({
+          success: true,
+          familyMember: newFamilyMember
+        }), {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' }
+        });
       }
+      
+      const [newFamilyMember] = await db
+        .insert(familyMembers)
+        .values({
+          userProfileId: userProfile.id,
+          ...validatedData
+        })
+        .returning();
       
       return new Response(JSON.stringify({
         success: true,
-        profile: updatedProfile
+        familyMember: newFamilyMember
       }), {
-        status: 200,
+        status: 201,
         headers: { 'Content-Type': 'application/json' }
       });
     } catch (error) {
-      console.error('Error updating user profile:', error);
+      console.error('Error creating family member:', error);
       if (error instanceof z.ZodError) {
         return new Response(JSON.stringify({
           success: false,
@@ -178,7 +176,7 @@ export const ServerRoute = createServerFileRoute('/api/profiles/').methods({
       }
       return new Response(JSON.stringify({
         success: false,
-        error: 'Failed to update user profile'
+        error: 'Failed to create family member'
       }), { 
         status: 500,
         headers: { 'Content-Type': 'application/json' }

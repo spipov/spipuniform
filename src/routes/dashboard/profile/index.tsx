@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { User, Phone, MapPin, Bell, Shield, Star, Save, Users, Building } from 'lucide-react';
+import { User, Phone, MapPin, Bell, Shield, Star, Save, Users, Building, Activity, Clock, CheckCircle, AlertCircle, ShoppingBag } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -39,12 +39,24 @@ interface UserProfile {
   updatedAt: string;
 }
 
+interface ActivityItem {
+  id: string;
+  type: 'request' | 'sale' | 'purchase' | 'message';
+  title: string;
+  description: string;
+  status: 'pending' | 'fulfilled' | 'cancelled' | 'completed';
+  amount?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const Route = createFileRoute('/dashboard/profile/')({
   component: ProfilePage,
 });
 
 function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [activityLog, setActivityLog] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
@@ -93,6 +105,39 @@ function ProfilePage() {
             messageReceived: data.profile.notificationPreferences?.messageReceived ?? true
           }
         });
+        
+        // Mock activity log data - in production this would come from transactions/requests API
+        setActivityLog([
+          {
+            id: '1',
+            type: 'request',
+            title: 'Looking for Year 3 Uniform',
+            description: 'Posted request for navy jumper, size 7-8 years',
+            status: 'pending',
+            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+            updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+          },
+          {
+            id: '2',
+            type: 'purchase',
+            title: 'Purchased School Shoes',
+            description: 'Black leather shoes from ABC Uniforms',
+            status: 'completed',
+            amount: '€35.00',
+            createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+            updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
+          },
+          {
+            id: '3',
+            type: 'sale',
+            title: 'Sold PE Kit',
+            description: 'Red PE shorts and white t-shirt, age 9-10',
+            status: 'fulfilled',
+            amount: '€15.00',
+            createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+            updatedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
+          }
+        ]);
       } else {
         toast.error('Failed to load profile');
       }
@@ -113,7 +158,7 @@ function ProfilePage() {
     setSaving(true);
     
     try {
-      const response = await fetch('/api/profiles', {
+      const response = await fetch('/api/user-profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -224,7 +269,7 @@ function ProfilePage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             General
@@ -232,6 +277,10 @@ function ProfilePage() {
           <TabsTrigger value="preferences" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
             Preferences
+          </TabsTrigger>
+          <TabsTrigger value="activity" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Activity
           </TabsTrigger>
           <TabsTrigger value="family" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
@@ -463,6 +512,85 @@ function ProfilePage() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Activity Log
+                </CardTitle>
+                <CardDescription>
+                  Track your requests, sales, purchases, and activity on the platform
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {activityLog.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Activity className="mx-auto h-12 w-12 mb-4" />
+                    <p>No activity yet</p>
+                    <p className="text-sm">Your requests, sales, and purchases will appear here.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {activityLog.map((activity) => {
+                      const getActivityIcon = (type: string) => {
+                        switch (type) {
+                          case 'request': return <AlertCircle className="h-4 w-4" />;
+                          case 'sale': return <Star className="h-4 w-4" />;
+                          case 'purchase': return <ShoppingBag className="h-4 w-4" />;
+                          default: return <Activity className="h-4 w-4" />;
+                        }
+                      };
+                      
+                      const getStatusBadge = (status: string) => {
+                        switch (status) {
+                          case 'pending': return <Badge variant="outline"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
+                          case 'fulfilled': case 'completed': return <Badge className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />Completed</Badge>;
+                          case 'cancelled': return <Badge variant="destructive">Cancelled</Badge>;
+                          default: return <Badge variant="outline">{status}</Badge>;
+                        }
+                      };
+                      
+                      const getActivityColor = (type: string) => {
+                        switch (type) {
+                          case 'request': return 'text-blue-600';
+                          case 'sale': return 'text-green-600';
+                          case 'purchase': return 'text-purple-600';
+                          default: return 'text-gray-600';
+                        }
+                      };
+                      
+                      return (
+                        <div key={activity.id} className="flex items-start gap-3 p-4 border rounded-lg">
+                          <div className={`${getActivityColor(activity.type)} mt-0.5`}>
+                            {getActivityIcon(activity.type)}
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium">{activity.title}</h4>
+                              {getStatusBadge(activity.status)}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{activity.description}</p>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <span>{new Date(activity.createdAt).toLocaleDateString()}</span>
+                              {activity.amount && <span className="font-medium">{activity.amount}</span>}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    <div className="text-center py-4">
+                      <p className="text-sm text-muted-foreground">
+                        This is sample data. In production, this will show your real requests, sales, and purchases.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="family">
