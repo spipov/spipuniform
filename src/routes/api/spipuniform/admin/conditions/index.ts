@@ -1,5 +1,7 @@
 import { json } from '@tanstack/start';
 import type { APIEvent } from '@tanstack/start/server';
+import { createServerFileRoute } from '@tanstack/react-start/server';
+
 import { db } from '@/db';
 import { conditions } from '@/db/schema/spipuniform';
 import { eq, asc } from 'drizzle-orm';
@@ -21,7 +23,7 @@ export async function GET({ request }: APIEvent) {
       .select()
       .from(conditions)
       .orderBy(asc(conditions.order), asc(conditions.name));
-    
+
     return json({
       success: true,
       conditions: conditionsData
@@ -39,21 +41,21 @@ export async function POST({ request }: APIEvent) {
   try {
     const body = await request.json();
     const validatedData = createConditionSchema.parse(body);
-    
+
     // Check if name already exists
     const existingCondition = await db
       .select()
       .from(conditions)
       .where(eq(conditions.name, validatedData.name))
       .limit(1);
-    
+
     if (existingCondition.length > 0) {
       return json({
         success: false,
         error: 'A condition with this name already exists'
       }, { status: 400 });
     }
-    
+
     const [newCondition] = await db
       .insert(conditions)
       .values({
@@ -61,7 +63,7 @@ export async function POST({ request }: APIEvent) {
         updatedAt: new Date().toISOString()
       })
       .returning();
-    
+
     return json({
       success: true,
       condition: newCondition
@@ -94,7 +96,7 @@ export async function PUT({ request, params }: APIEvent) {
 
     const body = await request.json();
     const validatedData = updateConditionSchema.parse(body);
-    
+
     // Check if name already exists for other conditions
     if (validatedData.name) {
       const existingCondition = await db
@@ -102,7 +104,7 @@ export async function PUT({ request, params }: APIEvent) {
         .from(conditions)
         .where(eq(conditions.name, validatedData.name))
         .limit(1);
-      
+
       if (existingCondition.length > 0 && existingCondition[0].id !== id) {
         return json({
           success: false,
@@ -110,7 +112,7 @@ export async function PUT({ request, params }: APIEvent) {
         }, { status: 400 });
       }
     }
-    
+
     const [updatedCondition] = await db
       .update(conditions)
       .set({
@@ -119,14 +121,14 @@ export async function PUT({ request, params }: APIEvent) {
       })
       .where(eq(conditions.id, id))
       .returning();
-    
+
     if (!updatedCondition) {
       return json({
         success: false,
         error: 'Condition not found'
       }, { status: 404 });
     }
-    
+
     return json({
       success: true,
       condition: updatedCondition
@@ -161,14 +163,14 @@ export async function DELETE({ request, params }: APIEvent) {
       .delete(conditions)
       .where(eq(conditions.id, id))
       .returning();
-    
+
     if (!deletedCondition) {
       return json({
         success: false,
         error: 'Condition not found'
       }, { status: 404 });
     }
-    
+
     return json({
       success: true,
       message: 'Condition deleted successfully'
@@ -179,5 +181,15 @@ export async function DELETE({ request, params }: APIEvent) {
       success: false,
       error: 'Failed to delete condition'
     }, { status: 500 });
+
   }
 }
+
+// Expose ServerRoute for TanStack Start to register this API route
+export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/conditions/').methods({
+  GET,
+  POST,
+  // These exist in this file; expose them to satisfy the router, even if seldom used on this path
+  PUT,
+  DELETE,
+});

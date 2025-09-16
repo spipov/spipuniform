@@ -1,7 +1,8 @@
 import { json } from '@tanstack/start';
 import type { APIEvent } from '@tanstack/start/server';
+import { createServerFileRoute } from '@tanstack/react-start/server';
 import { db } from '@/db';
-import { transactions, user } from '@/db/schema';
+import { transactions } from '@/db/schema';
 import { eq, or, desc, and } from 'drizzle-orm';
 import { z } from 'zod';
 
@@ -162,3 +163,9 @@ export async function POST({ request }: APIEvent) {
     }, { status: 500 });
   }
 }
+
+// Expose ServerRoute for TanStack Start to register this API route
+export const ServerRoute = createServerFileRoute('/api/transactions/').methods({
+  GET,
+  POST,
+});

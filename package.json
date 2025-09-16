@@ -1,9 +1,9 @@
 {
-  "name": ".",
+  "name": "spipuniform",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev --port 3350",
+    "dev": "NODE_NO_WARNINGS=1 vite dev --port 3350",
     "start": "node .output/server/index.mjs",
     "build": "vite build",
     "serve": "vite preview",

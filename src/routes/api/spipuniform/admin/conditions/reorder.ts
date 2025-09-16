@@ -1,5 +1,7 @@
 import { json } from '@tanstack/start';
 import type { APIEvent } from '@tanstack/start/server';
+import { createServerFileRoute } from '@tanstack/react-start/server';
+
 import { db } from '@/db';
 import { conditions } from '@/db/schema/spipuniform';
 import { eq } from 'drizzle-orm';
@@ -16,21 +18,21 @@ export async function POST({ request }: APIEvent) {
   try {
     const body = await request.json();
     const { conditionOrders } = reorderSchema.parse(body);
-    
+
     // Update each condition's order
-    const promises = conditionOrders.map(({ id, order }) => 
+    const promises = conditionOrders.map(({ id, order }) =>
       db
         .update(conditions)
-        .set({ 
+        .set({
           order,
           updatedAt: new Date().toISOString()
         })
         .where(eq(conditions.id, id))
         .returning()
     );
-    
+
     const updatedConditions = await Promise.all(promises);
-    
+
     return json({
       success: true,
       message: 'Conditions reordered successfully',
@@ -51,3 +53,8 @@ export async function POST({ request }: APIEvent) {
     }, { status: 500 });
   }
 }
+
+// Expose ServerRoute for TanStack Start to register this API route
+export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/conditions/reorder').methods({
+  POST,
+});

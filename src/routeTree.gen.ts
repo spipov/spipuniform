@@ -54,11 +54,13 @@ import { ServerRoute as ApiChangePasswordServerRouteImport } from './routes/api/
 import { ServerRoute as ApiAvatarServerRouteImport } from './routes/api/avatar'
 import { ServerRoute as ApiAuthSettingsServerRouteImport } from './routes/api/auth-settings'
 import { ServerRoute as ApiUsersIndexServerRouteImport } from './routes/api/users/index'
+import { ServerRoute as ApiTransactionsIndexServerRouteImport } from './routes/api/transactions/index'
 import { ServerRoute as ApiRolesIndexServerRouteImport } from './routes/api/roles/index'
 import { ServerRoute as ApiEmailIndexServerRouteImport } from './routes/api/email/index'
 import { ServerRoute as ApiBrandingIndexServerRouteImport } from './routes/api/branding/index'
 import { ServerRoute as ApiUsersActionsServerRouteImport } from './routes/api/users/actions'
 import { ServerRoute as ApiUsersUserIdServerRouteImport } from './routes/api/users/$userId'
+import { ServerRoute as ApiTransactionsIdServerRouteImport } from './routes/api/transactions/$id'
 import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api/storage/settings'
 import { ServerRoute as ApiRolesRoleIdServerRouteImport } from './routes/api/roles/$roleId'
 import { ServerRoute as ApiProfilesShopServerRouteImport } from './routes/api.profiles.shop'
@@ -79,6 +81,7 @@ import { ServerRoute as ApiAdminDashboardStatsServerRouteImport } from './routes
 import { ServerRoute as ApiAdminAnalyticsServerRouteImport } from './routes/api/admin/analytics'
 import { ServerRoute as ApiSpipuniformSchoolsIndexServerRouteImport } from './routes/api/spipuniform/schools/index'
 import { ServerRoute as ApiSpipuniformCountiesIndexServerRouteImport } from './routes/api/spipuniform/counties/index'
+import { ServerRoute as ApiTransactionsIdMessagesServerRouteImport } from './routes/api/transactions/$id/messages'
 import { ServerRoute as ApiSpipuniformLocalitiesSearchServerRouteImport } from './routes/api/spipuniform/localities/search'
 import { ServerRoute as ApiProfilesFamilyMemberIdServerRouteImport } from './routes/api.profiles.familyMember.$id'
 import { ServerRoute as ApiLocalitiesFetchSplatServerRouteImport } from './routes/api/localities/fetch/$'
@@ -86,10 +89,13 @@ import { ServerRoute as ApiEmailTemplatesSeedApprovalServerRouteImport } from '.
 import { ServerRoute as ApiEmailTemplatesPreviewServerRouteImport } from './routes/api/email/templates.preview'
 import { ServerRoute as ApiEmailFragmentsDefaultServerRouteImport } from './routes/api/email/fragments.default'
 import { ServerRoute as ApiSpipuniformAdminProductTypesIndexServerRouteImport } from './routes/api/spipuniform/admin/product-types/index'
+import { ServerRoute as ApiSpipuniformAdminConditionsIndexServerRouteImport } from './routes/api/spipuniform/admin/conditions/index'
 import { ServerRoute as ApiSpipuniformAdminCategoriesIndexServerRouteImport } from './routes/api/spipuniform/admin/categories/index'
 import { ServerRoute as ApiSpipuniformAdminAttributesIndexServerRouteImport } from './routes/api/spipuniform/admin/attributes/index'
 import { ServerRoute as ApiSpipuniformAdminAttributeValuesIndexServerRouteImport } from './routes/api/spipuniform/admin/attribute-values/index'
 import { ServerRoute as ApiSpipuniformAdminProductTypesTypeIdServerRouteImport } from './routes/api/spipuniform/admin/product-types/[typeId]'
+import { ServerRoute as ApiSpipuniformAdminConditionsReorderServerRouteImport } from './routes/api/spipuniform/admin/conditions/reorder'
+import { ServerRoute as ApiSpipuniformAdminConditionsIdServerRouteImport } from './routes/api/spipuniform/admin/conditions/$id'
 import { ServerRoute as ApiSpipuniformAdminCategoriesCategoryIdServerRouteImport } from './routes/api/spipuniform/admin/categories/[categoryId]'
 import { ServerRoute as ApiSpipuniformAdminAttributesAttributeIdServerRouteImport } from './routes/api/spipuniform/admin/attributes/[attributeId]'
 import { ServerRoute as ApiSpipuniformAdminAttributeValuesValueIdServerRouteImport } from './routes/api/spipuniform/admin/attribute-values/[valueId]'
@@ -323,6 +329,12 @@ const ApiUsersIndexServerRoute = ApiUsersIndexServerRouteImport.update({
   path: '/api/users/',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiTransactionsIndexServerRoute =
+  ApiTransactionsIndexServerRouteImport.update({
+    id: '/api/transactions/',
+    path: '/api/transactions/',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiRolesIndexServerRoute = ApiRolesIndexServerRouteImport.update({
   id: '/api/roles/',
   path: '/api/roles/',
@@ -346,6 +358,11 @@ const ApiUsersActionsServerRoute = ApiUsersActionsServerRouteImport.update({
 const ApiUsersUserIdServerRoute = ApiUsersUserIdServerRouteImport.update({
   id: '/api/users/$userId',
   path: '/api/users/$userId',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiTransactionsIdServerRoute = ApiTransactionsIdServerRouteImport.update({
+  id: '/api/transactions/$id',
+  path: '/api/transactions/$id',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiStorageSettingsServerRoute =
@@ -458,6 +475,12 @@ const ApiSpipuniformCountiesIndexServerRoute =
     path: '/api/spipuniform/counties/',
     getParentRoute: () => rootServerRouteImport,
   } as any)
+const ApiTransactionsIdMessagesServerRoute =
+  ApiTransactionsIdMessagesServerRouteImport.update({
+    id: '/messages',
+    path: '/messages',
+    getParentRoute: () => ApiTransactionsIdServerRoute,
+  } as any)
 const ApiSpipuniformLocalitiesSearchServerRoute =
   ApiSpipuniformLocalitiesSearchServerRouteImport.update({
     id: '/api/spipuniform/localities/search',
@@ -500,6 +523,12 @@ const ApiSpipuniformAdminProductTypesIndexServerRoute =
     path: '/api/spipuniform/admin/product-types/',
     getParentRoute: () => rootServerRouteImport,
   } as any)
+const ApiSpipuniformAdminConditionsIndexServerRoute =
+  ApiSpipuniformAdminConditionsIndexServerRouteImport.update({
+    id: '/api/spipuniform/admin/conditions/',
+    path: '/api/spipuniform/admin/conditions/',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiSpipuniformAdminCategoriesIndexServerRoute =
   ApiSpipuniformAdminCategoriesIndexServerRouteImport.update({
     id: '/api/spipuniform/admin/categories/',
@@ -522,6 +551,18 @@ const ApiSpipuniformAdminProductTypesTypeIdServerRoute =
   ApiSpipuniformAdminProductTypesTypeIdServerRouteImport.update({
     id: '/api/spipuniform/admin/product-types/typeId',
     path: '/api/spipuniform/admin/product-types/typeId',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiSpipuniformAdminConditionsReorderServerRoute =
+  ApiSpipuniformAdminConditionsReorderServerRouteImport.update({
+    id: '/api/spipuniform/admin/conditions/reorder',
+    path: '/api/spipuniform/admin/conditions/reorder',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiSpipuniformAdminConditionsIdServerRoute =
+  ApiSpipuniformAdminConditionsIdServerRouteImport.update({
+    id: '/api/spipuniform/admin/conditions/$id',
+    path: '/api/spipuniform/admin/conditions/$id',
     getParentRoute: () => rootServerRouteImport,
   } as any)
 const ApiSpipuniformAdminCategoriesCategoryIdServerRoute =
@@ -772,11 +813,13 @@ export interface FileServerRoutesByFullPath {
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
+  '/api/transactions/$id': typeof ApiTransactionsIdServerRouteWithChildren
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
   '/api/users/actions': typeof ApiUsersActionsServerRoute
   '/api/branding': typeof ApiBrandingIndexServerRoute
   '/api/email': typeof ApiEmailIndexServerRoute
   '/api/roles': typeof ApiRolesIndexServerRoute
+  '/api/transactions': typeof ApiTransactionsIndexServerRoute
   '/api/users': typeof ApiUsersIndexServerRoute
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
@@ -784,15 +827,19 @@ export interface FileServerRoutesByFullPath {
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
+  '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
   '/api/spipuniform/counties': typeof ApiSpipuniformCountiesIndexServerRoute
   '/api/spipuniform/schools': typeof ApiSpipuniformSchoolsIndexServerRoute
   '/api/spipuniform/admin/attribute-values/valueId': typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
   '/api/spipuniform/admin/attributes/attributeId': typeof ApiSpipuniformAdminAttributesAttributeIdServerRoute
   '/api/spipuniform/admin/categories/categoryId': typeof ApiSpipuniformAdminCategoriesCategoryIdServerRoute
+  '/api/spipuniform/admin/conditions/$id': typeof ApiSpipuniformAdminConditionsIdServerRoute
+  '/api/spipuniform/admin/conditions/reorder': typeof ApiSpipuniformAdminConditionsReorderServerRoute
   '/api/spipuniform/admin/product-types/typeId': typeof ApiSpipuniformAdminProductTypesTypeIdServerRoute
   '/api/spipuniform/admin/attribute-values': typeof ApiSpipuniformAdminAttributeValuesIndexServerRoute
   '/api/spipuniform/admin/attributes': typeof ApiSpipuniformAdminAttributesIndexServerRoute
   '/api/spipuniform/admin/categories': typeof ApiSpipuniformAdminCategoriesIndexServerRoute
+  '/api/spipuniform/admin/conditions': typeof ApiSpipuniformAdminConditionsIndexServerRoute
   '/api/spipuniform/admin/product-types': typeof ApiSpipuniformAdminProductTypesIndexServerRoute
 }
 export interface FileServerRoutesByTo {
@@ -827,11 +874,13 @@ export interface FileServerRoutesByTo {
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
+  '/api/transactions/$id': typeof ApiTransactionsIdServerRouteWithChildren
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
   '/api/users/actions': typeof ApiUsersActionsServerRoute
   '/api/branding': typeof ApiBrandingIndexServerRoute
   '/api/email': typeof ApiEmailIndexServerRoute
   '/api/roles': typeof ApiRolesIndexServerRoute
+  '/api/transactions': typeof ApiTransactionsIndexServerRoute
   '/api/users': typeof ApiUsersIndexServerRoute
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
@@ -839,15 +888,19 @@ export interface FileServerRoutesByTo {
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
+  '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
   '/api/spipuniform/counties': typeof ApiSpipuniformCountiesIndexServerRoute
   '/api/spipuniform/schools': typeof ApiSpipuniformSchoolsIndexServerRoute
   '/api/spipuniform/admin/attribute-values/valueId': typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
   '/api/spipuniform/admin/attributes/attributeId': typeof ApiSpipuniformAdminAttributesAttributeIdServerRoute
   '/api/spipuniform/admin/categories/categoryId': typeof ApiSpipuniformAdminCategoriesCategoryIdServerRoute
+  '/api/spipuniform/admin/conditions/$id': typeof ApiSpipuniformAdminConditionsIdServerRoute
+  '/api/spipuniform/admin/conditions/reorder': typeof ApiSpipuniformAdminConditionsReorderServerRoute
   '/api/spipuniform/admin/product-types/typeId': typeof ApiSpipuniformAdminProductTypesTypeIdServerRoute
   '/api/spipuniform/admin/attribute-values': typeof ApiSpipuniformAdminAttributeValuesIndexServerRoute
   '/api/spipuniform/admin/attributes': typeof ApiSpipuniformAdminAttributesIndexServerRoute
   '/api/spipuniform/admin/categories': typeof ApiSpipuniformAdminCategoriesIndexServerRoute
+  '/api/spipuniform/admin/conditions': typeof ApiSpipuniformAdminConditionsIndexServerRoute
   '/api/spipuniform/admin/product-types': typeof ApiSpipuniformAdminProductTypesIndexServerRoute
 }
 export interface FileServerRoutesById {
@@ -883,11 +936,13 @@ export interface FileServerRoutesById {
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
+  '/api/transactions/$id': typeof ApiTransactionsIdServerRouteWithChildren
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
   '/api/users/actions': typeof ApiUsersActionsServerRoute
   '/api/branding/': typeof ApiBrandingIndexServerRoute
   '/api/email/': typeof ApiEmailIndexServerRoute
   '/api/roles/': typeof ApiRolesIndexServerRoute
+  '/api/transactions/': typeof ApiTransactionsIndexServerRoute
   '/api/users/': typeof ApiUsersIndexServerRoute
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
@@ -895,15 +950,19 @@ export interface FileServerRoutesById {
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
+  '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
   '/api/spipuniform/counties/': typeof ApiSpipuniformCountiesIndexServerRoute
   '/api/spipuniform/schools/': typeof ApiSpipuniformSchoolsIndexServerRoute
   '/api/spipuniform/admin/attribute-values/valueId': typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
   '/api/spipuniform/admin/attributes/attributeId': typeof ApiSpipuniformAdminAttributesAttributeIdServerRoute
   '/api/spipuniform/admin/categories/categoryId': typeof ApiSpipuniformAdminCategoriesCategoryIdServerRoute
+  '/api/spipuniform/admin/conditions/$id': typeof ApiSpipuniformAdminConditionsIdServerRoute
+  '/api/spipuniform/admin/conditions/reorder': typeof ApiSpipuniformAdminConditionsReorderServerRoute
   '/api/spipuniform/admin/product-types/typeId': typeof ApiSpipuniformAdminProductTypesTypeIdServerRoute
   '/api/spipuniform/admin/attribute-values/': typeof ApiSpipuniformAdminAttributeValuesIndexServerRoute
   '/api/spipuniform/admin/attributes/': typeof ApiSpipuniformAdminAttributesIndexServerRoute
   '/api/spipuniform/admin/categories/': typeof ApiSpipuniformAdminCategoriesIndexServerRoute
+  '/api/spipuniform/admin/conditions/': typeof ApiSpipuniformAdminConditionsIndexServerRoute
   '/api/spipuniform/admin/product-types/': typeof ApiSpipuniformAdminProductTypesIndexServerRoute
 }
 export interface FileServerRouteTypes {
@@ -940,11 +999,13 @@ export interface FileServerRouteTypes {
     | '/api/profiles/shop'
     | '/api/roles/$roleId'
     | '/api/storage/settings'
+    | '/api/transactions/$id'
     | '/api/users/$userId'
     | '/api/users/actions'
     | '/api/branding'
     | '/api/email'
     | '/api/roles'
+    | '/api/transactions'
     | '/api/users'
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
@@ -952,15 +1013,19 @@ export interface FileServerRouteTypes {
     | '/api/localities/fetch/$'
     | '/api/profiles/familyMember/$id'
     | '/api/spipuniform/localities/search'
+    | '/api/transactions/$id/messages'
     | '/api/spipuniform/counties'
     | '/api/spipuniform/schools'
     | '/api/spipuniform/admin/attribute-values/valueId'
     | '/api/spipuniform/admin/attributes/attributeId'
     | '/api/spipuniform/admin/categories/categoryId'
+    | '/api/spipuniform/admin/conditions/$id'
+    | '/api/spipuniform/admin/conditions/reorder'
     | '/api/spipuniform/admin/product-types/typeId'
     | '/api/spipuniform/admin/attribute-values'
     | '/api/spipuniform/admin/attributes'
     | '/api/spipuniform/admin/categories'
+    | '/api/spipuniform/admin/conditions'
     | '/api/spipuniform/admin/product-types'
   fileServerRoutesByTo: FileServerRoutesByTo
   to:
@@ -995,11 +1060,13 @@ export interface FileServerRouteTypes {
     | '/api/profiles/shop'
     | '/api/roles/$roleId'
     | '/api/storage/settings'
+    | '/api/transactions/$id'
     | '/api/users/$userId'
     | '/api/users/actions'
     | '/api/branding'
     | '/api/email'
     | '/api/roles'
+    | '/api/transactions'
     | '/api/users'
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
@@ -1007,15 +1074,19 @@ export interface FileServerRouteTypes {
     | '/api/localities/fetch/$'
     | '/api/profiles/familyMember/$id'
     | '/api/spipuniform/localities/search'
+    | '/api/transactions/$id/messages'
     | '/api/spipuniform/counties'
     | '/api/spipuniform/schools'
     | '/api/spipuniform/admin/attribute-values/valueId'
     | '/api/spipuniform/admin/attributes/attributeId'
     | '/api/spipuniform/admin/categories/categoryId'
+    | '/api/spipuniform/admin/conditions/$id'
+    | '/api/spipuniform/admin/conditions/reorder'
     | '/api/spipuniform/admin/product-types/typeId'
     | '/api/spipuniform/admin/attribute-values'
     | '/api/spipuniform/admin/attributes'
     | '/api/spipuniform/admin/categories'
+    | '/api/spipuniform/admin/conditions'
     | '/api/spipuniform/admin/product-types'
   id:
     | '__root__'
@@ -1050,11 +1121,13 @@ export interface FileServerRouteTypes {
     | '/api/profiles/shop'
     | '/api/roles/$roleId'
     | '/api/storage/settings'
+    | '/api/transactions/$id'
     | '/api/users/$userId'
     | '/api/users/actions'
     | '/api/branding/'
     | '/api/email/'
     | '/api/roles/'
+    | '/api/transactions/'
     | '/api/users/'
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
@@ -1062,15 +1135,19 @@ export interface FileServerRouteTypes {
     | '/api/localities/fetch/$'
     | '/api/profiles/familyMember/$id'
     | '/api/spipuniform/localities/search'
+    | '/api/transactions/$id/messages'
     | '/api/spipuniform/counties/'
     | '/api/spipuniform/schools/'
     | '/api/spipuniform/admin/attribute-values/valueId'
     | '/api/spipuniform/admin/attributes/attributeId'
     | '/api/spipuniform/admin/categories/categoryId'
+    | '/api/spipuniform/admin/conditions/$id'
+    | '/api/spipuniform/admin/conditions/reorder'
     | '/api/spipuniform/admin/product-types/typeId'
     | '/api/spipuniform/admin/attribute-values/'
     | '/api/spipuniform/admin/attributes/'
     | '/api/spipuniform/admin/categories/'
+    | '/api/spipuniform/admin/conditions/'
     | '/api/spipuniform/admin/product-types/'
   fileServerRoutesById: FileServerRoutesById
 }
@@ -1104,11 +1181,13 @@ export interface RootServerRouteChildren {
   ApiProfilesShopServerRoute: typeof ApiProfilesShopServerRoute
   ApiRolesRoleIdServerRoute: typeof ApiRolesRoleIdServerRoute
   ApiStorageSettingsServerRoute: typeof ApiStorageSettingsServerRoute
+  ApiTransactionsIdServerRoute: typeof ApiTransactionsIdServerRouteWithChildren
   ApiUsersUserIdServerRoute: typeof ApiUsersUserIdServerRoute
   ApiUsersActionsServerRoute: typeof ApiUsersActionsServerRoute
   ApiBrandingIndexServerRoute: typeof ApiBrandingIndexServerRoute
   ApiEmailIndexServerRoute: typeof ApiEmailIndexServerRoute
   ApiRolesIndexServerRoute: typeof ApiRolesIndexServerRoute
+  ApiTransactionsIndexServerRoute: typeof ApiTransactionsIndexServerRoute
   ApiUsersIndexServerRoute: typeof ApiUsersIndexServerRoute
   ApiLocalitiesFetchSplatServerRoute: typeof ApiLocalitiesFetchSplatServerRoute
   ApiProfilesFamilyMemberIdServerRoute: typeof ApiProfilesFamilyMemberIdServerRoute
@@ -1118,10 +1197,13 @@ export interface RootServerRouteChildren {
   ApiSpipuniformAdminAttributeValuesValueIdServerRoute: typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
   ApiSpipuniformAdminAttributesAttributeIdServerRoute: typeof ApiSpipuniformAdminAttributesAttributeIdServerRoute
   ApiSpipuniformAdminCategoriesCategoryIdServerRoute: typeof ApiSpipuniformAdminCategoriesCategoryIdServerRoute
+  ApiSpipuniformAdminConditionsIdServerRoute: typeof ApiSpipuniformAdminConditionsIdServerRoute
+  ApiSpipuniformAdminConditionsReorderServerRoute: typeof ApiSpipuniformAdminConditionsReorderServerRoute
   ApiSpipuniformAdminProductTypesTypeIdServerRoute: typeof ApiSpipuniformAdminProductTypesTypeIdServerRoute
   ApiSpipuniformAdminAttributeValuesIndexServerRoute: typeof ApiSpipuniformAdminAttributeValuesIndexServerRoute
   ApiSpipuniformAdminAttributesIndexServerRoute: typeof ApiSpipuniformAdminAttributesIndexServerRoute
   ApiSpipuniformAdminCategoriesIndexServerRoute: typeof ApiSpipuniformAdminCategoriesIndexServerRoute
+  ApiSpipuniformAdminConditionsIndexServerRoute: typeof ApiSpipuniformAdminConditionsIndexServerRoute
   ApiSpipuniformAdminProductTypesIndexServerRoute: typeof ApiSpipuniformAdminProductTypesIndexServerRoute
 }
 
@@ -1432,6 +1514,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiUsersIndexServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/transactions/': {
+      id: '/api/transactions/'
+      path: '/api/transactions'
+      fullPath: '/api/transactions'
+      preLoaderRoute: typeof ApiTransactionsIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/roles/': {
       id: '/api/roles/'
       path: '/api/roles'
@@ -1465,6 +1554,13 @@ declare module '@tanstack/react-start/server' {
       path: '/api/users/$userId'
       fullPath: '/api/users/$userId'
       preLoaderRoute: typeof ApiUsersUserIdServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/transactions/$id': {
+      id: '/api/transactions/$id'
+      path: '/api/transactions/$id'
+      fullPath: '/api/transactions/$id'
+      preLoaderRoute: typeof ApiTransactionsIdServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/storage/settings': {
@@ -1607,6 +1703,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiSpipuniformCountiesIndexServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/transactions/$id/messages': {
+      id: '/api/transactions/$id/messages'
+      path: '/messages'
+      fullPath: '/api/transactions/$id/messages'
+      preLoaderRoute: typeof ApiTransactionsIdMessagesServerRouteImport
+      parentRoute: typeof ApiTransactionsIdServerRoute
+    }
     '/api/spipuniform/localities/search': {
       id: '/api/spipuniform/localities/search'
       path: '/api/spipuniform/localities/search'
@@ -1656,6 +1759,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiSpipuniformAdminProductTypesIndexServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/spipuniform/admin/conditions/': {
+      id: '/api/spipuniform/admin/conditions/'
+      path: '/api/spipuniform/admin/conditions'
+      fullPath: '/api/spipuniform/admin/conditions'
+      preLoaderRoute: typeof ApiSpipuniformAdminConditionsIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/spipuniform/admin/categories/': {
       id: '/api/spipuniform/admin/categories/'
       path: '/api/spipuniform/admin/categories'
@@ -1682,6 +1792,20 @@ declare module '@tanstack/react-start/server' {
       path: '/api/spipuniform/admin/product-types/typeId'
       fullPath: '/api/spipuniform/admin/product-types/typeId'
       preLoaderRoute: typeof ApiSpipuniformAdminProductTypesTypeIdServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/spipuniform/admin/conditions/reorder': {
+      id: '/api/spipuniform/admin/conditions/reorder'
+      path: '/api/spipuniform/admin/conditions/reorder'
+      fullPath: '/api/spipuniform/admin/conditions/reorder'
+      preLoaderRoute: typeof ApiSpipuniformAdminConditionsReorderServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/spipuniform/admin/conditions/$id': {
+      id: '/api/spipuniform/admin/conditions/$id'
+      path: '/api/spipuniform/admin/conditions/$id'
+      fullPath: '/api/spipuniform/admin/conditions/$id'
+      preLoaderRoute: typeof ApiSpipuniformAdminConditionsIdServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/spipuniform/admin/categories/categoryId': {
@@ -1827,6 +1951,20 @@ const ApiEmailTemplatesServerRouteWithChildren =
     ApiEmailTemplatesServerRouteChildren,
   )
 
+interface ApiTransactionsIdServerRouteChildren {
+  ApiTransactionsIdMessagesServerRoute: typeof ApiTransactionsIdMessagesServerRoute
+}
+
+const ApiTransactionsIdServerRouteChildren: ApiTransactionsIdServerRouteChildren =
+  {
+    ApiTransactionsIdMessagesServerRoute: ApiTransactionsIdMessagesServerRoute,
+  }
+
+const ApiTransactionsIdServerRouteWithChildren =
+  ApiTransactionsIdServerRoute._addFileChildren(
+    ApiTransactionsIdServerRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
@@ -1869,11 +2007,13 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiProfilesShopServerRoute: ApiProfilesShopServerRoute,
   ApiRolesRoleIdServerRoute: ApiRolesRoleIdServerRoute,
   ApiStorageSettingsServerRoute: ApiStorageSettingsServerRoute,
+  ApiTransactionsIdServerRoute: ApiTransactionsIdServerRouteWithChildren,
   ApiUsersUserIdServerRoute: ApiUsersUserIdServerRoute,
   ApiUsersActionsServerRoute: ApiUsersActionsServerRoute,
   ApiBrandingIndexServerRoute: ApiBrandingIndexServerRoute,
   ApiEmailIndexServerRoute: ApiEmailIndexServerRoute,
   ApiRolesIndexServerRoute: ApiRolesIndexServerRoute,
+  ApiTransactionsIndexServerRoute: ApiTransactionsIndexServerRoute,
   ApiUsersIndexServerRoute: ApiUsersIndexServerRoute,
   ApiLocalitiesFetchSplatServerRoute: ApiLocalitiesFetchSplatServerRoute,
   ApiProfilesFamilyMemberIdServerRoute: ApiProfilesFamilyMemberIdServerRoute,
@@ -1888,6 +2028,10 @@ const rootServerRouteChildren: RootServerRouteChildren = {
     ApiSpipuniformAdminAttributesAttributeIdServerRoute,
   ApiSpipuniformAdminCategoriesCategoryIdServerRoute:
     ApiSpipuniformAdminCategoriesCategoryIdServerRoute,
+  ApiSpipuniformAdminConditionsIdServerRoute:
+    ApiSpipuniformAdminConditionsIdServerRoute,
+  ApiSpipuniformAdminConditionsReorderServerRoute:
+    ApiSpipuniformAdminConditionsReorderServerRoute,
   ApiSpipuniformAdminProductTypesTypeIdServerRoute:
     ApiSpipuniformAdminProductTypesTypeIdServerRoute,
   ApiSpipuniformAdminAttributeValuesIndexServerRoute:
@@ -1896,6 +2040,8 @@ const rootServerRouteChildren: RootServerRouteChildren = {
     ApiSpipuniformAdminAttributesIndexServerRoute,
   ApiSpipuniformAdminCategoriesIndexServerRoute:
     ApiSpipuniformAdminCategoriesIndexServerRoute,
+  ApiSpipuniformAdminConditionsIndexServerRoute:
+    ApiSpipuniformAdminConditionsIndexServerRoute,
   ApiSpipuniformAdminProductTypesIndexServerRoute:
     ApiSpipuniformAdminProductTypesIndexServerRoute,
 }

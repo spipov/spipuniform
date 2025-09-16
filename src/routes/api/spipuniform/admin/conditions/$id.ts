@@ -1,5 +1,7 @@
 import { json } from '@tanstack/start';
 import type { APIEvent } from '@tanstack/start/server';
+import { createServerFileRoute } from '@tanstack/react-start/server';
+
 import { db } from '@/db';
 import { conditions } from '@/db/schema/spipuniform';
 import { eq } from 'drizzle-orm';
@@ -27,14 +29,14 @@ export async function GET({ params }: APIEvent) {
       .from(conditions)
       .where(eq(conditions.id, id))
       .limit(1);
-    
+
     if (!condition) {
       return json({
         success: false,
         error: 'Condition not found'
       }, { status: 404 });
     }
-    
+
     return json({
       success: true,
       condition
@@ -60,7 +62,7 @@ export async function PUT({ request, params }: APIEvent) {
 
     const body = await request.json();
     const validatedData = updateConditionSchema.parse(body);
-    
+
     // Check if name already exists for other conditions
     if (validatedData.name) {
       const existingCondition = await db
@@ -68,7 +70,7 @@ export async function PUT({ request, params }: APIEvent) {
         .from(conditions)
         .where(eq(conditions.name, validatedData.name))
         .limit(1);
-      
+
       if (existingCondition.length > 0 && existingCondition[0].id !== id) {
         return json({
           success: false,
@@ -76,7 +78,7 @@ export async function PUT({ request, params }: APIEvent) {
         }, { status: 400 });
       }
     }
-    
+
     const [updatedCondition] = await db
       .update(conditions)
       .set({
@@ -85,14 +87,14 @@ export async function PUT({ request, params }: APIEvent) {
       })
       .where(eq(conditions.id, id))
       .returning();
-    
+
     if (!updatedCondition) {
       return json({
         success: false,
         error: 'Condition not found'
       }, { status: 404 });
     }
-    
+
     return json({
       success: true,
       condition: updatedCondition
@@ -126,19 +128,19 @@ export async function DELETE({ params }: APIEvent) {
     // Check if condition is being used in listings
     // Note: We'll need to import listings table if we want to check usage
     // For now, we'll allow deletion and rely on database constraints
-    
+
     const [deletedCondition] = await db
       .delete(conditions)
       .where(eq(conditions.id, id))
       .returning();
-    
+
     if (!deletedCondition) {
       return json({
         success: false,
         error: 'Condition not found'
       }, { status: 404 });
     }
-    
+
     return json({
       success: true,
       message: 'Condition deleted successfully'
@@ -156,5 +158,13 @@ export async function DELETE({ params }: APIEvent) {
       success: false,
       error: 'Failed to delete condition'
     }, { status: 500 });
+
   }
 }
+
+// Expose ServerRoute for TanStack Start to register this API route
+export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/conditions/$id').methods({
+  GET,
+  PUT,
+  DELETE,
+});

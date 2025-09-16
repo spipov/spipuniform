@@ -24,7 +24,7 @@ const config = defineConfig({
   // SSR configuration
   ssr: {
     external: ["crypto", "better-auth", "dotenv", "path"],
-    noExternal: [],
+    noExternal: ["@tanstack/start"],
   },
 
   // Optimization configuration
@@ -60,6 +60,18 @@ const config = defineConfig({
   },
 
   plugins: [
+    // TanStack Start should come first so it can properly analyze routes
+    tanstackStart({
+      customViteReactPlugin: true,
+    }),
+    // React plugin should be applied right after TanStack Start
+    viteReact(),
+    // Path aliases
+    viteTsConfigPaths({
+      projects: ["./tsconfig.json"],
+    }),
+    // Tailwind
+    tailwindcss(),
     // Node.js polyfills - minimal set, no crypto since it's server-side only
     nodePolyfills({
       // Only include what's needed for client-side
@@ -71,15 +83,6 @@ const config = defineConfig({
         process: true,
       },
     }),
-    // this is the plugin that enables path aliases
-    viteTsConfigPaths({
-      projects: ["./tsconfig.json"],
-    }),
-    tailwindcss(),
-    tanstackStart({
-      customViteReactPlugin: true,
-    }),
-    viteReact(),
   ],
 });
 
