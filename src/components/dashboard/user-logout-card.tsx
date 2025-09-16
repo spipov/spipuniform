@@ -1,5 +1,5 @@
 import * as React from "react";
-import { User, LogOut, Settings, ChevronsUpDown } from "lucide-react";
+import { User, LogOut, Settings, ChevronsUpDown, UserCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -41,8 +41,11 @@ export function UserLogoutCard({
   };
 
   const handleSettings = () => {
--    router.navigate({ to: "/dashboard/settings" });
-+    router.navigate({ to: "/dashboard/account" });
+    router.navigate({ to: "/dashboard/settings" });
+  };
+
+  const handleProfile = () => {
+    router.navigate({ to: "/dashboard/profile" });
   };
 
   return (
@@ -110,6 +113,10 @@ export function UserLogoutCard({
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator className="user-logout-card__separator" />
+          <DropdownMenuItem onClick={handleProfile} className="user-logout-card__profile-item">
+            <UserCircle className="user-logout-card__profile-icon" />
+            <span className="user-logout-card__profile-text">My Profile</span>
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleSettings} className="user-logout-card__settings-item">
             <Settings className="user-logout-card__settings-icon" />
             <span className="user-logout-card__settings-text">Account Settings</span>

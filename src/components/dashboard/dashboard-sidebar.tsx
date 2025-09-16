@@ -1,6 +1,6 @@
 import type * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive, MapPin, School, ShoppingBag, Tags, Package, Sliders } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive, MapPin, School, ShoppingBag, Tags, Package, Sliders, Star, User, UserCircle, Building2, History, CreditCard } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { UserLogoutCard } from "./user-logout-card";
 import { BrandingProvider, SmartBrandingLogo } from "@/components/branding/branding-logo";
@@ -100,6 +100,12 @@ const productsNavigation = [
     icon: Sliders,
     requiredPermission: "viewDashboard", // Using basic dashboard permission for now
   },
+  {
+    title: "Conditions",
+    url: "/dashboard/spipuniform/products/conditions",
+    icon: Star,
+    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
+  },
 ] as const;
 
 const spipUniformNavigation = [
@@ -108,6 +114,21 @@ const spipUniformNavigation = [
     url: "/dashboard/spipuniform/data-verification",
     icon: MapPin,
     requiredPermission: "viewDashboard", // Using basic dashboard permission for now
+  },
+] as const;
+
+const profileNavigation = [
+  {
+    title: "Family Management",
+    url: "/dashboard/profile/family",
+    icon: Users,
+    requiredPermission: "viewDashboard", // All authenticated users can manage family
+  },
+  {
+    title: "Shop Management",
+    url: "/dashboard/profile/shop",
+    icon: Building2,
+    requiredPermission: "viewDashboard", // All authenticated users can access (shop owners will see content)
   },
 ] as const;
 
@@ -296,6 +317,37 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
                               >
                                 <Icon className="dashboard-sidebar__spipuniform-icon size-4" />
                                 <span className="dashboard-sidebar__spipuniform-text">{item.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        );
+                      })}
+                  </SidebarMenu>
+                </SidebarGroup>
+              )}
+
+              {isSignedIn && (can('viewDashboard')) && (
+                <SidebarGroup className="dashboard-sidebar__profile-group">
+                  <SidebarGroupLabel className="dashboard-sidebar__group-label">
+                    Family & Business
+                  </SidebarGroupLabel>
+                  <SidebarMenu className="dashboard-sidebar__profile-menu">
+                    {profileNavigation
+                      .filter((item) => can(item.requiredPermission))
+                      .map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <SidebarMenuItem
+                            key={item.title}
+                            className="dashboard-sidebar__profile-item"
+                          >
+                            <SidebarMenuButton asChild className="dashboard-sidebar__profile-button">
+                              <Link
+                                to={item.url}
+                                className="dashboard-sidebar__profile-link font-medium"
+                              >
+                                <Icon className="dashboard-sidebar__profile-icon size-4" />
+                                <span className="dashboard-sidebar__profile-text">{item.title}</span>
                               </Link>
                             </SidebarMenuButton>
                           </SidebarMenuItem>

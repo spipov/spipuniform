@@ -57,6 +57,13 @@
       "when": 1756913695646,
       "tag": "0007_violet_monster_badoon",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1757969599549,
+      "tag": "0008_silent_machine_man",
+      "breakpoints": true
     }
   ]
 }

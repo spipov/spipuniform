@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, unique, text, timestamp, uuid, jsonb, boolean, index, integer, decimal, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, uuid, text, integer, boolean, timestamp, decimal, unique, index, foreignKey, jsonb, date } from "drizzle-orm/pg-core";
 
 // Import existing tables for foreign keys
 import { user } from './auth';
@@ -482,6 +482,18 @@ export const userProfiles = pgTable("user_profiles", {
 	primarySchoolId: uuid("primary_school_id"),
 	additionalSchools: jsonb("additional_schools"), // Array of school IDs
 	localityId: uuid("locality_id"),
+	// Contact preferences
+	preferredContactMethod: text("preferred_contact_method"), // 'phone', 'email', 'app'
+	availability: text(), // "Weekday evenings, weekends"
+	specificArea: text("specific_area"), // More specific location within locality
+	// Profile preferences
+	preferredBrands: jsonb("preferred_brands"), // Array of preferred brands
+	preferredConditions: jsonb("preferred_conditions"), // Array of condition IDs
+	notificationPreferences: jsonb("notification_preferences"), // Email/app notification settings
+	// Trust and verification
+	verificationStatus: text("verification_status").default('unverified'), // 'unverified', 'email_verified', 'phone_verified', 'fully_verified'
+	totalRating: decimal("total_rating", { precision: 3, scale: 2 }).default('0'),
+	ratingCount: integer("rating_count").default(0),
 	metadata: jsonb(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
@@ -489,6 +501,7 @@ export const userProfiles = pgTable("user_profiles", {
 	index("user_profiles_user_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
 	index("user_profiles_school_idx").using("btree", table.primarySchoolId.asc().nullsLast().op("uuid_ops")),
 	index("user_profiles_locality_idx").using("btree", table.localityId.asc().nullsLast().op("uuid_ops")),
+	index("user_profiles_verification_idx").using("btree", table.verificationStatus.asc().nullsLast().op("text_ops")),
 	unique("user_profiles_user_unique").on(table.userId),
 	foreignKey({
 		columns: [table.userId],
@@ -505,6 +518,167 @@ export const userProfiles = pgTable("user_profiles", {
 		foreignColumns: [localities.id],
 		name: "user_profiles_locality_id_localities_id_fk"
 	}).onDelete("set null"),
+]);
+
+// Children/Family member details for parents
+export const familyMembers = pgTable("family_members", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userProfileId: uuid("user_profile_id").notNull(),
+	firstName: text("first_name").notNull(),
+	lastName: text("last_name"),
+	dateOfBirth: date("date_of_birth"),
+	schoolId: uuid("school_id"),
+	schoolYear: text("school_year"), // "Junior Infants", "Year 1", etc.
+	// Size information
+	currentSizes: jsonb("current_sizes"), // {"shirt": "Age 7-8", "trousers": "Age 8", "shoes": "UK 2"}
+	growthNotes: text("growth_notes"), // "Growing fast, may need bigger soon"
+	// Privacy
+	showInProfile: boolean("show_in_profile").default(true),
+	isActive: boolean("is_active").default(true),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("family_members_profile_idx").using("btree", table.userProfileId.asc().nullsLast().op("uuid_ops")),
+	index("family_members_school_idx").using("btree", table.schoolId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+		columns: [table.userProfileId],
+		foreignColumns: [userProfiles.id],
+		name: "family_members_user_profile_id_user_profiles_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.schoolId],
+		foreignColumns: [schools.id],
+		name: "family_members_school_id_schools_id_fk"
+	}).onDelete("set null"),
+]);
+
+// Enhanced shop profiles with detailed business information
+export const shopProfiles = pgTable("shop_profiles", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	shopId: uuid("shop_id").notNull(),
+	// Business details
+	businessRegistrationNumber: text("business_registration_number"),
+	vatNumber: text("vat_number"),
+	openingHours: jsonb("opening_hours"), // {"monday": "9:00-17:00", ...}
+	serviceAreas: jsonb("service_areas"), // Array of locality IDs they serve
+	specialties: jsonb("specialties"), // Array of what they specialize in
+	// Contact and social
+	socialMedia: jsonb("social_media"), // {"facebook": "url", "instagram": "url"}
+	deliveryOptions: jsonb("delivery_options"), // {"pickup": true, "delivery": true, "radius": "10km"}
+	paymentMethods: jsonb("payment_methods"), // ["cash", "card", "bank_transfer"]
+	// Performance metrics
+	responseTime: integer("response_time"), // Average response time in hours
+	completionRate: decimal("completion_rate", { precision: 5, scale: 2 }).default('0'), // Percentage of completed transactions
+	customerRating: decimal("customer_rating", { precision: 3, scale: 2 }).default('0'),
+	totalReviews: integer("total_reviews").default(0),
+	// Business verification
+	verificationDocuments: jsonb("verification_documents"), // File IDs of verification docs
+	verifiedAt: timestamp("verified_at", { mode: 'string' }),
+	verifiedBy: text("verified_by"), // Admin user ID who verified
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("shop_profiles_shop_idx").using("btree", table.shopId.asc().nullsLast().op("uuid_ops")),
+	index("shop_profiles_verified_idx").using("btree", table.verifiedAt.asc().nullsLast().op("timestamp_ops")),
+	unique("shop_profiles_shop_unique").on(table.shopId),
+	foreignKey({
+		columns: [table.shopId],
+		foreignColumns: [shops.id],
+		name: "shop_profiles_shop_id_shops_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.verifiedBy],
+		foreignColumns: [user.id],
+		name: "shop_profiles_verified_by_user_id_fk"
+	}).onDelete("set null"),
+]);
+
+// Transaction history for all users
+export const transactions = pgTable("transactions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	// Core transaction details
+	type: text().notNull(), // 'purchase', 'sale', 'exchange'
+	status: text().notNull(), // 'pending', 'completed', 'cancelled'
+	// Participants
+	buyerUserId: text("buyer_user_id"),
+	sellerUserId: text("seller_user_id").notNull(),
+	// Item details
+	listingId: uuid("listing_id"),
+	requestId: uuid("request_id"),
+	itemDescription: text("item_description").notNull(),
+	conditionAtSale: text("condition_at_sale"),
+	price: decimal({ precision: 10, scale: 2 }),
+	currency: text().default('EUR'),
+	// Exchange details
+	exchangeMethod: text("exchange_method"), // 'pickup', 'delivery', 'postal'
+	meetingLocation: text("meeting_location"),
+	scheduledDate: timestamp("scheduled_date", { mode: 'string' }),
+	actualDate: timestamp("actual_date", { mode: 'string' }),
+	// Communication and feedback
+	buyerNotes: text("buyer_notes"),
+	sellerNotes: text("seller_notes"),
+	buyerRating: integer("buyer_rating"), // 1-5 stars
+	sellerRating: integer("seller_rating"), // 1-5 stars
+	buyerFeedback: text("buyer_feedback"),
+	sellerFeedback: text("seller_feedback"),
+	// System tracking
+	notificationsLog: jsonb("notifications_log"), // Record of emails/notifications sent
+	completedAt: timestamp("completed_at", { mode: 'string' }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("transactions_buyer_idx").using("btree", table.buyerUserId.asc().nullsLast().op("text_ops")),
+	index("transactions_seller_idx").using("btree", table.sellerUserId.asc().nullsLast().op("text_ops")),
+	index("transactions_listing_idx").using("btree", table.listingId.asc().nullsLast().op("uuid_ops")),
+	index("transactions_request_idx").using("btree", table.requestId.asc().nullsLast().op("uuid_ops")),
+	index("transactions_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
+	index("transactions_date_idx").using("btree", table.createdAt.desc().nullsLast().op("timestamp_ops")),
+	foreignKey({
+		columns: [table.buyerUserId],
+		foreignColumns: [user.id],
+		name: "transactions_buyer_user_id_user_id_fk"
+	}).onDelete("set null"),
+	foreignKey({
+		columns: [table.sellerUserId],
+		foreignColumns: [user.id],
+		name: "transactions_seller_user_id_user_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.listingId],
+		foreignColumns: [listings.id],
+		name: "transactions_listing_id_listings_id_fk"
+	}).onDelete("set null"),
+	foreignKey({
+		columns: [table.requestId],
+		foreignColumns: [requests.id],
+		name: "transactions_request_id_requests_id_fk"
+	}).onDelete("set null"),
+]);
+
+// Communication threads related to transactions
+export const transactionMessages = pgTable("transaction_messages", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	transactionId: uuid("transaction_id").notNull(),
+	senderUserId: text("sender_user_id").notNull(),
+	message: text().notNull(),
+	messageType: text("message_type").default('general'), // 'general', 'location', 'schedule', 'feedback'
+	isSystemMessage: boolean("is_system_message").default(false),
+	readAt: timestamp("read_at", { mode: 'string' }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("transaction_messages_transaction_idx").using("btree", table.transactionId.asc().nullsLast().op("uuid_ops")),
+	index("transaction_messages_sender_idx").using("btree", table.senderUserId.asc().nullsLast().op("text_ops")),
+	index("transaction_messages_created_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	foreignKey({
+		columns: [table.transactionId],
+		foreignColumns: [transactions.id],
+		name: "transaction_messages_transaction_id_transactions_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.senderUserId],
+		foreignColumns: [user.id],
+		name: "transaction_messages_sender_user_id_user_id_fk"
+	}).onDelete("cascade"),
 ]);
 
 // Type exports
@@ -544,3 +718,11 @@ export type Notification = typeof notifications.$inferSelect;
 export type NewNotification = typeof notifications.$inferInsert;
 export type UserProfile = typeof userProfiles.$inferSelect;
 export type NewUserProfile = typeof userProfiles.$inferInsert;
+export type FamilyMember = typeof familyMembers.$inferSelect;
+export type NewFamilyMember = typeof familyMembers.$inferInsert;
+export type ShopProfile = typeof shopProfiles.$inferSelect;
+export type NewShopProfile = typeof shopProfiles.$inferInsert;
+export type Transaction = typeof transactions.$inferSelect;
+export type NewTransaction = typeof transactions.$inferInsert;
+export type TransactionMessage = typeof transactionMessages.$inferSelect;
+export type NewTransactionMessage = typeof transactionMessages.$inferInsert;

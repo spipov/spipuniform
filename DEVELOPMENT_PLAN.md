@@ -262,6 +262,58 @@ scripts/spipuniform/
 
 ---
 
+## 🎯 Phase 5: Email Notification System 📧
+**Goal: Notify parents when requested uniform items become available**
+
+### 5.1 Email Templates for Uniforms ✋ **CHECKPOINT**
+- [ ] Create uniform availability notification templates
+- [ ] Create request confirmation email templates
+- [ ] Create listing confirmation email templates
+- [ ] **CHECKPOINT: Email templates work with uniform data**
+
+### 5.2 Notification Triggers ✋ **CHECKPOINT**
+- [ ] Trigger emails when new listings match existing requests
+- [ ] Trigger emails when requests are created (confirmation)
+- [ ] Trigger emails when listings are created (confirmation)
+- [ ] **CHECKPOINT: Email notifications fire correctly**
+
+### 5.3 Email Preferences ✋ **CHECKPOINT**
+- [ ] User email notification preferences
+- [ ] Unsubscribe functionality
+- [ ] Email frequency controls
+- [ ] **CHECKPOINT: Users can control their email preferences**
+
+---
+
+## 🎯 Phase 6: Messaging System 💬
+**Goal: Enable direct parent-to-parent communication for uniform coordination**
+
+### 6.1 Direct Messaging Core ✋ **CHECKPOINT**
+- [ ] Create messaging system database schema
+- [ ] Build message CRUD APIs
+- [ ] Implement real-time messaging with WebSocket/Server-Sent Events
+- [ ] **CHECKPOINT: Basic messaging works between users**
+
+### 6.2 Conversation Management ✋ **CHECKPOINT**
+- [ ] Thread/conversation grouping
+- [ ] Message status (read/unread)
+- [ ] Message history and pagination
+- [ ] **CHECKPOINT: Conversation management works smoothly**
+
+### 6.3 Messaging UI Components ✋ **CHECKPOINT**
+- [ ] Chat/message interface components
+- [ ] Conversation list component
+- [ ] Message composer component
+- [ ] **CHECKPOINT: Messaging UI is user-friendly**
+
+### 6.4 Integration with Listings ✋ **CHECKPOINT**
+- [ ] "Message Seller" buttons on listings
+- [ ] "Message Requester" functionality
+- [ ] Context-aware messaging (include item details)
+- [ ] **CHECKPOINT: Messaging integrates seamlessly with marketplace**
+
+---
+
 ## 🏃‍♂️ Development Workflow Rules
 
 ### Before Starting Any Phase:

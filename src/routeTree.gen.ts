@@ -27,15 +27,20 @@ import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-passw
 import { Route as AuthPendingRouteImport } from './routes/auth/pending'
 import { Route as DashboardUserManagementIndexRouteImport } from './routes/dashboard/user-management/index'
 import { Route as DashboardSpipuniformIndexRouteImport } from './routes/dashboard/spipuniform/index'
+import { Route as DashboardProfileIndexRouteImport } from './routes/dashboard/profile/index'
 import { Route as DashboardUserManagementUsersRouteImport } from './routes/dashboard/user-management/users'
 import { Route as DashboardUserManagementRolesRouteImport } from './routes/dashboard/user-management/roles'
 import { Route as DashboardUserManagementPermissionsRouteImport } from './routes/dashboard/user-management/permissions'
 import { Route as DashboardUserManagementConsolidatedRouteImport } from './routes/dashboard/user-management/consolidated'
 import { Route as DashboardSpipuniformDataVerificationRouteImport } from './routes/dashboard/spipuniform/data-verification'
+import { Route as DashboardProfileShopRouteImport } from './routes/dashboard/profile/shop'
+import { Route as DashboardProfileFamilyRouteImport } from './routes/dashboard/profile/family'
 import { Route as DashboardSpipuniformProductsTypesRouteImport } from './routes/dashboard/spipuniform/products/types'
+import { Route as DashboardSpipuniformProductsConditionsRouteImport } from './routes/dashboard/spipuniform/products/conditions'
 import { Route as DashboardSpipuniformProductsCategoriesRouteImport } from './routes/dashboard/spipuniform/products/categories'
 import { Route as DashboardSpipuniformProductsAttributesRouteImport } from './routes/dashboard/spipuniform/products/attributes'
 import { ServerRoute as ApiUsersApprovalServerRouteImport } from './routes/api/users-approval'
+import { ServerRoute as ApiUserProfileServerRouteImport } from './routes/api/user-profile'
 import { ServerRoute as ApiUserFilesServerRouteImport } from './routes/api/user-files'
 import { ServerRoute as ApiTestServerRouteImport } from './routes/api/test'
 import { ServerRoute as ApiMeServerRouteImport } from './routes/api/me'
@@ -46,12 +51,15 @@ import { ServerRoute as ApiAvatarServerRouteImport } from './routes/api/avatar'
 import { ServerRoute as ApiAuthSettingsServerRouteImport } from './routes/api/auth-settings'
 import { ServerRoute as ApiUsersIndexServerRouteImport } from './routes/api/users/index'
 import { ServerRoute as ApiRolesIndexServerRouteImport } from './routes/api/roles/index'
+import { ServerRoute as ApiProfilesIndexServerRouteImport } from './routes/api/profiles/index'
 import { ServerRoute as ApiEmailIndexServerRouteImport } from './routes/api/email/index'
 import { ServerRoute as ApiBrandingIndexServerRouteImport } from './routes/api/branding/index'
 import { ServerRoute as ApiUsersActionsServerRouteImport } from './routes/api/users/actions'
 import { ServerRoute as ApiUsersUserIdServerRouteImport } from './routes/api/users/$userId'
 import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api/storage/settings'
 import { ServerRoute as ApiRolesRoleIdServerRouteImport } from './routes/api/roles/$roleId'
+import { ServerRoute as ApiProfilesShopServerRouteImport } from './routes/api.profiles.shop'
+import { ServerRoute as ApiProfilesFamilyMembersServerRouteImport } from './routes/api.profiles.familyMembers'
 import { ServerRoute as ApiLocalitiesSplatServerRouteImport } from './routes/api/localities/$'
 import { ServerRoute as ApiEmailTestServerRouteImport } from './routes/api/email/test'
 import { ServerRoute as ApiEmailTemplatesServerRouteImport } from './routes/api/email/templates'
@@ -67,7 +75,9 @@ import { ServerRoute as ApiAdminDashboardStatsServerRouteImport } from './routes
 import { ServerRoute as ApiAdminAnalyticsServerRouteImport } from './routes/api/admin/analytics'
 import { ServerRoute as ApiSpipuniformSchoolsIndexServerRouteImport } from './routes/api/spipuniform/schools/index'
 import { ServerRoute as ApiSpipuniformCountiesIndexServerRouteImport } from './routes/api/spipuniform/counties/index'
+import { ServerRoute as ApiProfilesFamilyMembersIndexServerRouteImport } from './routes/api/profiles/family-members/index'
 import { ServerRoute as ApiSpipuniformLocalitiesSearchServerRouteImport } from './routes/api/spipuniform/localities/search'
+import { ServerRoute as ApiProfilesFamilyMemberIdServerRouteImport } from './routes/api.profiles.familyMember.$id'
 import { ServerRoute as ApiLocalitiesFetchSplatServerRouteImport } from './routes/api/localities/fetch/$'
 import { ServerRoute as ApiEmailTemplatesSeedApprovalServerRouteImport } from './routes/api/email/templates.seed-approval'
 import { ServerRoute as ApiEmailTemplatesPreviewServerRouteImport } from './routes/api/email/templates.preview'
@@ -166,6 +176,11 @@ const DashboardSpipuniformIndexRoute =
     path: '/spipuniform/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardProfileIndexRoute = DashboardProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardUserManagementUsersRoute =
   DashboardUserManagementUsersRouteImport.update({
     id: '/user-management/users',
@@ -196,10 +211,26 @@ const DashboardSpipuniformDataVerificationRoute =
     path: '/spipuniform/data-verification',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardProfileShopRoute = DashboardProfileShopRouteImport.update({
+  id: '/profile/shop',
+  path: '/profile/shop',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardProfileFamilyRoute = DashboardProfileFamilyRouteImport.update({
+  id: '/profile/family',
+  path: '/profile/family',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardSpipuniformProductsTypesRoute =
   DashboardSpipuniformProductsTypesRouteImport.update({
     id: '/spipuniform/products/types',
     path: '/spipuniform/products/types',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardSpipuniformProductsConditionsRoute =
+  DashboardSpipuniformProductsConditionsRouteImport.update({
+    id: '/spipuniform/products/conditions',
+    path: '/spipuniform/products/conditions',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardSpipuniformProductsCategoriesRoute =
@@ -217,6 +248,11 @@ const DashboardSpipuniformProductsAttributesRoute =
 const ApiUsersApprovalServerRoute = ApiUsersApprovalServerRouteImport.update({
   id: '/api/users-approval',
   path: '/api/users-approval',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiUserProfileServerRoute = ApiUserProfileServerRouteImport.update({
+  id: '/api/user-profile',
+  path: '/api/user-profile',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiUserFilesServerRoute = ApiUserFilesServerRouteImport.update({
@@ -269,6 +305,11 @@ const ApiRolesIndexServerRoute = ApiRolesIndexServerRouteImport.update({
   path: '/api/roles/',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiProfilesIndexServerRoute = ApiProfilesIndexServerRouteImport.update({
+  id: '/api/profiles/',
+  path: '/api/profiles/',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
 const ApiEmailIndexServerRoute = ApiEmailIndexServerRouteImport.update({
   id: '/api/email/',
   path: '/api/email/',
@@ -300,6 +341,17 @@ const ApiRolesRoleIdServerRoute = ApiRolesRoleIdServerRouteImport.update({
   path: '/api/roles/$roleId',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiProfilesShopServerRoute = ApiProfilesShopServerRouteImport.update({
+  id: '/api/profiles/shop',
+  path: '/api/profiles/shop',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiProfilesFamilyMembersServerRoute =
+  ApiProfilesFamilyMembersServerRouteImport.update({
+    id: '/api/profiles/familyMembers',
+    path: '/api/profiles/familyMembers',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiLocalitiesSplatServerRoute =
   ApiLocalitiesSplatServerRouteImport.update({
     id: '/api/localities/$',
@@ -382,10 +434,22 @@ const ApiSpipuniformCountiesIndexServerRoute =
     path: '/api/spipuniform/counties/',
     getParentRoute: () => rootServerRouteImport,
   } as any)
+const ApiProfilesFamilyMembersIndexServerRoute =
+  ApiProfilesFamilyMembersIndexServerRouteImport.update({
+    id: '/api/profiles/family-members/',
+    path: '/api/profiles/family-members/',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiSpipuniformLocalitiesSearchServerRoute =
   ApiSpipuniformLocalitiesSearchServerRouteImport.update({
     id: '/api/spipuniform/localities/search',
     path: '/api/spipuniform/localities/search',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiProfilesFamilyMemberIdServerRoute =
+  ApiProfilesFamilyMemberIdServerRouteImport.update({
+    id: '/api/profiles/familyMember/$id',
+    path: '/api/profiles/familyMember/$id',
     getParentRoute: () => rootServerRouteImport,
   } as any)
 const ApiLocalitiesFetchSplatServerRoute =
@@ -476,15 +540,19 @@ export interface FileRoutesByFullPath {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/profile/family': typeof DashboardProfileFamilyRoute
+  '/dashboard/profile/shop': typeof DashboardProfileShopRoute
   '/dashboard/spipuniform/data-verification': typeof DashboardSpipuniformDataVerificationRoute
   '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
+  '/dashboard/profile': typeof DashboardProfileIndexRoute
   '/dashboard/spipuniform': typeof DashboardSpipuniformIndexRoute
   '/dashboard/user-management': typeof DashboardUserManagementIndexRoute
   '/dashboard/spipuniform/products/attributes': typeof DashboardSpipuniformProductsAttributesRoute
   '/dashboard/spipuniform/products/categories': typeof DashboardSpipuniformProductsCategoriesRoute
+  '/dashboard/spipuniform/products/conditions': typeof DashboardSpipuniformProductsConditionsRoute
   '/dashboard/spipuniform/products/types': typeof DashboardSpipuniformProductsTypesRoute
 }
 export interface FileRoutesByTo {
@@ -501,15 +569,19 @@ export interface FileRoutesByTo {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/profile/family': typeof DashboardProfileFamilyRoute
+  '/dashboard/profile/shop': typeof DashboardProfileShopRoute
   '/dashboard/spipuniform/data-verification': typeof DashboardSpipuniformDataVerificationRoute
   '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
+  '/dashboard/profile': typeof DashboardProfileIndexRoute
   '/dashboard/spipuniform': typeof DashboardSpipuniformIndexRoute
   '/dashboard/user-management': typeof DashboardUserManagementIndexRoute
   '/dashboard/spipuniform/products/attributes': typeof DashboardSpipuniformProductsAttributesRoute
   '/dashboard/spipuniform/products/categories': typeof DashboardSpipuniformProductsCategoriesRoute
+  '/dashboard/spipuniform/products/conditions': typeof DashboardSpipuniformProductsConditionsRoute
   '/dashboard/spipuniform/products/types': typeof DashboardSpipuniformProductsTypesRoute
 }
 export interface FileRoutesById {
@@ -528,15 +600,19 @@ export interface FileRoutesById {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/profile/family': typeof DashboardProfileFamilyRoute
+  '/dashboard/profile/shop': typeof DashboardProfileShopRoute
   '/dashboard/spipuniform/data-verification': typeof DashboardSpipuniformDataVerificationRoute
   '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
+  '/dashboard/profile/': typeof DashboardProfileIndexRoute
   '/dashboard/spipuniform/': typeof DashboardSpipuniformIndexRoute
   '/dashboard/user-management/': typeof DashboardUserManagementIndexRoute
   '/dashboard/spipuniform/products/attributes': typeof DashboardSpipuniformProductsAttributesRoute
   '/dashboard/spipuniform/products/categories': typeof DashboardSpipuniformProductsCategoriesRoute
+  '/dashboard/spipuniform/products/conditions': typeof DashboardSpipuniformProductsConditionsRoute
   '/dashboard/spipuniform/products/types': typeof DashboardSpipuniformProductsTypesRoute
 }
 export interface FileRouteTypes {
@@ -556,15 +632,19 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/dashboard/'
+    | '/dashboard/profile/family'
+    | '/dashboard/profile/shop'
     | '/dashboard/spipuniform/data-verification'
     | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
+    | '/dashboard/profile'
     | '/dashboard/spipuniform'
     | '/dashboard/user-management'
     | '/dashboard/spipuniform/products/attributes'
     | '/dashboard/spipuniform/products/categories'
+    | '/dashboard/spipuniform/products/conditions'
     | '/dashboard/spipuniform/products/types'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -581,15 +661,19 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/dashboard'
+    | '/dashboard/profile/family'
+    | '/dashboard/profile/shop'
     | '/dashboard/spipuniform/data-verification'
     | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
+    | '/dashboard/profile'
     | '/dashboard/spipuniform'
     | '/dashboard/user-management'
     | '/dashboard/spipuniform/products/attributes'
     | '/dashboard/spipuniform/products/categories'
+    | '/dashboard/spipuniform/products/conditions'
     | '/dashboard/spipuniform/products/types'
   id:
     | '__root__'
@@ -607,15 +691,19 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/dashboard/'
+    | '/dashboard/profile/family'
+    | '/dashboard/profile/shop'
     | '/dashboard/spipuniform/data-verification'
     | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
+    | '/dashboard/profile/'
     | '/dashboard/spipuniform/'
     | '/dashboard/user-management/'
     | '/dashboard/spipuniform/products/attributes'
     | '/dashboard/spipuniform/products/categories'
+    | '/dashboard/spipuniform/products/conditions'
     | '/dashboard/spipuniform/products/types'
   fileRoutesById: FileRoutesById
 }
@@ -637,6 +725,7 @@ export interface FileServerRoutesByFullPath {
   '/api/me': typeof ApiMeServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/user-files': typeof ApiUserFilesServerRoute
+  '/api/user-profile': typeof ApiUserProfileServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsServerRoute
   '/api/admin/dashboard-stats': typeof ApiAdminDashboardStatsServerRoute
@@ -651,19 +740,24 @@ export interface FileServerRoutesByFullPath {
   '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
   '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
+  '/api/profiles/familyMembers': typeof ApiProfilesFamilyMembersServerRoute
+  '/api/profiles/shop': typeof ApiProfilesShopServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
   '/api/users/actions': typeof ApiUsersActionsServerRoute
   '/api/branding': typeof ApiBrandingIndexServerRoute
   '/api/email': typeof ApiEmailIndexServerRoute
+  '/api/profiles': typeof ApiProfilesIndexServerRoute
   '/api/roles': typeof ApiRolesIndexServerRoute
   '/api/users': typeof ApiUsersIndexServerRoute
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
+  '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
+  '/api/profiles/family-members': typeof ApiProfilesFamilyMembersIndexServerRoute
   '/api/spipuniform/counties': typeof ApiSpipuniformCountiesIndexServerRoute
   '/api/spipuniform/schools': typeof ApiSpipuniformSchoolsIndexServerRoute
   '/api/spipuniform/admin/attribute-values/valueId': typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
@@ -684,6 +778,7 @@ export interface FileServerRoutesByTo {
   '/api/me': typeof ApiMeServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/user-files': typeof ApiUserFilesServerRoute
+  '/api/user-profile': typeof ApiUserProfileServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsServerRoute
   '/api/admin/dashboard-stats': typeof ApiAdminDashboardStatsServerRoute
@@ -698,19 +793,24 @@ export interface FileServerRoutesByTo {
   '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
   '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
+  '/api/profiles/familyMembers': typeof ApiProfilesFamilyMembersServerRoute
+  '/api/profiles/shop': typeof ApiProfilesShopServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
   '/api/users/actions': typeof ApiUsersActionsServerRoute
   '/api/branding': typeof ApiBrandingIndexServerRoute
   '/api/email': typeof ApiEmailIndexServerRoute
+  '/api/profiles': typeof ApiProfilesIndexServerRoute
   '/api/roles': typeof ApiRolesIndexServerRoute
   '/api/users': typeof ApiUsersIndexServerRoute
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
+  '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
+  '/api/profiles/family-members': typeof ApiProfilesFamilyMembersIndexServerRoute
   '/api/spipuniform/counties': typeof ApiSpipuniformCountiesIndexServerRoute
   '/api/spipuniform/schools': typeof ApiSpipuniformSchoolsIndexServerRoute
   '/api/spipuniform/admin/attribute-values/valueId': typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
@@ -732,6 +832,7 @@ export interface FileServerRoutesById {
   '/api/me': typeof ApiMeServerRoute
   '/api/test': typeof ApiTestServerRoute
   '/api/user-files': typeof ApiUserFilesServerRoute
+  '/api/user-profile': typeof ApiUserProfileServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsServerRoute
   '/api/admin/dashboard-stats': typeof ApiAdminDashboardStatsServerRoute
@@ -746,19 +847,24 @@ export interface FileServerRoutesById {
   '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
   '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
+  '/api/profiles/familyMembers': typeof ApiProfilesFamilyMembersServerRoute
+  '/api/profiles/shop': typeof ApiProfilesShopServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
   '/api/users/actions': typeof ApiUsersActionsServerRoute
   '/api/branding/': typeof ApiBrandingIndexServerRoute
   '/api/email/': typeof ApiEmailIndexServerRoute
+  '/api/profiles/': typeof ApiProfilesIndexServerRoute
   '/api/roles/': typeof ApiRolesIndexServerRoute
   '/api/users/': typeof ApiUsersIndexServerRoute
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
+  '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
+  '/api/profiles/family-members/': typeof ApiProfilesFamilyMembersIndexServerRoute
   '/api/spipuniform/counties/': typeof ApiSpipuniformCountiesIndexServerRoute
   '/api/spipuniform/schools/': typeof ApiSpipuniformSchoolsIndexServerRoute
   '/api/spipuniform/admin/attribute-values/valueId': typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
@@ -781,6 +887,7 @@ export interface FileServerRouteTypes {
     | '/api/me'
     | '/api/test'
     | '/api/user-files'
+    | '/api/user-profile'
     | '/api/users-approval'
     | '/api/admin/analytics'
     | '/api/admin/dashboard-stats'
@@ -795,19 +902,24 @@ export interface FileServerRouteTypes {
     | '/api/email/templates'
     | '/api/email/test'
     | '/api/localities/$'
+    | '/api/profiles/familyMembers'
+    | '/api/profiles/shop'
     | '/api/roles/$roleId'
     | '/api/storage/settings'
     | '/api/users/$userId'
     | '/api/users/actions'
     | '/api/branding'
     | '/api/email'
+    | '/api/profiles'
     | '/api/roles'
     | '/api/users'
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
     | '/api/localities/fetch/$'
+    | '/api/profiles/familyMember/$id'
     | '/api/spipuniform/localities/search'
+    | '/api/profiles/family-members'
     | '/api/spipuniform/counties'
     | '/api/spipuniform/schools'
     | '/api/spipuniform/admin/attribute-values/valueId'
@@ -828,6 +940,7 @@ export interface FileServerRouteTypes {
     | '/api/me'
     | '/api/test'
     | '/api/user-files'
+    | '/api/user-profile'
     | '/api/users-approval'
     | '/api/admin/analytics'
     | '/api/admin/dashboard-stats'
@@ -842,19 +955,24 @@ export interface FileServerRouteTypes {
     | '/api/email/templates'
     | '/api/email/test'
     | '/api/localities/$'
+    | '/api/profiles/familyMembers'
+    | '/api/profiles/shop'
     | '/api/roles/$roleId'
     | '/api/storage/settings'
     | '/api/users/$userId'
     | '/api/users/actions'
     | '/api/branding'
     | '/api/email'
+    | '/api/profiles'
     | '/api/roles'
     | '/api/users'
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
     | '/api/localities/fetch/$'
+    | '/api/profiles/familyMember/$id'
     | '/api/spipuniform/localities/search'
+    | '/api/profiles/family-members'
     | '/api/spipuniform/counties'
     | '/api/spipuniform/schools'
     | '/api/spipuniform/admin/attribute-values/valueId'
@@ -875,6 +993,7 @@ export interface FileServerRouteTypes {
     | '/api/me'
     | '/api/test'
     | '/api/user-files'
+    | '/api/user-profile'
     | '/api/users-approval'
     | '/api/admin/analytics'
     | '/api/admin/dashboard-stats'
@@ -889,19 +1008,24 @@ export interface FileServerRouteTypes {
     | '/api/email/templates'
     | '/api/email/test'
     | '/api/localities/$'
+    | '/api/profiles/familyMembers'
+    | '/api/profiles/shop'
     | '/api/roles/$roleId'
     | '/api/storage/settings'
     | '/api/users/$userId'
     | '/api/users/actions'
     | '/api/branding/'
     | '/api/email/'
+    | '/api/profiles/'
     | '/api/roles/'
     | '/api/users/'
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
     | '/api/localities/fetch/$'
+    | '/api/profiles/familyMember/$id'
     | '/api/spipuniform/localities/search'
+    | '/api/profiles/family-members/'
     | '/api/spipuniform/counties/'
     | '/api/spipuniform/schools/'
     | '/api/spipuniform/admin/attribute-values/valueId'
@@ -923,6 +1047,7 @@ export interface RootServerRouteChildren {
   ApiMeServerRoute: typeof ApiMeServerRoute
   ApiTestServerRoute: typeof ApiTestServerRoute
   ApiUserFilesServerRoute: typeof ApiUserFilesServerRoute
+  ApiUserProfileServerRoute: typeof ApiUserProfileServerRoute
   ApiUsersApprovalServerRoute: typeof ApiUsersApprovalServerRoute
   ApiAdminAnalyticsServerRoute: typeof ApiAdminAnalyticsServerRoute
   ApiAdminDashboardStatsServerRoute: typeof ApiAdminDashboardStatsServerRoute
@@ -936,16 +1061,21 @@ export interface RootServerRouteChildren {
   ApiEmailTemplatesServerRoute: typeof ApiEmailTemplatesServerRouteWithChildren
   ApiEmailTestServerRoute: typeof ApiEmailTestServerRoute
   ApiLocalitiesSplatServerRoute: typeof ApiLocalitiesSplatServerRoute
+  ApiProfilesFamilyMembersServerRoute: typeof ApiProfilesFamilyMembersServerRoute
+  ApiProfilesShopServerRoute: typeof ApiProfilesShopServerRoute
   ApiRolesRoleIdServerRoute: typeof ApiRolesRoleIdServerRoute
   ApiStorageSettingsServerRoute: typeof ApiStorageSettingsServerRoute
   ApiUsersUserIdServerRoute: typeof ApiUsersUserIdServerRoute
   ApiUsersActionsServerRoute: typeof ApiUsersActionsServerRoute
   ApiBrandingIndexServerRoute: typeof ApiBrandingIndexServerRoute
   ApiEmailIndexServerRoute: typeof ApiEmailIndexServerRoute
+  ApiProfilesIndexServerRoute: typeof ApiProfilesIndexServerRoute
   ApiRolesIndexServerRoute: typeof ApiRolesIndexServerRoute
   ApiUsersIndexServerRoute: typeof ApiUsersIndexServerRoute
   ApiLocalitiesFetchSplatServerRoute: typeof ApiLocalitiesFetchSplatServerRoute
+  ApiProfilesFamilyMemberIdServerRoute: typeof ApiProfilesFamilyMemberIdServerRoute
   ApiSpipuniformLocalitiesSearchServerRoute: typeof ApiSpipuniformLocalitiesSearchServerRoute
+  ApiProfilesFamilyMembersIndexServerRoute: typeof ApiProfilesFamilyMembersIndexServerRoute
   ApiSpipuniformCountiesIndexServerRoute: typeof ApiSpipuniformCountiesIndexServerRoute
   ApiSpipuniformSchoolsIndexServerRoute: typeof ApiSpipuniformSchoolsIndexServerRoute
   ApiSpipuniformAdminAttributeValuesValueIdServerRoute: typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
@@ -1072,6 +1202,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSpipuniformIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/profile/': {
+      id: '/dashboard/profile/'
+      path: '/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof DashboardProfileIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/user-management/users': {
       id: '/dashboard/user-management/users'
       path: '/user-management/users'
@@ -1107,11 +1244,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSpipuniformDataVerificationRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/profile/shop': {
+      id: '/dashboard/profile/shop'
+      path: '/profile/shop'
+      fullPath: '/dashboard/profile/shop'
+      preLoaderRoute: typeof DashboardProfileShopRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/profile/family': {
+      id: '/dashboard/profile/family'
+      path: '/profile/family'
+      fullPath: '/dashboard/profile/family'
+      preLoaderRoute: typeof DashboardProfileFamilyRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/spipuniform/products/types': {
       id: '/dashboard/spipuniform/products/types'
       path: '/spipuniform/products/types'
       fullPath: '/dashboard/spipuniform/products/types'
       preLoaderRoute: typeof DashboardSpipuniformProductsTypesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/spipuniform/products/conditions': {
+      id: '/dashboard/spipuniform/products/conditions'
+      path: '/spipuniform/products/conditions'
+      fullPath: '/dashboard/spipuniform/products/conditions'
+      preLoaderRoute: typeof DashboardSpipuniformProductsConditionsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/spipuniform/products/categories': {
@@ -1137,6 +1295,13 @@ declare module '@tanstack/react-start/server' {
       path: '/api/users-approval'
       fullPath: '/api/users-approval'
       preLoaderRoute: typeof ApiUsersApprovalServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/user-profile': {
+      id: '/api/user-profile'
+      path: '/api/user-profile'
+      fullPath: '/api/user-profile'
+      preLoaderRoute: typeof ApiUserProfileServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/user-files': {
@@ -1209,6 +1374,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiRolesIndexServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/profiles/': {
+      id: '/api/profiles/'
+      path: '/api/profiles'
+      fullPath: '/api/profiles'
+      preLoaderRoute: typeof ApiProfilesIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/email/': {
       id: '/api/email/'
       path: '/api/email'
@@ -1249,6 +1421,20 @@ declare module '@tanstack/react-start/server' {
       path: '/api/roles/$roleId'
       fullPath: '/api/roles/$roleId'
       preLoaderRoute: typeof ApiRolesRoleIdServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/profiles/shop': {
+      id: '/api/profiles/shop'
+      path: '/api/profiles/shop'
+      fullPath: '/api/profiles/shop'
+      preLoaderRoute: typeof ApiProfilesShopServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/profiles/familyMembers': {
+      id: '/api/profiles/familyMembers'
+      path: '/api/profiles/familyMembers'
+      fullPath: '/api/profiles/familyMembers'
+      preLoaderRoute: typeof ApiProfilesFamilyMembersServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/localities/$': {
@@ -1356,11 +1542,25 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiSpipuniformCountiesIndexServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/profiles/family-members/': {
+      id: '/api/profiles/family-members/'
+      path: '/api/profiles/family-members'
+      fullPath: '/api/profiles/family-members'
+      preLoaderRoute: typeof ApiProfilesFamilyMembersIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/spipuniform/localities/search': {
       id: '/api/spipuniform/localities/search'
       path: '/api/spipuniform/localities/search'
       fullPath: '/api/spipuniform/localities/search'
       preLoaderRoute: typeof ApiSpipuniformLocalitiesSearchServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/profiles/familyMember/$id': {
+      id: '/api/profiles/familyMember/$id'
+      path: '/api/profiles/familyMember/$id'
+      fullPath: '/api/profiles/familyMember/$id'
+      preLoaderRoute: typeof ApiProfilesFamilyMemberIdServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/localities/fetch/$': {
@@ -1458,15 +1658,19 @@ interface DashboardRouteChildren {
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardStorageSettingsRoute: typeof DashboardStorageSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardProfileFamilyRoute: typeof DashboardProfileFamilyRoute
+  DashboardProfileShopRoute: typeof DashboardProfileShopRoute
   DashboardSpipuniformDataVerificationRoute: typeof DashboardSpipuniformDataVerificationRoute
   DashboardUserManagementConsolidatedRoute: typeof DashboardUserManagementConsolidatedRoute
   DashboardUserManagementPermissionsRoute: typeof DashboardUserManagementPermissionsRoute
   DashboardUserManagementRolesRoute: typeof DashboardUserManagementRolesRoute
   DashboardUserManagementUsersRoute: typeof DashboardUserManagementUsersRoute
+  DashboardProfileIndexRoute: typeof DashboardProfileIndexRoute
   DashboardSpipuniformIndexRoute: typeof DashboardSpipuniformIndexRoute
   DashboardUserManagementIndexRoute: typeof DashboardUserManagementIndexRoute
   DashboardSpipuniformProductsAttributesRoute: typeof DashboardSpipuniformProductsAttributesRoute
   DashboardSpipuniformProductsCategoriesRoute: typeof DashboardSpipuniformProductsCategoriesRoute
+  DashboardSpipuniformProductsConditionsRoute: typeof DashboardSpipuniformProductsConditionsRoute
   DashboardSpipuniformProductsTypesRoute: typeof DashboardSpipuniformProductsTypesRoute
 }
 
@@ -1478,6 +1682,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardStorageSettingsRoute: DashboardStorageSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardProfileFamilyRoute: DashboardProfileFamilyRoute,
+  DashboardProfileShopRoute: DashboardProfileShopRoute,
   DashboardSpipuniformDataVerificationRoute:
     DashboardSpipuniformDataVerificationRoute,
   DashboardUserManagementConsolidatedRoute:
@@ -1486,12 +1692,15 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardUserManagementPermissionsRoute,
   DashboardUserManagementRolesRoute: DashboardUserManagementRolesRoute,
   DashboardUserManagementUsersRoute: DashboardUserManagementUsersRoute,
+  DashboardProfileIndexRoute: DashboardProfileIndexRoute,
   DashboardSpipuniformIndexRoute: DashboardSpipuniformIndexRoute,
   DashboardUserManagementIndexRoute: DashboardUserManagementIndexRoute,
   DashboardSpipuniformProductsAttributesRoute:
     DashboardSpipuniformProductsAttributesRoute,
   DashboardSpipuniformProductsCategoriesRoute:
     DashboardSpipuniformProductsCategoriesRoute,
+  DashboardSpipuniformProductsConditionsRoute:
+    DashboardSpipuniformProductsConditionsRoute,
   DashboardSpipuniformProductsTypesRoute:
     DashboardSpipuniformProductsTypesRoute,
 }
@@ -1565,6 +1774,7 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiMeServerRoute: ApiMeServerRoute,
   ApiTestServerRoute: ApiTestServerRoute,
   ApiUserFilesServerRoute: ApiUserFilesServerRoute,
+  ApiUserProfileServerRoute: ApiUserProfileServerRoute,
   ApiUsersApprovalServerRoute: ApiUsersApprovalServerRoute,
   ApiAdminAnalyticsServerRoute: ApiAdminAnalyticsServerRoute,
   ApiAdminDashboardStatsServerRoute: ApiAdminDashboardStatsServerRoute,
@@ -1578,17 +1788,23 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiEmailTemplatesServerRoute: ApiEmailTemplatesServerRouteWithChildren,
   ApiEmailTestServerRoute: ApiEmailTestServerRoute,
   ApiLocalitiesSplatServerRoute: ApiLocalitiesSplatServerRoute,
+  ApiProfilesFamilyMembersServerRoute: ApiProfilesFamilyMembersServerRoute,
+  ApiProfilesShopServerRoute: ApiProfilesShopServerRoute,
   ApiRolesRoleIdServerRoute: ApiRolesRoleIdServerRoute,
   ApiStorageSettingsServerRoute: ApiStorageSettingsServerRoute,
   ApiUsersUserIdServerRoute: ApiUsersUserIdServerRoute,
   ApiUsersActionsServerRoute: ApiUsersActionsServerRoute,
   ApiBrandingIndexServerRoute: ApiBrandingIndexServerRoute,
   ApiEmailIndexServerRoute: ApiEmailIndexServerRoute,
+  ApiProfilesIndexServerRoute: ApiProfilesIndexServerRoute,
   ApiRolesIndexServerRoute: ApiRolesIndexServerRoute,
   ApiUsersIndexServerRoute: ApiUsersIndexServerRoute,
   ApiLocalitiesFetchSplatServerRoute: ApiLocalitiesFetchSplatServerRoute,
+  ApiProfilesFamilyMemberIdServerRoute: ApiProfilesFamilyMemberIdServerRoute,
   ApiSpipuniformLocalitiesSearchServerRoute:
     ApiSpipuniformLocalitiesSearchServerRoute,
+  ApiProfilesFamilyMembersIndexServerRoute:
+    ApiProfilesFamilyMembersIndexServerRoute,
   ApiSpipuniformCountiesIndexServerRoute:
     ApiSpipuniformCountiesIndexServerRoute,
   ApiSpipuniformSchoolsIndexServerRoute: ApiSpipuniformSchoolsIndexServerRoute,
