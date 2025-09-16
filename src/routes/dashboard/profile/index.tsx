@@ -81,7 +81,7 @@ function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch('/api/profiles', {
+      const response = await fetch('/api/user-profile', {
         credentials: 'include'
       });
       const data = await response.json();
