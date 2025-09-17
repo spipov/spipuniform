@@ -25,6 +25,10 @@ export * from './file-system';
 // SpipUniform tables
 export * from './spipuniform';
 
+// School management tables
+export * from './school-submissions';
+export * from './school-approval-requests';
+
 
 // Export types for user management
 export type { User, NewUser, Role, NewRole, Permission, NewPermission } from './user-management';
@@ -115,3 +119,16 @@ export type {
   UserProfile,
   NewUserProfile
 } from './spipuniform';
+
+// Export types for school management
+export type {
+  SchoolSubmission,
+  NewSchoolSubmission,
+  SchoolApprovalRequest,
+  NewSchoolApprovalRequest
+} from './school-submissions';
+
+export type {
+  SchoolApprovalRequest as SchoolApprovalRequestType,
+  NewSchoolApprovalRequest as NewSchoolApprovalRequestType
+} from './school-approval-requests';

@@ -15,6 +15,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as MarketplaceCreateRouteImport } from './routes/marketplace/create'
 import { Route as DashboardStorageSettingsRouteImport } from './routes/dashboard/storage-settings'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardFileManagerRouteImport } from './routes/dashboard/file-manager'
@@ -28,6 +29,7 @@ import { Route as AuthPendingRouteImport } from './routes/auth/pending'
 import { Route as DashboardUserManagementIndexRouteImport } from './routes/dashboard/user-management/index'
 import { Route as DashboardSpipuniformIndexRouteImport } from './routes/dashboard/spipuniform/index'
 import { Route as DashboardProfileIndexRouteImport } from './routes/dashboard/profile/index'
+import { Route as MarketplaceListingsIdRouteImport } from './routes/marketplace/listings/$id'
 import { Route as DashboardUserManagementUsersRouteImport } from './routes/dashboard/user-management/users'
 import { Route as DashboardUserManagementRolesRouteImport } from './routes/dashboard/user-management/roles'
 import { Route as DashboardUserManagementPermissionsRouteImport } from './routes/dashboard/user-management/permissions'
@@ -43,15 +45,22 @@ import { Route as DashboardSpipuniformProductsAttributesRouteImport } from './ro
 import { ServerRoute as ApiUsersApprovalServerRouteImport } from './routes/api/users-approval'
 import { ServerRoute as ApiUserProfileServerRouteImport } from './routes/api/user-profile'
 import { ServerRoute as ApiUserFilesServerRouteImport } from './routes/api/user-files'
+import { ServerRoute as ApiUploadServerRouteImport } from './routes/api/upload'
 import { ServerRoute as ApiTestServerRouteImport } from './routes/api/test'
 import { ServerRoute as ApiShopsServerRouteImport } from './routes/api/shops'
 import { ServerRoute as ApiShopOptionsServerRouteImport } from './routes/api/shop-options'
 import { ServerRoute as ApiSchoolsServerRouteImport } from './routes/api/schools'
+import { ServerRoute as ApiSchoolSubmissionsServerRouteImport } from './routes/api/school-submissions'
 import { ServerRoute as ApiSchoolApprovalRequestsServerRouteImport } from './routes/api/school-approval-requests'
+import { ServerRoute as ApiProductCategoriesServerRouteImport } from './routes/api/product-categories'
 import { ServerRoute as ApiMeServerRouteImport } from './routes/api/me'
+import { ServerRoute as ApiLocalitiesServerRouteImport } from './routes/api/localities'
+import { ServerRoute as ApiListingsServerRouteImport } from './routes/api/listings'
 import { ServerRoute as ApiFilesServerRouteImport } from './routes/api/files'
 import { ServerRoute as ApiFamilyMembersServerRouteImport } from './routes/api/family-members'
 import { ServerRoute as ApiCredentialsServerRouteImport } from './routes/api/credentials'
+import { ServerRoute as ApiCountiesServerRouteImport } from './routes/api/counties'
+import { ServerRoute as ApiConditionsServerRouteImport } from './routes/api/conditions'
 import { ServerRoute as ApiChangePasswordServerRouteImport } from './routes/api/change-password'
 import { ServerRoute as ApiAvatarServerRouteImport } from './routes/api/avatar'
 import { ServerRoute as ApiAuthSettingsServerRouteImport } from './routes/api/auth-settings'
@@ -68,6 +77,7 @@ import { ServerRoute as ApiRolesRoleIdServerRouteImport } from './routes/api/rol
 import { ServerRoute as ApiProfilesShopServerRouteImport } from './routes/api.profiles.shop'
 import { ServerRoute as ApiProfilesFamilyMembersServerRouteImport } from './routes/api.profiles.familyMembers'
 import { ServerRoute as ApiLocalitiesSplatServerRouteImport } from './routes/api/localities/$'
+import { ServerRoute as ApiListingsIdServerRouteImport } from './routes/api/listings/$id'
 import { ServerRoute as ApiFamilyMembersIdServerRouteImport } from './routes/api/family-members/$id'
 import { ServerRoute as ApiEmailTestServerRouteImport } from './routes/api/email/test'
 import { ServerRoute as ApiEmailTemplatesServerRouteImport } from './routes/api/email/templates'
@@ -86,6 +96,7 @@ import { ServerRoute as ApiSpipuniformCountiesIndexServerRouteImport } from './r
 import { ServerRoute as ApiTransactionsIdMessagesServerRouteImport } from './routes/api/transactions/$id/messages'
 import { ServerRoute as ApiSpipuniformLocalitiesSearchServerRouteImport } from './routes/api/spipuniform/localities/search'
 import { ServerRoute as ApiProfilesFamilyMemberIdServerRouteImport } from './routes/api.profiles.familyMember.$id'
+import { ServerRoute as ApiProductTypesIdAttributesServerRouteImport } from './routes/api/product-types/$id/attributes'
 import { ServerRoute as ApiLocalitiesFetchSplatServerRouteImport } from './routes/api/localities/fetch/$'
 import { ServerRoute as ApiEmailTemplatesSeedSchoolApprovalServerRouteImport } from './routes/api/email/templates/seed-school-approval'
 import { ServerRoute as ApiEmailTemplatesSeedApprovalServerRouteImport } from './routes/api/email/templates.seed-approval'
@@ -121,6 +132,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const MarketplaceCreateRoute = MarketplaceCreateRouteImport.update({
+  id: '/marketplace/create',
+  path: '/marketplace/create',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardStorageSettingsRoute =
   DashboardStorageSettingsRouteImport.update({
@@ -189,6 +205,11 @@ const DashboardProfileIndexRoute = DashboardProfileIndexRouteImport.update({
   id: '/profile/',
   path: '/profile/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const MarketplaceListingsIdRoute = MarketplaceListingsIdRouteImport.update({
+  id: '/marketplace/listings/$id',
+  path: '/marketplace/listings/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardUserManagementUsersRoute =
   DashboardUserManagementUsersRouteImport.update({
@@ -274,6 +295,11 @@ const ApiUserFilesServerRoute = ApiUserFilesServerRouteImport.update({
   path: '/api/user-files',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiUploadServerRoute = ApiUploadServerRouteImport.update({
+  id: '/api/upload',
+  path: '/api/upload',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
 const ApiTestServerRoute = ApiTestServerRouteImport.update({
   id: '/api/test',
   path: '/api/test',
@@ -294,15 +320,37 @@ const ApiSchoolsServerRoute = ApiSchoolsServerRouteImport.update({
   path: '/api/schools',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiSchoolSubmissionsServerRoute =
+  ApiSchoolSubmissionsServerRouteImport.update({
+    id: '/api/school-submissions',
+    path: '/api/school-submissions',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiSchoolApprovalRequestsServerRoute =
   ApiSchoolApprovalRequestsServerRouteImport.update({
     id: '/api/school-approval-requests',
     path: '/api/school-approval-requests',
     getParentRoute: () => rootServerRouteImport,
   } as any)
+const ApiProductCategoriesServerRoute =
+  ApiProductCategoriesServerRouteImport.update({
+    id: '/api/product-categories',
+    path: '/api/product-categories',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiMeServerRoute = ApiMeServerRouteImport.update({
   id: '/api/me',
   path: '/api/me',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiLocalitiesServerRoute = ApiLocalitiesServerRouteImport.update({
+  id: '/api/localities',
+  path: '/api/localities',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiListingsServerRoute = ApiListingsServerRouteImport.update({
+  id: '/api/listings',
+  path: '/api/listings',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiFilesServerRoute = ApiFilesServerRouteImport.update({
@@ -318,6 +366,16 @@ const ApiFamilyMembersServerRoute = ApiFamilyMembersServerRouteImport.update({
 const ApiCredentialsServerRoute = ApiCredentialsServerRouteImport.update({
   id: '/api/credentials',
   path: '/api/credentials',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiCountiesServerRoute = ApiCountiesServerRouteImport.update({
+  id: '/api/counties',
+  path: '/api/counties',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiConditionsServerRoute = ApiConditionsServerRouteImport.update({
+  id: '/api/conditions',
+  path: '/api/conditions',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiChangePasswordServerRoute = ApiChangePasswordServerRouteImport.update({
@@ -400,10 +458,15 @@ const ApiProfilesFamilyMembersServerRoute =
   } as any)
 const ApiLocalitiesSplatServerRoute =
   ApiLocalitiesSplatServerRouteImport.update({
-    id: '/api/localities/$',
-    path: '/api/localities/$',
-    getParentRoute: () => rootServerRouteImport,
+    id: '/$',
+    path: '/$',
+    getParentRoute: () => ApiLocalitiesServerRoute,
   } as any)
+const ApiListingsIdServerRoute = ApiListingsIdServerRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiListingsServerRoute,
+} as any)
 const ApiFamilyMembersIdServerRoute =
   ApiFamilyMembersIdServerRouteImport.update({
     id: '/$id',
@@ -504,11 +567,17 @@ const ApiProfilesFamilyMemberIdServerRoute =
     path: '/api/profiles/familyMember/$id',
     getParentRoute: () => rootServerRouteImport,
   } as any)
+const ApiProductTypesIdAttributesServerRoute =
+  ApiProductTypesIdAttributesServerRouteImport.update({
+    id: '/api/product-types/$id/attributes',
+    path: '/api/product-types/$id/attributes',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiLocalitiesFetchSplatServerRoute =
   ApiLocalitiesFetchSplatServerRouteImport.update({
-    id: '/api/localities/fetch/$',
-    path: '/api/localities/fetch/$',
-    getParentRoute: () => rootServerRouteImport,
+    id: '/fetch/$',
+    path: '/fetch/$',
+    getParentRoute: () => ApiLocalitiesServerRoute,
   } as any)
 const ApiEmailTemplatesSeedSchoolApprovalServerRoute =
   ApiEmailTemplatesSeedSchoolApprovalServerRouteImport.update({
@@ -597,6 +666,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
+  '/marketplace/create': typeof MarketplaceCreateRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/profile/family': typeof DashboardProfileFamilyRoute
   '/dashboard/profile/shop': typeof DashboardProfileShopRoute
@@ -606,6 +676,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
+  '/marketplace/listings/$id': typeof MarketplaceListingsIdRoute
   '/dashboard/profile': typeof DashboardProfileIndexRoute
   '/dashboard/spipuniform': typeof DashboardSpipuniformIndexRoute
   '/dashboard/user-management': typeof DashboardUserManagementIndexRoute
@@ -627,6 +698,7 @@ export interface FileRoutesByTo {
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
+  '/marketplace/create': typeof MarketplaceCreateRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/profile/family': typeof DashboardProfileFamilyRoute
   '/dashboard/profile/shop': typeof DashboardProfileShopRoute
@@ -636,6 +708,7 @@ export interface FileRoutesByTo {
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
+  '/marketplace/listings/$id': typeof MarketplaceListingsIdRoute
   '/dashboard/profile': typeof DashboardProfileIndexRoute
   '/dashboard/spipuniform': typeof DashboardSpipuniformIndexRoute
   '/dashboard/user-management': typeof DashboardUserManagementIndexRoute
@@ -659,6 +732,7 @@ export interface FileRoutesById {
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
+  '/marketplace/create': typeof MarketplaceCreateRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/profile/family': typeof DashboardProfileFamilyRoute
   '/dashboard/profile/shop': typeof DashboardProfileShopRoute
@@ -668,6 +742,7 @@ export interface FileRoutesById {
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
+  '/marketplace/listings/$id': typeof MarketplaceListingsIdRoute
   '/dashboard/profile/': typeof DashboardProfileIndexRoute
   '/dashboard/spipuniform/': typeof DashboardSpipuniformIndexRoute
   '/dashboard/user-management/': typeof DashboardUserManagementIndexRoute
@@ -692,6 +767,7 @@ export interface FileRouteTypes {
     | '/dashboard/file-manager'
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
+    | '/marketplace/create'
     | '/dashboard/'
     | '/dashboard/profile/family'
     | '/dashboard/profile/shop'
@@ -701,6 +777,7 @@ export interface FileRouteTypes {
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
+    | '/marketplace/listings/$id'
     | '/dashboard/profile'
     | '/dashboard/spipuniform'
     | '/dashboard/user-management'
@@ -722,6 +799,7 @@ export interface FileRouteTypes {
     | '/dashboard/file-manager'
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
+    | '/marketplace/create'
     | '/dashboard'
     | '/dashboard/profile/family'
     | '/dashboard/profile/shop'
@@ -731,6 +809,7 @@ export interface FileRouteTypes {
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
+    | '/marketplace/listings/$id'
     | '/dashboard/profile'
     | '/dashboard/spipuniform'
     | '/dashboard/user-management'
@@ -753,6 +832,7 @@ export interface FileRouteTypes {
     | '/dashboard/file-manager'
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
+    | '/marketplace/create'
     | '/dashboard/'
     | '/dashboard/profile/family'
     | '/dashboard/profile/shop'
@@ -762,6 +842,7 @@ export interface FileRouteTypes {
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
+    | '/marketplace/listings/$id'
     | '/dashboard/profile/'
     | '/dashboard/spipuniform/'
     | '/dashboard/user-management/'
@@ -779,20 +860,29 @@ export interface RootRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSigninRoute: typeof AuthSigninRoute
   AuthSignupRoute: typeof AuthSignupRoute
+  MarketplaceCreateRoute: typeof MarketplaceCreateRoute
+  MarketplaceListingsIdRoute: typeof MarketplaceListingsIdRoute
 }
 export interface FileServerRoutesByFullPath {
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/avatar': typeof ApiAvatarServerRoute
   '/api/change-password': typeof ApiChangePasswordServerRoute
+  '/api/conditions': typeof ApiConditionsServerRoute
+  '/api/counties': typeof ApiCountiesServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/family-members': typeof ApiFamilyMembersServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
+  '/api/listings': typeof ApiListingsServerRouteWithChildren
+  '/api/localities': typeof ApiLocalitiesServerRouteWithChildren
   '/api/me': typeof ApiMeServerRoute
+  '/api/product-categories': typeof ApiProductCategoriesServerRoute
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
+  '/api/school-submissions': typeof ApiSchoolSubmissionsServerRoute
   '/api/schools': typeof ApiSchoolsServerRoute
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
   '/api/test': typeof ApiTestServerRoute
+  '/api/upload': typeof ApiUploadServerRoute
   '/api/user-files': typeof ApiUserFilesServerRoute
   '/api/user-profile': typeof ApiUserProfileServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
@@ -809,6 +899,7 @@ export interface FileServerRoutesByFullPath {
   '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
   '/api/family-members/$id': typeof ApiFamilyMembersIdServerRoute
+  '/api/listings/$id': typeof ApiListingsIdServerRoute
   '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
   '/api/profiles/familyMembers': typeof ApiProfilesFamilyMembersServerRoute
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
@@ -827,6 +918,7 @@ export interface FileServerRoutesByFullPath {
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
   '/api/email/templates/seed-school-approval': typeof ApiEmailTemplatesSeedSchoolApprovalServerRoute
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
+  '/api/product-types/$id/attributes': typeof ApiProductTypesIdAttributesServerRoute
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
@@ -845,15 +937,22 @@ export interface FileServerRoutesByTo {
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/avatar': typeof ApiAvatarServerRoute
   '/api/change-password': typeof ApiChangePasswordServerRoute
+  '/api/conditions': typeof ApiConditionsServerRoute
+  '/api/counties': typeof ApiCountiesServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/family-members': typeof ApiFamilyMembersServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
+  '/api/listings': typeof ApiListingsServerRouteWithChildren
+  '/api/localities': typeof ApiLocalitiesServerRouteWithChildren
   '/api/me': typeof ApiMeServerRoute
+  '/api/product-categories': typeof ApiProductCategoriesServerRoute
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
+  '/api/school-submissions': typeof ApiSchoolSubmissionsServerRoute
   '/api/schools': typeof ApiSchoolsServerRoute
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
   '/api/test': typeof ApiTestServerRoute
+  '/api/upload': typeof ApiUploadServerRoute
   '/api/user-files': typeof ApiUserFilesServerRoute
   '/api/user-profile': typeof ApiUserProfileServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
@@ -870,6 +969,7 @@ export interface FileServerRoutesByTo {
   '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
   '/api/family-members/$id': typeof ApiFamilyMembersIdServerRoute
+  '/api/listings/$id': typeof ApiListingsIdServerRoute
   '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
   '/api/profiles/familyMembers': typeof ApiProfilesFamilyMembersServerRoute
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
@@ -888,6 +988,7 @@ export interface FileServerRoutesByTo {
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
   '/api/email/templates/seed-school-approval': typeof ApiEmailTemplatesSeedSchoolApprovalServerRoute
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
+  '/api/product-types/$id/attributes': typeof ApiProductTypesIdAttributesServerRoute
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
@@ -907,15 +1008,22 @@ export interface FileServerRoutesById {
   '/api/auth-settings': typeof ApiAuthSettingsServerRouteWithChildren
   '/api/avatar': typeof ApiAvatarServerRoute
   '/api/change-password': typeof ApiChangePasswordServerRoute
+  '/api/conditions': typeof ApiConditionsServerRoute
+  '/api/counties': typeof ApiCountiesServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/family-members': typeof ApiFamilyMembersServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
+  '/api/listings': typeof ApiListingsServerRouteWithChildren
+  '/api/localities': typeof ApiLocalitiesServerRouteWithChildren
   '/api/me': typeof ApiMeServerRoute
+  '/api/product-categories': typeof ApiProductCategoriesServerRoute
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
+  '/api/school-submissions': typeof ApiSchoolSubmissionsServerRoute
   '/api/schools': typeof ApiSchoolsServerRoute
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
   '/api/test': typeof ApiTestServerRoute
+  '/api/upload': typeof ApiUploadServerRoute
   '/api/user-files': typeof ApiUserFilesServerRoute
   '/api/user-profile': typeof ApiUserProfileServerRoute
   '/api/users-approval': typeof ApiUsersApprovalServerRoute
@@ -932,6 +1040,7 @@ export interface FileServerRoutesById {
   '/api/email/templates': typeof ApiEmailTemplatesServerRouteWithChildren
   '/api/email/test': typeof ApiEmailTestServerRoute
   '/api/family-members/$id': typeof ApiFamilyMembersIdServerRoute
+  '/api/listings/$id': typeof ApiListingsIdServerRoute
   '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
   '/api/profiles/familyMembers': typeof ApiProfilesFamilyMembersServerRoute
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
@@ -950,6 +1059,7 @@ export interface FileServerRoutesById {
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
   '/api/email/templates/seed-school-approval': typeof ApiEmailTemplatesSeedSchoolApprovalServerRoute
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
+  '/api/product-types/$id/attributes': typeof ApiProductTypesIdAttributesServerRoute
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
@@ -970,15 +1080,22 @@ export interface FileServerRouteTypes {
     | '/api/auth-settings'
     | '/api/avatar'
     | '/api/change-password'
+    | '/api/conditions'
+    | '/api/counties'
     | '/api/credentials'
     | '/api/family-members'
     | '/api/files'
+    | '/api/listings'
+    | '/api/localities'
     | '/api/me'
+    | '/api/product-categories'
     | '/api/school-approval-requests'
+    | '/api/school-submissions'
     | '/api/schools'
     | '/api/shop-options'
     | '/api/shops'
     | '/api/test'
+    | '/api/upload'
     | '/api/user-files'
     | '/api/user-profile'
     | '/api/users-approval'
@@ -995,6 +1112,7 @@ export interface FileServerRouteTypes {
     | '/api/email/templates'
     | '/api/email/test'
     | '/api/family-members/$id'
+    | '/api/listings/$id'
     | '/api/localities/$'
     | '/api/profiles/familyMembers'
     | '/api/profiles/shop'
@@ -1013,6 +1131,7 @@ export interface FileServerRouteTypes {
     | '/api/email/templates/seed-approval'
     | '/api/email/templates/seed-school-approval'
     | '/api/localities/fetch/$'
+    | '/api/product-types/$id/attributes'
     | '/api/profiles/familyMember/$id'
     | '/api/spipuniform/localities/search'
     | '/api/transactions/$id/messages'
@@ -1031,15 +1150,22 @@ export interface FileServerRouteTypes {
     | '/api/auth-settings'
     | '/api/avatar'
     | '/api/change-password'
+    | '/api/conditions'
+    | '/api/counties'
     | '/api/credentials'
     | '/api/family-members'
     | '/api/files'
+    | '/api/listings'
+    | '/api/localities'
     | '/api/me'
+    | '/api/product-categories'
     | '/api/school-approval-requests'
+    | '/api/school-submissions'
     | '/api/schools'
     | '/api/shop-options'
     | '/api/shops'
     | '/api/test'
+    | '/api/upload'
     | '/api/user-files'
     | '/api/user-profile'
     | '/api/users-approval'
@@ -1056,6 +1182,7 @@ export interface FileServerRouteTypes {
     | '/api/email/templates'
     | '/api/email/test'
     | '/api/family-members/$id'
+    | '/api/listings/$id'
     | '/api/localities/$'
     | '/api/profiles/familyMembers'
     | '/api/profiles/shop'
@@ -1074,6 +1201,7 @@ export interface FileServerRouteTypes {
     | '/api/email/templates/seed-approval'
     | '/api/email/templates/seed-school-approval'
     | '/api/localities/fetch/$'
+    | '/api/product-types/$id/attributes'
     | '/api/profiles/familyMember/$id'
     | '/api/spipuniform/localities/search'
     | '/api/transactions/$id/messages'
@@ -1092,15 +1220,22 @@ export interface FileServerRouteTypes {
     | '/api/auth-settings'
     | '/api/avatar'
     | '/api/change-password'
+    | '/api/conditions'
+    | '/api/counties'
     | '/api/credentials'
     | '/api/family-members'
     | '/api/files'
+    | '/api/listings'
+    | '/api/localities'
     | '/api/me'
+    | '/api/product-categories'
     | '/api/school-approval-requests'
+    | '/api/school-submissions'
     | '/api/schools'
     | '/api/shop-options'
     | '/api/shops'
     | '/api/test'
+    | '/api/upload'
     | '/api/user-files'
     | '/api/user-profile'
     | '/api/users-approval'
@@ -1117,6 +1252,7 @@ export interface FileServerRouteTypes {
     | '/api/email/templates'
     | '/api/email/test'
     | '/api/family-members/$id'
+    | '/api/listings/$id'
     | '/api/localities/$'
     | '/api/profiles/familyMembers'
     | '/api/profiles/shop'
@@ -1135,6 +1271,7 @@ export interface FileServerRouteTypes {
     | '/api/email/templates/seed-approval'
     | '/api/email/templates/seed-school-approval'
     | '/api/localities/fetch/$'
+    | '/api/product-types/$id/attributes'
     | '/api/profiles/familyMember/$id'
     | '/api/spipuniform/localities/search'
     | '/api/transactions/$id/messages'
@@ -1154,15 +1291,22 @@ export interface RootServerRouteChildren {
   ApiAuthSettingsServerRoute: typeof ApiAuthSettingsServerRouteWithChildren
   ApiAvatarServerRoute: typeof ApiAvatarServerRoute
   ApiChangePasswordServerRoute: typeof ApiChangePasswordServerRoute
+  ApiConditionsServerRoute: typeof ApiConditionsServerRoute
+  ApiCountiesServerRoute: typeof ApiCountiesServerRoute
   ApiCredentialsServerRoute: typeof ApiCredentialsServerRoute
   ApiFamilyMembersServerRoute: typeof ApiFamilyMembersServerRouteWithChildren
   ApiFilesServerRoute: typeof ApiFilesServerRoute
+  ApiListingsServerRoute: typeof ApiListingsServerRouteWithChildren
+  ApiLocalitiesServerRoute: typeof ApiLocalitiesServerRouteWithChildren
   ApiMeServerRoute: typeof ApiMeServerRoute
+  ApiProductCategoriesServerRoute: typeof ApiProductCategoriesServerRoute
   ApiSchoolApprovalRequestsServerRoute: typeof ApiSchoolApprovalRequestsServerRoute
+  ApiSchoolSubmissionsServerRoute: typeof ApiSchoolSubmissionsServerRoute
   ApiSchoolsServerRoute: typeof ApiSchoolsServerRoute
   ApiShopOptionsServerRoute: typeof ApiShopOptionsServerRoute
   ApiShopsServerRoute: typeof ApiShopsServerRoute
   ApiTestServerRoute: typeof ApiTestServerRoute
+  ApiUploadServerRoute: typeof ApiUploadServerRoute
   ApiUserFilesServerRoute: typeof ApiUserFilesServerRoute
   ApiUserProfileServerRoute: typeof ApiUserProfileServerRoute
   ApiUsersApprovalServerRoute: typeof ApiUsersApprovalServerRoute
@@ -1177,7 +1321,6 @@ export interface RootServerRouteChildren {
   ApiEmailSettingsServerRoute: typeof ApiEmailSettingsServerRoute
   ApiEmailTemplatesServerRoute: typeof ApiEmailTemplatesServerRouteWithChildren
   ApiEmailTestServerRoute: typeof ApiEmailTestServerRoute
-  ApiLocalitiesSplatServerRoute: typeof ApiLocalitiesSplatServerRoute
   ApiProfilesFamilyMembersServerRoute: typeof ApiProfilesFamilyMembersServerRoute
   ApiProfilesShopServerRoute: typeof ApiProfilesShopServerRoute
   ApiRolesRoleIdServerRoute: typeof ApiRolesRoleIdServerRoute
@@ -1190,7 +1333,7 @@ export interface RootServerRouteChildren {
   ApiRolesIndexServerRoute: typeof ApiRolesIndexServerRoute
   ApiTransactionsIndexServerRoute: typeof ApiTransactionsIndexServerRoute
   ApiUsersIndexServerRoute: typeof ApiUsersIndexServerRoute
-  ApiLocalitiesFetchSplatServerRoute: typeof ApiLocalitiesFetchSplatServerRoute
+  ApiProductTypesIdAttributesServerRoute: typeof ApiProductTypesIdAttributesServerRoute
   ApiProfilesFamilyMemberIdServerRoute: typeof ApiProfilesFamilyMemberIdServerRoute
   ApiSpipuniformLocalitiesSearchServerRoute: typeof ApiSpipuniformLocalitiesSearchServerRoute
   ApiSpipuniformCountiesIndexServerRoute: typeof ApiSpipuniformCountiesIndexServerRoute
@@ -1234,6 +1377,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/marketplace/create': {
+      id: '/marketplace/create'
+      path: '/marketplace/create'
+      fullPath: '/marketplace/create'
+      preLoaderRoute: typeof MarketplaceCreateRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/dashboard/storage-settings': {
       id: '/dashboard/storage-settings'
@@ -1325,6 +1475,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/profile'
       preLoaderRoute: typeof DashboardProfileIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/marketplace/listings/$id': {
+      id: '/marketplace/listings/$id'
+      path: '/marketplace/listings/$id'
+      fullPath: '/marketplace/listings/$id'
+      preLoaderRoute: typeof MarketplaceListingsIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/dashboard/user-management/users': {
       id: '/dashboard/user-management/users'
@@ -1435,6 +1592,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiUserFilesServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/upload': {
+      id: '/api/upload'
+      path: '/api/upload'
+      fullPath: '/api/upload'
+      preLoaderRoute: typeof ApiUploadServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/test': {
       id: '/api/test'
       path: '/api/test'
@@ -1463,6 +1627,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiSchoolsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/school-submissions': {
+      id: '/api/school-submissions'
+      path: '/api/school-submissions'
+      fullPath: '/api/school-submissions'
+      preLoaderRoute: typeof ApiSchoolSubmissionsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/school-approval-requests': {
       id: '/api/school-approval-requests'
       path: '/api/school-approval-requests'
@@ -1470,11 +1641,32 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiSchoolApprovalRequestsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/product-categories': {
+      id: '/api/product-categories'
+      path: '/api/product-categories'
+      fullPath: '/api/product-categories'
+      preLoaderRoute: typeof ApiProductCategoriesServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/me': {
       id: '/api/me'
       path: '/api/me'
       fullPath: '/api/me'
       preLoaderRoute: typeof ApiMeServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/localities': {
+      id: '/api/localities'
+      path: '/api/localities'
+      fullPath: '/api/localities'
+      preLoaderRoute: typeof ApiLocalitiesServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/listings': {
+      id: '/api/listings'
+      path: '/api/listings'
+      fullPath: '/api/listings'
+      preLoaderRoute: typeof ApiListingsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/files': {
@@ -1496,6 +1688,20 @@ declare module '@tanstack/react-start/server' {
       path: '/api/credentials'
       fullPath: '/api/credentials'
       preLoaderRoute: typeof ApiCredentialsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/counties': {
+      id: '/api/counties'
+      path: '/api/counties'
+      fullPath: '/api/counties'
+      preLoaderRoute: typeof ApiCountiesServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/conditions': {
+      id: '/api/conditions'
+      path: '/api/conditions'
+      fullPath: '/api/conditions'
+      preLoaderRoute: typeof ApiConditionsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/change-password': {
@@ -1605,10 +1811,17 @@ declare module '@tanstack/react-start/server' {
     }
     '/api/localities/$': {
       id: '/api/localities/$'
-      path: '/api/localities/$'
+      path: '/$'
       fullPath: '/api/localities/$'
       preLoaderRoute: typeof ApiLocalitiesSplatServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      parentRoute: typeof ApiLocalitiesServerRoute
+    }
+    '/api/listings/$id': {
+      id: '/api/listings/$id'
+      path: '/$id'
+      fullPath: '/api/listings/$id'
+      preLoaderRoute: typeof ApiListingsIdServerRouteImport
+      parentRoute: typeof ApiListingsServerRoute
     }
     '/api/family-members/$id': {
       id: '/api/family-members/$id'
@@ -1736,12 +1949,19 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiProfilesFamilyMemberIdServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/product-types/$id/attributes': {
+      id: '/api/product-types/$id/attributes'
+      path: '/api/product-types/$id/attributes'
+      fullPath: '/api/product-types/$id/attributes'
+      preLoaderRoute: typeof ApiProductTypesIdAttributesServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/localities/fetch/$': {
       id: '/api/localities/fetch/$'
-      path: '/api/localities/fetch/$'
+      path: '/fetch/$'
       fullPath: '/api/localities/fetch/$'
       preLoaderRoute: typeof ApiLocalitiesFetchSplatServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      parentRoute: typeof ApiLocalitiesServerRoute
     }
     '/api/email/templates/seed-school-approval': {
       id: '/api/email/templates/seed-school-approval'
@@ -1918,6 +2138,30 @@ const ApiFamilyMembersServerRouteWithChildren =
     ApiFamilyMembersServerRouteChildren,
   )
 
+interface ApiListingsServerRouteChildren {
+  ApiListingsIdServerRoute: typeof ApiListingsIdServerRoute
+}
+
+const ApiListingsServerRouteChildren: ApiListingsServerRouteChildren = {
+  ApiListingsIdServerRoute: ApiListingsIdServerRoute,
+}
+
+const ApiListingsServerRouteWithChildren =
+  ApiListingsServerRoute._addFileChildren(ApiListingsServerRouteChildren)
+
+interface ApiLocalitiesServerRouteChildren {
+  ApiLocalitiesSplatServerRoute: typeof ApiLocalitiesSplatServerRoute
+  ApiLocalitiesFetchSplatServerRoute: typeof ApiLocalitiesFetchSplatServerRoute
+}
+
+const ApiLocalitiesServerRouteChildren: ApiLocalitiesServerRouteChildren = {
+  ApiLocalitiesSplatServerRoute: ApiLocalitiesSplatServerRoute,
+  ApiLocalitiesFetchSplatServerRoute: ApiLocalitiesFetchSplatServerRoute,
+}
+
+const ApiLocalitiesServerRouteWithChildren =
+  ApiLocalitiesServerRoute._addFileChildren(ApiLocalitiesServerRouteChildren)
+
 interface ApiEmailFragmentsServerRouteChildren {
   ApiEmailFragmentsDefaultServerRoute: typeof ApiEmailFragmentsDefaultServerRoute
 }
@@ -1974,6 +2218,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSigninRoute: AuthSigninRoute,
   AuthSignupRoute: AuthSignupRoute,
+  MarketplaceCreateRoute: MarketplaceCreateRoute,
+  MarketplaceListingsIdRoute: MarketplaceListingsIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
@@ -1982,15 +2228,22 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiAuthSettingsServerRoute: ApiAuthSettingsServerRouteWithChildren,
   ApiAvatarServerRoute: ApiAvatarServerRoute,
   ApiChangePasswordServerRoute: ApiChangePasswordServerRoute,
+  ApiConditionsServerRoute: ApiConditionsServerRoute,
+  ApiCountiesServerRoute: ApiCountiesServerRoute,
   ApiCredentialsServerRoute: ApiCredentialsServerRoute,
   ApiFamilyMembersServerRoute: ApiFamilyMembersServerRouteWithChildren,
   ApiFilesServerRoute: ApiFilesServerRoute,
+  ApiListingsServerRoute: ApiListingsServerRouteWithChildren,
+  ApiLocalitiesServerRoute: ApiLocalitiesServerRouteWithChildren,
   ApiMeServerRoute: ApiMeServerRoute,
+  ApiProductCategoriesServerRoute: ApiProductCategoriesServerRoute,
   ApiSchoolApprovalRequestsServerRoute: ApiSchoolApprovalRequestsServerRoute,
+  ApiSchoolSubmissionsServerRoute: ApiSchoolSubmissionsServerRoute,
   ApiSchoolsServerRoute: ApiSchoolsServerRoute,
   ApiShopOptionsServerRoute: ApiShopOptionsServerRoute,
   ApiShopsServerRoute: ApiShopsServerRoute,
   ApiTestServerRoute: ApiTestServerRoute,
+  ApiUploadServerRoute: ApiUploadServerRoute,
   ApiUserFilesServerRoute: ApiUserFilesServerRoute,
   ApiUserProfileServerRoute: ApiUserProfileServerRoute,
   ApiUsersApprovalServerRoute: ApiUsersApprovalServerRoute,
@@ -2005,7 +2258,6 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiEmailSettingsServerRoute: ApiEmailSettingsServerRoute,
   ApiEmailTemplatesServerRoute: ApiEmailTemplatesServerRouteWithChildren,
   ApiEmailTestServerRoute: ApiEmailTestServerRoute,
-  ApiLocalitiesSplatServerRoute: ApiLocalitiesSplatServerRoute,
   ApiProfilesFamilyMembersServerRoute: ApiProfilesFamilyMembersServerRoute,
   ApiProfilesShopServerRoute: ApiProfilesShopServerRoute,
   ApiRolesRoleIdServerRoute: ApiRolesRoleIdServerRoute,
@@ -2018,7 +2270,8 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiRolesIndexServerRoute: ApiRolesIndexServerRoute,
   ApiTransactionsIndexServerRoute: ApiTransactionsIndexServerRoute,
   ApiUsersIndexServerRoute: ApiUsersIndexServerRoute,
-  ApiLocalitiesFetchSplatServerRoute: ApiLocalitiesFetchSplatServerRoute,
+  ApiProductTypesIdAttributesServerRoute:
+    ApiProductTypesIdAttributesServerRoute,
   ApiProfilesFamilyMemberIdServerRoute: ApiProfilesFamilyMemberIdServerRoute,
   ApiSpipuniformLocalitiesSearchServerRoute:
     ApiSpipuniformLocalitiesSearchServerRoute,
