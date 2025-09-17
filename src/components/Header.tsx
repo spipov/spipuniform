@@ -14,6 +14,17 @@ export default function Header() {
           <Link to="/">Home</Link>
         </div>
 
+        {session?.user && (
+          <>
+            <div className="px-2 font-bold">
+              <Link to="/marketplace">Marketplace</Link>
+            </div>
+            <div className="px-2 font-bold">
+              <Link to="/dashboard">Dashboard</Link>
+            </div>
+          </>
+        )}
+
         <div className="px-2 font-bold">
           <Link to="/demo/start/server-funcs">Start - Server Functions</Link>
         </div>

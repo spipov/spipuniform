@@ -14,8 +14,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MarketplaceIndexRouteImport } from './routes/marketplace/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as MarketplaceRequestsRouteImport } from './routes/marketplace/requests'
+import { Route as MarketplaceMyListingsRouteImport } from './routes/marketplace/my-listings'
+import { Route as MarketplaceMessagesRouteImport } from './routes/marketplace/messages'
 import { Route as MarketplaceCreateRouteImport } from './routes/marketplace/create'
+import { Route as MarketplaceBrowseRouteImport } from './routes/marketplace/browse'
 import { Route as DashboardStorageSettingsRouteImport } from './routes/dashboard/storage-settings'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardFileManagerRouteImport } from './routes/dashboard/file-manager'
@@ -128,14 +133,39 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketplaceIndexRoute = MarketplaceIndexRouteImport.update({
+  id: '/marketplace/',
+  path: '/marketplace/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const MarketplaceRequestsRoute = MarketplaceRequestsRouteImport.update({
+  id: '/marketplace/requests',
+  path: '/marketplace/requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceMyListingsRoute = MarketplaceMyListingsRouteImport.update({
+  id: '/marketplace/my-listings',
+  path: '/marketplace/my-listings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceMessagesRoute = MarketplaceMessagesRouteImport.update({
+  id: '/marketplace/messages',
+  path: '/marketplace/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MarketplaceCreateRoute = MarketplaceCreateRouteImport.update({
   id: '/marketplace/create',
   path: '/marketplace/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceBrowseRoute = MarketplaceBrowseRouteImport.update({
+  id: '/marketplace/browse',
+  path: '/marketplace/browse',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardStorageSettingsRoute =
@@ -666,8 +696,13 @@ export interface FileRoutesByFullPath {
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
+  '/marketplace/browse': typeof MarketplaceBrowseRoute
   '/marketplace/create': typeof MarketplaceCreateRoute
+  '/marketplace/messages': typeof MarketplaceMessagesRoute
+  '/marketplace/my-listings': typeof MarketplaceMyListingsRoute
+  '/marketplace/requests': typeof MarketplaceRequestsRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/marketplace': typeof MarketplaceIndexRoute
   '/dashboard/profile/family': typeof DashboardProfileFamilyRoute
   '/dashboard/profile/shop': typeof DashboardProfileShopRoute
   '/dashboard/profile/shop-old': typeof DashboardProfileShopOldRoute
@@ -698,8 +733,13 @@ export interface FileRoutesByTo {
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
+  '/marketplace/browse': typeof MarketplaceBrowseRoute
   '/marketplace/create': typeof MarketplaceCreateRoute
+  '/marketplace/messages': typeof MarketplaceMessagesRoute
+  '/marketplace/my-listings': typeof MarketplaceMyListingsRoute
+  '/marketplace/requests': typeof MarketplaceRequestsRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/marketplace': typeof MarketplaceIndexRoute
   '/dashboard/profile/family': typeof DashboardProfileFamilyRoute
   '/dashboard/profile/shop': typeof DashboardProfileShopRoute
   '/dashboard/profile/shop-old': typeof DashboardProfileShopOldRoute
@@ -732,8 +772,13 @@ export interface FileRoutesById {
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
+  '/marketplace/browse': typeof MarketplaceBrowseRoute
   '/marketplace/create': typeof MarketplaceCreateRoute
+  '/marketplace/messages': typeof MarketplaceMessagesRoute
+  '/marketplace/my-listings': typeof MarketplaceMyListingsRoute
+  '/marketplace/requests': typeof MarketplaceRequestsRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/marketplace/': typeof MarketplaceIndexRoute
   '/dashboard/profile/family': typeof DashboardProfileFamilyRoute
   '/dashboard/profile/shop': typeof DashboardProfileShopRoute
   '/dashboard/profile/shop-old': typeof DashboardProfileShopOldRoute
@@ -767,8 +812,13 @@ export interface FileRouteTypes {
     | '/dashboard/file-manager'
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
+    | '/marketplace/browse'
     | '/marketplace/create'
+    | '/marketplace/messages'
+    | '/marketplace/my-listings'
+    | '/marketplace/requests'
     | '/dashboard/'
+    | '/marketplace'
     | '/dashboard/profile/family'
     | '/dashboard/profile/shop'
     | '/dashboard/profile/shop-old'
@@ -799,8 +849,13 @@ export interface FileRouteTypes {
     | '/dashboard/file-manager'
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
+    | '/marketplace/browse'
     | '/marketplace/create'
+    | '/marketplace/messages'
+    | '/marketplace/my-listings'
+    | '/marketplace/requests'
     | '/dashboard'
+    | '/marketplace'
     | '/dashboard/profile/family'
     | '/dashboard/profile/shop'
     | '/dashboard/profile/shop-old'
@@ -832,8 +887,13 @@ export interface FileRouteTypes {
     | '/dashboard/file-manager'
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
+    | '/marketplace/browse'
     | '/marketplace/create'
+    | '/marketplace/messages'
+    | '/marketplace/my-listings'
+    | '/marketplace/requests'
     | '/dashboard/'
+    | '/marketplace/'
     | '/dashboard/profile/family'
     | '/dashboard/profile/shop'
     | '/dashboard/profile/shop-old'
@@ -860,7 +920,12 @@ export interface RootRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSigninRoute: typeof AuthSigninRoute
   AuthSignupRoute: typeof AuthSignupRoute
+  MarketplaceBrowseRoute: typeof MarketplaceBrowseRoute
   MarketplaceCreateRoute: typeof MarketplaceCreateRoute
+  MarketplaceMessagesRoute: typeof MarketplaceMessagesRoute
+  MarketplaceMyListingsRoute: typeof MarketplaceMyListingsRoute
+  MarketplaceRequestsRoute: typeof MarketplaceRequestsRoute
+  MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   MarketplaceListingsIdRoute: typeof MarketplaceListingsIdRoute
 }
 export interface FileServerRoutesByFullPath {
@@ -1371,6 +1436,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/marketplace/': {
+      id: '/marketplace/'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof MarketplaceIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/': {
       id: '/dashboard/'
       path: '/'
@@ -1378,11 +1450,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/marketplace/requests': {
+      id: '/marketplace/requests'
+      path: '/marketplace/requests'
+      fullPath: '/marketplace/requests'
+      preLoaderRoute: typeof MarketplaceRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace/my-listings': {
+      id: '/marketplace/my-listings'
+      path: '/marketplace/my-listings'
+      fullPath: '/marketplace/my-listings'
+      preLoaderRoute: typeof MarketplaceMyListingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace/messages': {
+      id: '/marketplace/messages'
+      path: '/marketplace/messages'
+      fullPath: '/marketplace/messages'
+      preLoaderRoute: typeof MarketplaceMessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/marketplace/create': {
       id: '/marketplace/create'
       path: '/marketplace/create'
       fullPath: '/marketplace/create'
       preLoaderRoute: typeof MarketplaceCreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace/browse': {
+      id: '/marketplace/browse'
+      path: '/marketplace/browse'
+      fullPath: '/marketplace/browse'
+      preLoaderRoute: typeof MarketplaceBrowseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/storage-settings': {
@@ -2218,7 +2318,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSigninRoute: AuthSigninRoute,
   AuthSignupRoute: AuthSignupRoute,
+  MarketplaceBrowseRoute: MarketplaceBrowseRoute,
   MarketplaceCreateRoute: MarketplaceCreateRoute,
+  MarketplaceMessagesRoute: MarketplaceMessagesRoute,
+  MarketplaceMyListingsRoute: MarketplaceMyListingsRoute,
+  MarketplaceRequestsRoute: MarketplaceRequestsRoute,
+  MarketplaceIndexRoute: MarketplaceIndexRoute,
   MarketplaceListingsIdRoute: MarketplaceListingsIdRoute,
 }
 export const routeTree = rootRouteImport
