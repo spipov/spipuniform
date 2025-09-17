@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Users, School, Calendar, Ruler, MoreHorizontal, Baby } from 'lucide-react';
+import { SizeSelector } from '@/components/family/SizeSelector';
 
 interface FamilyMember {
   id: string;
@@ -45,24 +46,17 @@ function FamilyPage() {
     firstName: '',
     lastName: '',
     dateOfBirth: '',
+    relationship: 'child', // child, stepchild, foster_child, other
     schoolId: '',
     schoolYear: '',
     currentSizes: {} as Record<string, string>,
     growthNotes: '',
     showInProfile: true,
-    isActive: true
+    isActive: true,
+    requiresSchoolAssociation: false // Optional school association
   });
 
-  const sizeCategories = [
-    'Shirt',
-    'Trousers',
-    'Skirt',
-    'Shoes',
-    'Jumper',
-    'Blazer',
-    'PE Kit',
-    'School Bag'
-  ];
+  // Size categories are now handled by SizeSelector component
 
   const schoolYears = [
     'Junior Infants',
@@ -79,6 +73,15 @@ function FamilyPage() {
     '4th Year',
     '5th Year',
     '6th Year'
+  ];
+
+  const relationshipTypes = [
+    { value: 'child', label: 'Child' },
+    { value: 'stepchild', label: 'Step Child' },
+    { value: 'foster_child', label: 'Foster Child' },
+    { value: 'grandchild', label: 'Grandchild' },
+    { value: 'ward', label: 'Ward' },
+    { value: 'other', label: 'Other' }
   ];
 
   const fetchFamilyMembers = async () => {
@@ -110,12 +113,14 @@ function FamilyPage() {
       firstName: '',
       lastName: '',
       dateOfBirth: '',
+      relationship: 'child',
       schoolId: '',
       schoolYear: '',
       currentSizes: {},
       growthNotes: '',
       showInProfile: true,
-      isActive: true
+      isActive: true,
+      requiresSchoolAssociation: false
     });
     setEditingMember(null);
   };
@@ -131,12 +136,14 @@ function FamilyPage() {
       firstName: member.firstName,
       lastName: member.lastName || '',
       dateOfBirth: member.dateOfBirth || '',
+      relationship: (member as any).relationship || 'child',
       schoolId: member.schoolId || '',
       schoolYear: member.schoolYear || '',
       currentSizes: member.currentSizes || {},
       growthNotes: member.growthNotes || '',
       showInProfile: member.showInProfile,
-      isActive: member.isActive
+      isActive: member.isActive,
+      requiresSchoolAssociation: !!(member.schoolId || member.schoolYear)
     });
     setIsDialogOpen(true);
   };
@@ -221,13 +228,10 @@ function FamilyPage() {
     return age;
   };
 
-  const updateSize = (category: string, size: string) => {
+  const updateSizes = (sizes: Record<string, string>) => {
     setFormData({
       ...formData,
-      currentSizes: {
-        ...formData.currentSizes,
-        [category]: size
-      }
+      currentSizes: sizes
     });
   };
 
@@ -425,15 +429,15 @@ function FamilyPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="schoolYear">School Year</Label>
-                  <Select value={formData.schoolYear} onValueChange={(value) => setFormData({...formData, schoolYear: value})}>
+                  <Label htmlFor="relationship">Relationship</Label>
+                  <Select value={formData.relationship} onValueChange={(value) => setFormData({...formData, relationship: value})}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select school year" />
+                      <SelectValue placeholder="Select relationship" />
                     </SelectTrigger>
                     <SelectContent>
-                      {schoolYears.map((year) => (
-                        <SelectItem key={year} value={year}>
-                          {year}
+                      {relationshipTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -441,21 +445,65 @@ function FamilyPage() {
                 </div>
               </div>
               
-              <div className="space-y-2">
-                <Label>Current Sizes</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {sizeCategories.map((category) => (
-                    <div key={category} className="space-y-1">
-                      <Label className="text-sm">{category}</Label>
-                      <Input
-                        value={formData.currentSizes[category] || ''}
-                        onChange={(e) => updateSize(category, e.target.value)}
-                        placeholder={`${category} size`}
-                        className="h-8"
-                      />
-                    </div>
-                  ))}
+              {/* Optional School Association */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="requiresSchoolAssociation"
+                    checked={formData.requiresSchoolAssociation}
+                    onChange={(e) => setFormData({
+                      ...formData, 
+                      requiresSchoolAssociation: e.target.checked,
+                      schoolId: e.target.checked ? formData.schoolId : '',
+                      schoolYear: e.target.checked ? formData.schoolYear : ''
+                    })}
+                    className="rounded"
+                  />
+                  <Label htmlFor="requiresSchoolAssociation" className="text-sm">
+                    Associate with a school (for uniform tracking)
+                  </Label>
                 </div>
+                
+                {formData.requiresSchoolAssociation && (
+                  <div className="grid grid-cols-2 gap-4 pl-6 border-l-2 border-muted">
+                    <div className="space-y-2">
+                      <Label htmlFor="schoolId">School</Label>
+                      <Select value={formData.schoolId} onValueChange={(value) => setFormData({...formData, schoolId: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select school" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="school-1">St. Mary's Primary</SelectItem>
+                          <SelectItem value="school-2">Oak View Secondary</SelectItem>
+                          <SelectItem value="school-3">Green Valley School</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="schoolYear">School Year</Label>
+                      <Select value={formData.schoolYear} onValueChange={(value) => setFormData({...formData, schoolYear: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select school year" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {schoolYears.map((year) => (
+                            <SelectItem key={year} value={year}>
+                              {year}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <SizeSelector
+                  currentSizes={formData.currentSizes}
+                  onChange={updateSizes}
+                />
               </div>
               
               <div className="space-y-2">

@@ -46,6 +46,7 @@ import { ServerRoute as ApiUserFilesServerRouteImport } from './routes/api/user-
 import { ServerRoute as ApiTestServerRouteImport } from './routes/api/test'
 import { ServerRoute as ApiShopsServerRouteImport } from './routes/api/shops'
 import { ServerRoute as ApiShopOptionsServerRouteImport } from './routes/api/shop-options'
+import { ServerRoute as ApiSchoolApprovalRequestsServerRouteImport } from './routes/api/school-approval-requests'
 import { ServerRoute as ApiMeServerRouteImport } from './routes/api/me'
 import { ServerRoute as ApiFilesServerRouteImport } from './routes/api/files'
 import { ServerRoute as ApiFamilyMembersServerRouteImport } from './routes/api/family-members'
@@ -85,6 +86,7 @@ import { ServerRoute as ApiTransactionsIdMessagesServerRouteImport } from './rou
 import { ServerRoute as ApiSpipuniformLocalitiesSearchServerRouteImport } from './routes/api/spipuniform/localities/search'
 import { ServerRoute as ApiProfilesFamilyMemberIdServerRouteImport } from './routes/api.profiles.familyMember.$id'
 import { ServerRoute as ApiLocalitiesFetchSplatServerRouteImport } from './routes/api/localities/fetch/$'
+import { ServerRoute as ApiEmailTemplatesSeedSchoolApprovalServerRouteImport } from './routes/api/email/templates/seed-school-approval'
 import { ServerRoute as ApiEmailTemplatesSeedApprovalServerRouteImport } from './routes/api/email/templates.seed-approval'
 import { ServerRoute as ApiEmailTemplatesPreviewServerRouteImport } from './routes/api/email/templates.preview'
 import { ServerRoute as ApiEmailFragmentsDefaultServerRouteImport } from './routes/api/email/fragments.default'
@@ -286,6 +288,12 @@ const ApiShopOptionsServerRoute = ApiShopOptionsServerRouteImport.update({
   path: '/api/shop-options',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiSchoolApprovalRequestsServerRoute =
+  ApiSchoolApprovalRequestsServerRouteImport.update({
+    id: '/api/school-approval-requests',
+    path: '/api/school-approval-requests',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiMeServerRoute = ApiMeServerRouteImport.update({
   id: '/api/me',
   path: '/api/me',
@@ -495,6 +503,12 @@ const ApiLocalitiesFetchSplatServerRoute =
     id: '/api/localities/fetch/$',
     path: '/api/localities/fetch/$',
     getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiEmailTemplatesSeedSchoolApprovalServerRoute =
+  ApiEmailTemplatesSeedSchoolApprovalServerRouteImport.update({
+    id: '/seed-school-approval',
+    path: '/seed-school-approval',
+    getParentRoute: () => ApiEmailTemplatesServerRoute,
   } as any)
 const ApiEmailTemplatesSeedApprovalServerRoute =
   ApiEmailTemplatesSeedApprovalServerRouteImport.update({
@@ -768,6 +782,7 @@ export interface FileServerRoutesByFullPath {
   '/api/family-members': typeof ApiFamilyMembersServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
   '/api/me': typeof ApiMeServerRoute
+  '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
   '/api/test': typeof ApiTestServerRoute
@@ -803,6 +818,7 @@ export interface FileServerRoutesByFullPath {
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
+  '/api/email/templates/seed-school-approval': typeof ApiEmailTemplatesSeedSchoolApprovalServerRoute
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
@@ -826,6 +842,7 @@ export interface FileServerRoutesByTo {
   '/api/family-members': typeof ApiFamilyMembersServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
   '/api/me': typeof ApiMeServerRoute
+  '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
   '/api/test': typeof ApiTestServerRoute
@@ -861,6 +878,7 @@ export interface FileServerRoutesByTo {
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
+  '/api/email/templates/seed-school-approval': typeof ApiEmailTemplatesSeedSchoolApprovalServerRoute
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
@@ -885,6 +903,7 @@ export interface FileServerRoutesById {
   '/api/family-members': typeof ApiFamilyMembersServerRouteWithChildren
   '/api/files': typeof ApiFilesServerRoute
   '/api/me': typeof ApiMeServerRoute
+  '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
   '/api/test': typeof ApiTestServerRoute
@@ -920,6 +939,7 @@ export interface FileServerRoutesById {
   '/api/email/fragments/default': typeof ApiEmailFragmentsDefaultServerRoute
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
+  '/api/email/templates/seed-school-approval': typeof ApiEmailTemplatesSeedSchoolApprovalServerRoute
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
@@ -945,6 +965,7 @@ export interface FileServerRouteTypes {
     | '/api/family-members'
     | '/api/files'
     | '/api/me'
+    | '/api/school-approval-requests'
     | '/api/shop-options'
     | '/api/shops'
     | '/api/test'
@@ -980,6 +1001,7 @@ export interface FileServerRouteTypes {
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
+    | '/api/email/templates/seed-school-approval'
     | '/api/localities/fetch/$'
     | '/api/profiles/familyMember/$id'
     | '/api/spipuniform/localities/search'
@@ -1003,6 +1025,7 @@ export interface FileServerRouteTypes {
     | '/api/family-members'
     | '/api/files'
     | '/api/me'
+    | '/api/school-approval-requests'
     | '/api/shop-options'
     | '/api/shops'
     | '/api/test'
@@ -1038,6 +1061,7 @@ export interface FileServerRouteTypes {
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
+    | '/api/email/templates/seed-school-approval'
     | '/api/localities/fetch/$'
     | '/api/profiles/familyMember/$id'
     | '/api/spipuniform/localities/search'
@@ -1061,6 +1085,7 @@ export interface FileServerRouteTypes {
     | '/api/family-members'
     | '/api/files'
     | '/api/me'
+    | '/api/school-approval-requests'
     | '/api/shop-options'
     | '/api/shops'
     | '/api/test'
@@ -1096,6 +1121,7 @@ export interface FileServerRouteTypes {
     | '/api/email/fragments/default'
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
+    | '/api/email/templates/seed-school-approval'
     | '/api/localities/fetch/$'
     | '/api/profiles/familyMember/$id'
     | '/api/spipuniform/localities/search'
@@ -1120,6 +1146,7 @@ export interface RootServerRouteChildren {
   ApiFamilyMembersServerRoute: typeof ApiFamilyMembersServerRouteWithChildren
   ApiFilesServerRoute: typeof ApiFilesServerRoute
   ApiMeServerRoute: typeof ApiMeServerRoute
+  ApiSchoolApprovalRequestsServerRoute: typeof ApiSchoolApprovalRequestsServerRoute
   ApiShopOptionsServerRoute: typeof ApiShopOptionsServerRoute
   ApiShopsServerRoute: typeof ApiShopsServerRoute
   ApiTestServerRoute: typeof ApiTestServerRoute
@@ -1416,6 +1443,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiShopOptionsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/school-approval-requests': {
+      id: '/api/school-approval-requests'
+      path: '/api/school-approval-requests'
+      fullPath: '/api/school-approval-requests'
+      preLoaderRoute: typeof ApiSchoolApprovalRequestsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/me': {
       id: '/api/me'
       path: '/api/me'
@@ -1689,6 +1723,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiLocalitiesFetchSplatServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/email/templates/seed-school-approval': {
+      id: '/api/email/templates/seed-school-approval'
+      path: '/seed-school-approval'
+      fullPath: '/api/email/templates/seed-school-approval'
+      preLoaderRoute: typeof ApiEmailTemplatesSeedSchoolApprovalServerRouteImport
+      parentRoute: typeof ApiEmailTemplatesServerRoute
+    }
     '/api/email/templates/seed-approval': {
       id: '/api/email/templates/seed-approval'
       path: '/seed-approval'
@@ -1874,6 +1915,7 @@ const ApiEmailFragmentsServerRouteWithChildren =
 interface ApiEmailTemplatesServerRouteChildren {
   ApiEmailTemplatesPreviewServerRoute: typeof ApiEmailTemplatesPreviewServerRoute
   ApiEmailTemplatesSeedApprovalServerRoute: typeof ApiEmailTemplatesSeedApprovalServerRoute
+  ApiEmailTemplatesSeedSchoolApprovalServerRoute: typeof ApiEmailTemplatesSeedSchoolApprovalServerRoute
 }
 
 const ApiEmailTemplatesServerRouteChildren: ApiEmailTemplatesServerRouteChildren =
@@ -1881,6 +1923,8 @@ const ApiEmailTemplatesServerRouteChildren: ApiEmailTemplatesServerRouteChildren
     ApiEmailTemplatesPreviewServerRoute: ApiEmailTemplatesPreviewServerRoute,
     ApiEmailTemplatesSeedApprovalServerRoute:
       ApiEmailTemplatesSeedApprovalServerRoute,
+    ApiEmailTemplatesSeedSchoolApprovalServerRoute:
+      ApiEmailTemplatesSeedSchoolApprovalServerRoute,
   }
 
 const ApiEmailTemplatesServerRouteWithChildren =
@@ -1922,6 +1966,7 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiFamilyMembersServerRoute: ApiFamilyMembersServerRouteWithChildren,
   ApiFilesServerRoute: ApiFilesServerRoute,
   ApiMeServerRoute: ApiMeServerRoute,
+  ApiSchoolApprovalRequestsServerRoute: ApiSchoolApprovalRequestsServerRoute,
   ApiShopOptionsServerRoute: ApiShopOptionsServerRoute,
   ApiShopsServerRoute: ApiShopsServerRoute,
   ApiTestServerRoute: ApiTestServerRoute,
