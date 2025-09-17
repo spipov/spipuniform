@@ -46,6 +46,7 @@ import { ServerRoute as ApiUserFilesServerRouteImport } from './routes/api/user-
 import { ServerRoute as ApiTestServerRouteImport } from './routes/api/test'
 import { ServerRoute as ApiShopsServerRouteImport } from './routes/api/shops'
 import { ServerRoute as ApiShopOptionsServerRouteImport } from './routes/api/shop-options'
+import { ServerRoute as ApiSchoolsServerRouteImport } from './routes/api/schools'
 import { ServerRoute as ApiSchoolApprovalRequestsServerRouteImport } from './routes/api/school-approval-requests'
 import { ServerRoute as ApiMeServerRouteImport } from './routes/api/me'
 import { ServerRoute as ApiFilesServerRouteImport } from './routes/api/files'
@@ -286,6 +287,11 @@ const ApiShopsServerRoute = ApiShopsServerRouteImport.update({
 const ApiShopOptionsServerRoute = ApiShopOptionsServerRouteImport.update({
   id: '/api/shop-options',
   path: '/api/shop-options',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiSchoolsServerRoute = ApiSchoolsServerRouteImport.update({
+  id: '/api/schools',
+  path: '/api/schools',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiSchoolApprovalRequestsServerRoute =
@@ -783,6 +789,7 @@ export interface FileServerRoutesByFullPath {
   '/api/files': typeof ApiFilesServerRoute
   '/api/me': typeof ApiMeServerRoute
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
+  '/api/schools': typeof ApiSchoolsServerRoute
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
   '/api/test': typeof ApiTestServerRoute
@@ -843,6 +850,7 @@ export interface FileServerRoutesByTo {
   '/api/files': typeof ApiFilesServerRoute
   '/api/me': typeof ApiMeServerRoute
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
+  '/api/schools': typeof ApiSchoolsServerRoute
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
   '/api/test': typeof ApiTestServerRoute
@@ -904,6 +912,7 @@ export interface FileServerRoutesById {
   '/api/files': typeof ApiFilesServerRoute
   '/api/me': typeof ApiMeServerRoute
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
+  '/api/schools': typeof ApiSchoolsServerRoute
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
   '/api/test': typeof ApiTestServerRoute
@@ -966,6 +975,7 @@ export interface FileServerRouteTypes {
     | '/api/files'
     | '/api/me'
     | '/api/school-approval-requests'
+    | '/api/schools'
     | '/api/shop-options'
     | '/api/shops'
     | '/api/test'
@@ -1026,6 +1036,7 @@ export interface FileServerRouteTypes {
     | '/api/files'
     | '/api/me'
     | '/api/school-approval-requests'
+    | '/api/schools'
     | '/api/shop-options'
     | '/api/shops'
     | '/api/test'
@@ -1086,6 +1097,7 @@ export interface FileServerRouteTypes {
     | '/api/files'
     | '/api/me'
     | '/api/school-approval-requests'
+    | '/api/schools'
     | '/api/shop-options'
     | '/api/shops'
     | '/api/test'
@@ -1147,6 +1159,7 @@ export interface RootServerRouteChildren {
   ApiFilesServerRoute: typeof ApiFilesServerRoute
   ApiMeServerRoute: typeof ApiMeServerRoute
   ApiSchoolApprovalRequestsServerRoute: typeof ApiSchoolApprovalRequestsServerRoute
+  ApiSchoolsServerRoute: typeof ApiSchoolsServerRoute
   ApiShopOptionsServerRoute: typeof ApiShopOptionsServerRoute
   ApiShopsServerRoute: typeof ApiShopsServerRoute
   ApiTestServerRoute: typeof ApiTestServerRoute
@@ -1441,6 +1454,13 @@ declare module '@tanstack/react-start/server' {
       path: '/api/shop-options'
       fullPath: '/api/shop-options'
       preLoaderRoute: typeof ApiShopOptionsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/schools': {
+      id: '/api/schools'
+      path: '/api/schools'
+      fullPath: '/api/schools'
+      preLoaderRoute: typeof ApiSchoolsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/school-approval-requests': {
@@ -1967,6 +1987,7 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiFilesServerRoute: ApiFilesServerRoute,
   ApiMeServerRoute: ApiMeServerRoute,
   ApiSchoolApprovalRequestsServerRoute: ApiSchoolApprovalRequestsServerRoute,
+  ApiSchoolsServerRoute: ApiSchoolsServerRoute,
   ApiShopOptionsServerRoute: ApiShopOptionsServerRoute,
   ApiShopsServerRoute: ApiShopsServerRoute,
   ApiTestServerRoute: ApiTestServerRoute,

@@ -5,11 +5,14 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 
+// Constants
+const MAX_SCHOOLS_WITHOUT_APPROVAL = 3;
+
 // Validation schema
 const updateUserProfileSchema = z.object({
   phone: z.string().optional(),
   primarySchoolId: z.string().uuid().optional().nullable(),
-  additionalSchools: z.array(z.string().uuid()).optional(),
+  additionalSchools: z.array(z.string().uuid()).max(MAX_SCHOOLS_WITHOUT_APPROVAL, 'Cannot select more than 3 additional schools without admin approval').optional(),
   localityId: z.string().uuid().optional().nullable(),
   preferredContactMethod: z.enum(['phone', 'email', 'app']).optional(),
   availability: z.string().optional(),
@@ -124,6 +127,42 @@ export const ServerRoute = createServerFileRoute('/api/user-profile').methods({
 
       const body = await request.json();
       const validatedData = updateUserProfileSchema.parse(body);
+      
+      // Additional validation for school limits
+      if (validatedData.additionalSchools || validatedData.primarySchoolId !== undefined) {
+        const totalSchools = [];
+        if (validatedData.primarySchoolId) {
+          totalSchools.push(validatedData.primarySchoolId);
+        }
+        if (validatedData.additionalSchools) {
+          totalSchools.push(...validatedData.additionalSchools);
+        }
+        
+        // Check for duplicates
+        const uniqueSchools = [...new Set(totalSchools)];
+        if (uniqueSchools.length !== totalSchools.length) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'Cannot select the same school multiple times'
+          }), { 
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        
+        // Check total school limit (primary + additional should not exceed 3)
+        if (uniqueSchools.length > MAX_SCHOOLS_WITHOUT_APPROVAL) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: `Cannot select more than ${MAX_SCHOOLS_WITHOUT_APPROVAL} schools without admin approval. Please use the additional school request feature.`,
+            maxSchools: MAX_SCHOOLS_WITHOUT_APPROVAL,
+            selectedCount: uniqueSchools.length
+          }), { 
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
       
       // Check if profile exists
       const [existingProfile] = await db

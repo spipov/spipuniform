@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { User, Phone, MapPin, Bell, Shield, Star, Save, Users, Building, Activity, Clock, CheckCircle, AlertCircle, ShoppingBag } from 'lucide-react';
+import { SchoolSelector } from '@/components/ui/school-selector';
 
 interface UserProfile {
   id: string;
@@ -64,6 +65,7 @@ function ProfilePage() {
   const [formData, setFormData] = useState({
     phone: '',
     primarySchoolId: '',
+    additionalSchools: [] as string[],
     localityId: '',
     preferredContactMethod: 'email',
     availability: '',
@@ -91,6 +93,7 @@ function ProfilePage() {
         setFormData({
           phone: data.profile.phone || '',
           primarySchoolId: data.profile.primarySchoolId || '',
+          additionalSchools: data.profile.additionalSchools || [],
           localityId: data.profile.localityId || '',
           preferredContactMethod: data.profile.preferredContactMethod || 'email',
           availability: data.profile.availability || '',
@@ -377,6 +380,18 @@ function ProfilePage() {
                 </CardContent>
               </Card>
             </div>
+            
+            <SchoolSelector
+              primarySchoolId={formData.primarySchoolId}
+              additionalSchools={formData.additionalSchools}
+              onSchoolsChange={(primary, additional) => {
+                setFormData({
+                  ...formData,
+                  primarySchoolId: primary || '',
+                  additionalSchools: additional
+                });
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="preferences" className="space-y-6">
