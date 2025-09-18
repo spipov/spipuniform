@@ -19,6 +19,7 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as MarketplaceRequestsRouteImport } from './routes/marketplace/requests'
 import { Route as MarketplaceMyListingsRouteImport } from './routes/marketplace/my-listings'
 import { Route as MarketplaceMessagesRouteImport } from './routes/marketplace/messages'
+import { Route as MarketplaceFavoritesRouteImport } from './routes/marketplace/favorites'
 import { Route as MarketplaceCreateRouteImport } from './routes/marketplace/create'
 import { Route as MarketplaceBrowseRouteImport } from './routes/marketplace/browse'
 import { Route as DashboardStorageSettingsRouteImport } from './routes/dashboard/storage-settings'
@@ -34,6 +35,7 @@ import { Route as AuthPendingRouteImport } from './routes/auth/pending'
 import { Route as DashboardUserManagementIndexRouteImport } from './routes/dashboard/user-management/index'
 import { Route as DashboardSpipuniformIndexRouteImport } from './routes/dashboard/spipuniform/index'
 import { Route as DashboardProfileIndexRouteImport } from './routes/dashboard/profile/index'
+import { Route as MarketplaceRequestsIdRouteImport } from './routes/marketplace/requests/$id'
 import { Route as MarketplaceListingsIdRouteImport } from './routes/marketplace/listings/$id'
 import { Route as DashboardUserManagementUsersRouteImport } from './routes/dashboard/user-management/users'
 import { Route as DashboardUserManagementRolesRouteImport } from './routes/dashboard/user-management/roles'
@@ -57,11 +59,13 @@ import { ServerRoute as ApiShopOptionsServerRouteImport } from './routes/api/sho
 import { ServerRoute as ApiSchoolsServerRouteImport } from './routes/api/schools'
 import { ServerRoute as ApiSchoolSubmissionsServerRouteImport } from './routes/api/school-submissions'
 import { ServerRoute as ApiSchoolApprovalRequestsServerRouteImport } from './routes/api/school-approval-requests'
+import { ServerRoute as ApiRequestsServerRouteImport } from './routes/api/requests'
 import { ServerRoute as ApiProductCategoriesServerRouteImport } from './routes/api/product-categories'
 import { ServerRoute as ApiMeServerRouteImport } from './routes/api/me'
 import { ServerRoute as ApiLocalitiesServerRouteImport } from './routes/api/localities'
 import { ServerRoute as ApiListingsServerRouteImport } from './routes/api/listings'
 import { ServerRoute as ApiFilesServerRouteImport } from './routes/api/files'
+import { ServerRoute as ApiFavoritesServerRouteImport } from './routes/api/favorites'
 import { ServerRoute as ApiFamilyMembersServerRouteImport } from './routes/api/family-members'
 import { ServerRoute as ApiCredentialsServerRouteImport } from './routes/api/credentials'
 import { ServerRoute as ApiCountiesServerRouteImport } from './routes/api/counties'
@@ -79,8 +83,10 @@ import { ServerRoute as ApiUsersUserIdServerRouteImport } from './routes/api/use
 import { ServerRoute as ApiTransactionsIdServerRouteImport } from './routes/api/transactions/$id'
 import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api/storage/settings'
 import { ServerRoute as ApiRolesRoleIdServerRouteImport } from './routes/api/roles/$roleId'
+import { ServerRoute as ApiRequestsIdServerRouteImport } from './routes/api/requests/$id'
 import { ServerRoute as ApiProfilesShopServerRouteImport } from './routes/api.profiles.shop'
 import { ServerRoute as ApiProfilesFamilyMembersServerRouteImport } from './routes/api.profiles.familyMembers'
+import { ServerRoute as ApiMarketplaceSearchServerRouteImport } from './routes/api/marketplace/search'
 import { ServerRoute as ApiLocalitiesSplatServerRouteImport } from './routes/api/localities/$'
 import { ServerRoute as ApiListingsIdServerRouteImport } from './routes/api/listings/$id'
 import { ServerRoute as ApiFamilyMembersIdServerRouteImport } from './routes/api/family-members/$id'
@@ -156,6 +162,11 @@ const MarketplaceMyListingsRoute = MarketplaceMyListingsRouteImport.update({
 const MarketplaceMessagesRoute = MarketplaceMessagesRouteImport.update({
   id: '/marketplace/messages',
   path: '/marketplace/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceFavoritesRoute = MarketplaceFavoritesRouteImport.update({
+  id: '/marketplace/favorites',
+  path: '/marketplace/favorites',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketplaceCreateRoute = MarketplaceCreateRouteImport.update({
@@ -235,6 +246,11 @@ const DashboardProfileIndexRoute = DashboardProfileIndexRouteImport.update({
   id: '/profile/',
   path: '/profile/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const MarketplaceRequestsIdRoute = MarketplaceRequestsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => MarketplaceRequestsRoute,
 } as any)
 const MarketplaceListingsIdRoute = MarketplaceListingsIdRouteImport.update({
   id: '/marketplace/listings/$id',
@@ -362,6 +378,11 @@ const ApiSchoolApprovalRequestsServerRoute =
     path: '/api/school-approval-requests',
     getParentRoute: () => rootServerRouteImport,
   } as any)
+const ApiRequestsServerRoute = ApiRequestsServerRouteImport.update({
+  id: '/api/requests',
+  path: '/api/requests',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
 const ApiProductCategoriesServerRoute =
   ApiProductCategoriesServerRouteImport.update({
     id: '/api/product-categories',
@@ -386,6 +407,11 @@ const ApiListingsServerRoute = ApiListingsServerRouteImport.update({
 const ApiFilesServerRoute = ApiFilesServerRouteImport.update({
   id: '/api/files',
   path: '/api/files',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiFavoritesServerRoute = ApiFavoritesServerRouteImport.update({
+  id: '/api/favorites',
+  path: '/api/favorites',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiFamilyMembersServerRoute = ApiFamilyMembersServerRouteImport.update({
@@ -475,6 +501,11 @@ const ApiRolesRoleIdServerRoute = ApiRolesRoleIdServerRouteImport.update({
   path: '/api/roles/$roleId',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiRequestsIdServerRoute = ApiRequestsIdServerRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiRequestsServerRoute,
+} as any)
 const ApiProfilesShopServerRoute = ApiProfilesShopServerRouteImport.update({
   id: '/api/profiles/shop',
   path: '/api/profiles/shop',
@@ -484,6 +515,12 @@ const ApiProfilesFamilyMembersServerRoute =
   ApiProfilesFamilyMembersServerRouteImport.update({
     id: '/api/profiles/familyMembers',
     path: '/api/profiles/familyMembers',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiMarketplaceSearchServerRoute =
+  ApiMarketplaceSearchServerRouteImport.update({
+    id: '/api/marketplace/search',
+    path: '/api/marketplace/search',
     getParentRoute: () => rootServerRouteImport,
   } as any)
 const ApiLocalitiesSplatServerRoute =
@@ -698,9 +735,10 @@ export interface FileRoutesByFullPath {
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/marketplace/browse': typeof MarketplaceBrowseRoute
   '/marketplace/create': typeof MarketplaceCreateRoute
+  '/marketplace/favorites': typeof MarketplaceFavoritesRoute
   '/marketplace/messages': typeof MarketplaceMessagesRoute
   '/marketplace/my-listings': typeof MarketplaceMyListingsRoute
-  '/marketplace/requests': typeof MarketplaceRequestsRoute
+  '/marketplace/requests': typeof MarketplaceRequestsRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
   '/dashboard/profile/family': typeof DashboardProfileFamilyRoute
@@ -712,6 +750,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
   '/marketplace/listings/$id': typeof MarketplaceListingsIdRoute
+  '/marketplace/requests/$id': typeof MarketplaceRequestsIdRoute
   '/dashboard/profile': typeof DashboardProfileIndexRoute
   '/dashboard/spipuniform': typeof DashboardSpipuniformIndexRoute
   '/dashboard/user-management': typeof DashboardUserManagementIndexRoute
@@ -735,9 +774,10 @@ export interface FileRoutesByTo {
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/marketplace/browse': typeof MarketplaceBrowseRoute
   '/marketplace/create': typeof MarketplaceCreateRoute
+  '/marketplace/favorites': typeof MarketplaceFavoritesRoute
   '/marketplace/messages': typeof MarketplaceMessagesRoute
   '/marketplace/my-listings': typeof MarketplaceMyListingsRoute
-  '/marketplace/requests': typeof MarketplaceRequestsRoute
+  '/marketplace/requests': typeof MarketplaceRequestsRouteWithChildren
   '/dashboard': typeof DashboardIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
   '/dashboard/profile/family': typeof DashboardProfileFamilyRoute
@@ -749,6 +789,7 @@ export interface FileRoutesByTo {
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
   '/marketplace/listings/$id': typeof MarketplaceListingsIdRoute
+  '/marketplace/requests/$id': typeof MarketplaceRequestsIdRoute
   '/dashboard/profile': typeof DashboardProfileIndexRoute
   '/dashboard/spipuniform': typeof DashboardSpipuniformIndexRoute
   '/dashboard/user-management': typeof DashboardUserManagementIndexRoute
@@ -774,9 +815,10 @@ export interface FileRoutesById {
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/marketplace/browse': typeof MarketplaceBrowseRoute
   '/marketplace/create': typeof MarketplaceCreateRoute
+  '/marketplace/favorites': typeof MarketplaceFavoritesRoute
   '/marketplace/messages': typeof MarketplaceMessagesRoute
   '/marketplace/my-listings': typeof MarketplaceMyListingsRoute
-  '/marketplace/requests': typeof MarketplaceRequestsRoute
+  '/marketplace/requests': typeof MarketplaceRequestsRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/dashboard/profile/family': typeof DashboardProfileFamilyRoute
@@ -788,6 +830,7 @@ export interface FileRoutesById {
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
   '/dashboard/user-management/users': typeof DashboardUserManagementUsersRoute
   '/marketplace/listings/$id': typeof MarketplaceListingsIdRoute
+  '/marketplace/requests/$id': typeof MarketplaceRequestsIdRoute
   '/dashboard/profile/': typeof DashboardProfileIndexRoute
   '/dashboard/spipuniform/': typeof DashboardSpipuniformIndexRoute
   '/dashboard/user-management/': typeof DashboardUserManagementIndexRoute
@@ -814,6 +857,7 @@ export interface FileRouteTypes {
     | '/dashboard/storage-settings'
     | '/marketplace/browse'
     | '/marketplace/create'
+    | '/marketplace/favorites'
     | '/marketplace/messages'
     | '/marketplace/my-listings'
     | '/marketplace/requests'
@@ -828,6 +872,7 @@ export interface FileRouteTypes {
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
     | '/marketplace/listings/$id'
+    | '/marketplace/requests/$id'
     | '/dashboard/profile'
     | '/dashboard/spipuniform'
     | '/dashboard/user-management'
@@ -851,6 +896,7 @@ export interface FileRouteTypes {
     | '/dashboard/storage-settings'
     | '/marketplace/browse'
     | '/marketplace/create'
+    | '/marketplace/favorites'
     | '/marketplace/messages'
     | '/marketplace/my-listings'
     | '/marketplace/requests'
@@ -865,6 +911,7 @@ export interface FileRouteTypes {
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
     | '/marketplace/listings/$id'
+    | '/marketplace/requests/$id'
     | '/dashboard/profile'
     | '/dashboard/spipuniform'
     | '/dashboard/user-management'
@@ -889,6 +936,7 @@ export interface FileRouteTypes {
     | '/dashboard/storage-settings'
     | '/marketplace/browse'
     | '/marketplace/create'
+    | '/marketplace/favorites'
     | '/marketplace/messages'
     | '/marketplace/my-listings'
     | '/marketplace/requests'
@@ -903,6 +951,7 @@ export interface FileRouteTypes {
     | '/dashboard/user-management/roles'
     | '/dashboard/user-management/users'
     | '/marketplace/listings/$id'
+    | '/marketplace/requests/$id'
     | '/dashboard/profile/'
     | '/dashboard/spipuniform/'
     | '/dashboard/user-management/'
@@ -922,9 +971,10 @@ export interface RootRouteChildren {
   AuthSignupRoute: typeof AuthSignupRoute
   MarketplaceBrowseRoute: typeof MarketplaceBrowseRoute
   MarketplaceCreateRoute: typeof MarketplaceCreateRoute
+  MarketplaceFavoritesRoute: typeof MarketplaceFavoritesRoute
   MarketplaceMessagesRoute: typeof MarketplaceMessagesRoute
   MarketplaceMyListingsRoute: typeof MarketplaceMyListingsRoute
-  MarketplaceRequestsRoute: typeof MarketplaceRequestsRoute
+  MarketplaceRequestsRoute: typeof MarketplaceRequestsRouteWithChildren
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   MarketplaceListingsIdRoute: typeof MarketplaceListingsIdRoute
 }
@@ -936,11 +986,13 @@ export interface FileServerRoutesByFullPath {
   '/api/counties': typeof ApiCountiesServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/family-members': typeof ApiFamilyMembersServerRouteWithChildren
+  '/api/favorites': typeof ApiFavoritesServerRoute
   '/api/files': typeof ApiFilesServerRoute
   '/api/listings': typeof ApiListingsServerRouteWithChildren
   '/api/localities': typeof ApiLocalitiesServerRouteWithChildren
   '/api/me': typeof ApiMeServerRoute
   '/api/product-categories': typeof ApiProductCategoriesServerRoute
+  '/api/requests': typeof ApiRequestsServerRouteWithChildren
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
   '/api/school-submissions': typeof ApiSchoolSubmissionsServerRoute
   '/api/schools': typeof ApiSchoolsServerRoute
@@ -966,8 +1018,10 @@ export interface FileServerRoutesByFullPath {
   '/api/family-members/$id': typeof ApiFamilyMembersIdServerRoute
   '/api/listings/$id': typeof ApiListingsIdServerRoute
   '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
+  '/api/marketplace/search': typeof ApiMarketplaceSearchServerRoute
   '/api/profiles/familyMembers': typeof ApiProfilesFamilyMembersServerRoute
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
+  '/api/requests/$id': typeof ApiRequestsIdServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/transactions/$id': typeof ApiTransactionsIdServerRouteWithChildren
@@ -1006,11 +1060,13 @@ export interface FileServerRoutesByTo {
   '/api/counties': typeof ApiCountiesServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/family-members': typeof ApiFamilyMembersServerRouteWithChildren
+  '/api/favorites': typeof ApiFavoritesServerRoute
   '/api/files': typeof ApiFilesServerRoute
   '/api/listings': typeof ApiListingsServerRouteWithChildren
   '/api/localities': typeof ApiLocalitiesServerRouteWithChildren
   '/api/me': typeof ApiMeServerRoute
   '/api/product-categories': typeof ApiProductCategoriesServerRoute
+  '/api/requests': typeof ApiRequestsServerRouteWithChildren
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
   '/api/school-submissions': typeof ApiSchoolSubmissionsServerRoute
   '/api/schools': typeof ApiSchoolsServerRoute
@@ -1036,8 +1092,10 @@ export interface FileServerRoutesByTo {
   '/api/family-members/$id': typeof ApiFamilyMembersIdServerRoute
   '/api/listings/$id': typeof ApiListingsIdServerRoute
   '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
+  '/api/marketplace/search': typeof ApiMarketplaceSearchServerRoute
   '/api/profiles/familyMembers': typeof ApiProfilesFamilyMembersServerRoute
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
+  '/api/requests/$id': typeof ApiRequestsIdServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/transactions/$id': typeof ApiTransactionsIdServerRouteWithChildren
@@ -1077,11 +1135,13 @@ export interface FileServerRoutesById {
   '/api/counties': typeof ApiCountiesServerRoute
   '/api/credentials': typeof ApiCredentialsServerRoute
   '/api/family-members': typeof ApiFamilyMembersServerRouteWithChildren
+  '/api/favorites': typeof ApiFavoritesServerRoute
   '/api/files': typeof ApiFilesServerRoute
   '/api/listings': typeof ApiListingsServerRouteWithChildren
   '/api/localities': typeof ApiLocalitiesServerRouteWithChildren
   '/api/me': typeof ApiMeServerRoute
   '/api/product-categories': typeof ApiProductCategoriesServerRoute
+  '/api/requests': typeof ApiRequestsServerRouteWithChildren
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
   '/api/school-submissions': typeof ApiSchoolSubmissionsServerRoute
   '/api/schools': typeof ApiSchoolsServerRoute
@@ -1107,8 +1167,10 @@ export interface FileServerRoutesById {
   '/api/family-members/$id': typeof ApiFamilyMembersIdServerRoute
   '/api/listings/$id': typeof ApiListingsIdServerRoute
   '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
+  '/api/marketplace/search': typeof ApiMarketplaceSearchServerRoute
   '/api/profiles/familyMembers': typeof ApiProfilesFamilyMembersServerRoute
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
+  '/api/requests/$id': typeof ApiRequestsIdServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/transactions/$id': typeof ApiTransactionsIdServerRouteWithChildren
@@ -1149,11 +1211,13 @@ export interface FileServerRouteTypes {
     | '/api/counties'
     | '/api/credentials'
     | '/api/family-members'
+    | '/api/favorites'
     | '/api/files'
     | '/api/listings'
     | '/api/localities'
     | '/api/me'
     | '/api/product-categories'
+    | '/api/requests'
     | '/api/school-approval-requests'
     | '/api/school-submissions'
     | '/api/schools'
@@ -1179,8 +1243,10 @@ export interface FileServerRouteTypes {
     | '/api/family-members/$id'
     | '/api/listings/$id'
     | '/api/localities/$'
+    | '/api/marketplace/search'
     | '/api/profiles/familyMembers'
     | '/api/profiles/shop'
+    | '/api/requests/$id'
     | '/api/roles/$roleId'
     | '/api/storage/settings'
     | '/api/transactions/$id'
@@ -1219,11 +1285,13 @@ export interface FileServerRouteTypes {
     | '/api/counties'
     | '/api/credentials'
     | '/api/family-members'
+    | '/api/favorites'
     | '/api/files'
     | '/api/listings'
     | '/api/localities'
     | '/api/me'
     | '/api/product-categories'
+    | '/api/requests'
     | '/api/school-approval-requests'
     | '/api/school-submissions'
     | '/api/schools'
@@ -1249,8 +1317,10 @@ export interface FileServerRouteTypes {
     | '/api/family-members/$id'
     | '/api/listings/$id'
     | '/api/localities/$'
+    | '/api/marketplace/search'
     | '/api/profiles/familyMembers'
     | '/api/profiles/shop'
+    | '/api/requests/$id'
     | '/api/roles/$roleId'
     | '/api/storage/settings'
     | '/api/transactions/$id'
@@ -1289,11 +1359,13 @@ export interface FileServerRouteTypes {
     | '/api/counties'
     | '/api/credentials'
     | '/api/family-members'
+    | '/api/favorites'
     | '/api/files'
     | '/api/listings'
     | '/api/localities'
     | '/api/me'
     | '/api/product-categories'
+    | '/api/requests'
     | '/api/school-approval-requests'
     | '/api/school-submissions'
     | '/api/schools'
@@ -1319,8 +1391,10 @@ export interface FileServerRouteTypes {
     | '/api/family-members/$id'
     | '/api/listings/$id'
     | '/api/localities/$'
+    | '/api/marketplace/search'
     | '/api/profiles/familyMembers'
     | '/api/profiles/shop'
+    | '/api/requests/$id'
     | '/api/roles/$roleId'
     | '/api/storage/settings'
     | '/api/transactions/$id'
@@ -1360,11 +1434,13 @@ export interface RootServerRouteChildren {
   ApiCountiesServerRoute: typeof ApiCountiesServerRoute
   ApiCredentialsServerRoute: typeof ApiCredentialsServerRoute
   ApiFamilyMembersServerRoute: typeof ApiFamilyMembersServerRouteWithChildren
+  ApiFavoritesServerRoute: typeof ApiFavoritesServerRoute
   ApiFilesServerRoute: typeof ApiFilesServerRoute
   ApiListingsServerRoute: typeof ApiListingsServerRouteWithChildren
   ApiLocalitiesServerRoute: typeof ApiLocalitiesServerRouteWithChildren
   ApiMeServerRoute: typeof ApiMeServerRoute
   ApiProductCategoriesServerRoute: typeof ApiProductCategoriesServerRoute
+  ApiRequestsServerRoute: typeof ApiRequestsServerRouteWithChildren
   ApiSchoolApprovalRequestsServerRoute: typeof ApiSchoolApprovalRequestsServerRoute
   ApiSchoolSubmissionsServerRoute: typeof ApiSchoolSubmissionsServerRoute
   ApiSchoolsServerRoute: typeof ApiSchoolsServerRoute
@@ -1386,6 +1462,7 @@ export interface RootServerRouteChildren {
   ApiEmailSettingsServerRoute: typeof ApiEmailSettingsServerRoute
   ApiEmailTemplatesServerRoute: typeof ApiEmailTemplatesServerRouteWithChildren
   ApiEmailTestServerRoute: typeof ApiEmailTestServerRoute
+  ApiMarketplaceSearchServerRoute: typeof ApiMarketplaceSearchServerRoute
   ApiProfilesFamilyMembersServerRoute: typeof ApiProfilesFamilyMembersServerRoute
   ApiProfilesShopServerRoute: typeof ApiProfilesShopServerRoute
   ApiRolesRoleIdServerRoute: typeof ApiRolesRoleIdServerRoute
@@ -1469,6 +1546,13 @@ declare module '@tanstack/react-router' {
       path: '/marketplace/messages'
       fullPath: '/marketplace/messages'
       preLoaderRoute: typeof MarketplaceMessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace/favorites': {
+      id: '/marketplace/favorites'
+      path: '/marketplace/favorites'
+      fullPath: '/marketplace/favorites'
+      preLoaderRoute: typeof MarketplaceFavoritesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/marketplace/create': {
@@ -1575,6 +1659,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/profile'
       preLoaderRoute: typeof DashboardProfileIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/marketplace/requests/$id': {
+      id: '/marketplace/requests/$id'
+      path: '/$id'
+      fullPath: '/marketplace/requests/$id'
+      preLoaderRoute: typeof MarketplaceRequestsIdRouteImport
+      parentRoute: typeof MarketplaceRequestsRoute
     }
     '/marketplace/listings/$id': {
       id: '/marketplace/listings/$id'
@@ -1741,6 +1832,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiSchoolApprovalRequestsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/requests': {
+      id: '/api/requests'
+      path: '/api/requests'
+      fullPath: '/api/requests'
+      preLoaderRoute: typeof ApiRequestsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/product-categories': {
       id: '/api/product-categories'
       path: '/api/product-categories'
@@ -1774,6 +1872,13 @@ declare module '@tanstack/react-start/server' {
       path: '/api/files'
       fullPath: '/api/files'
       preLoaderRoute: typeof ApiFilesServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/favorites': {
+      id: '/api/favorites'
+      path: '/api/favorites'
+      fullPath: '/api/favorites'
+      preLoaderRoute: typeof ApiFavoritesServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/family-members': {
@@ -1895,6 +2000,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiRolesRoleIdServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/requests/$id': {
+      id: '/api/requests/$id'
+      path: '/$id'
+      fullPath: '/api/requests/$id'
+      preLoaderRoute: typeof ApiRequestsIdServerRouteImport
+      parentRoute: typeof ApiRequestsServerRoute
+    }
     '/api/profiles/shop': {
       id: '/api/profiles/shop'
       path: '/api/profiles/shop'
@@ -1907,6 +2019,13 @@ declare module '@tanstack/react-start/server' {
       path: '/api/profiles/familyMembers'
       fullPath: '/api/profiles/familyMembers'
       preLoaderRoute: typeof ApiProfilesFamilyMembersServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/marketplace/search': {
+      id: '/api/marketplace/search'
+      path: '/api/marketplace/search'
+      fullPath: '/api/marketplace/search'
+      preLoaderRoute: typeof ApiMarketplaceSearchServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/localities/$': {
@@ -2211,6 +2330,17 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
   DashboardRouteChildren,
 )
 
+interface MarketplaceRequestsRouteChildren {
+  MarketplaceRequestsIdRoute: typeof MarketplaceRequestsIdRoute
+}
+
+const MarketplaceRequestsRouteChildren: MarketplaceRequestsRouteChildren = {
+  MarketplaceRequestsIdRoute: MarketplaceRequestsIdRoute,
+}
+
+const MarketplaceRequestsRouteWithChildren =
+  MarketplaceRequestsRoute._addFileChildren(MarketplaceRequestsRouteChildren)
+
 interface ApiAuthSettingsServerRouteChildren {
   ApiAuthSettingsFlagServerRoute: typeof ApiAuthSettingsFlagServerRoute
 }
@@ -2261,6 +2391,17 @@ const ApiLocalitiesServerRouteChildren: ApiLocalitiesServerRouteChildren = {
 
 const ApiLocalitiesServerRouteWithChildren =
   ApiLocalitiesServerRoute._addFileChildren(ApiLocalitiesServerRouteChildren)
+
+interface ApiRequestsServerRouteChildren {
+  ApiRequestsIdServerRoute: typeof ApiRequestsIdServerRoute
+}
+
+const ApiRequestsServerRouteChildren: ApiRequestsServerRouteChildren = {
+  ApiRequestsIdServerRoute: ApiRequestsIdServerRoute,
+}
+
+const ApiRequestsServerRouteWithChildren =
+  ApiRequestsServerRoute._addFileChildren(ApiRequestsServerRouteChildren)
 
 interface ApiEmailFragmentsServerRouteChildren {
   ApiEmailFragmentsDefaultServerRoute: typeof ApiEmailFragmentsDefaultServerRoute
@@ -2320,9 +2461,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthSignupRoute: AuthSignupRoute,
   MarketplaceBrowseRoute: MarketplaceBrowseRoute,
   MarketplaceCreateRoute: MarketplaceCreateRoute,
+  MarketplaceFavoritesRoute: MarketplaceFavoritesRoute,
   MarketplaceMessagesRoute: MarketplaceMessagesRoute,
   MarketplaceMyListingsRoute: MarketplaceMyListingsRoute,
-  MarketplaceRequestsRoute: MarketplaceRequestsRoute,
+  MarketplaceRequestsRoute: MarketplaceRequestsRouteWithChildren,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   MarketplaceListingsIdRoute: MarketplaceListingsIdRoute,
 }
@@ -2337,11 +2479,13 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiCountiesServerRoute: ApiCountiesServerRoute,
   ApiCredentialsServerRoute: ApiCredentialsServerRoute,
   ApiFamilyMembersServerRoute: ApiFamilyMembersServerRouteWithChildren,
+  ApiFavoritesServerRoute: ApiFavoritesServerRoute,
   ApiFilesServerRoute: ApiFilesServerRoute,
   ApiListingsServerRoute: ApiListingsServerRouteWithChildren,
   ApiLocalitiesServerRoute: ApiLocalitiesServerRouteWithChildren,
   ApiMeServerRoute: ApiMeServerRoute,
   ApiProductCategoriesServerRoute: ApiProductCategoriesServerRoute,
+  ApiRequestsServerRoute: ApiRequestsServerRouteWithChildren,
   ApiSchoolApprovalRequestsServerRoute: ApiSchoolApprovalRequestsServerRoute,
   ApiSchoolSubmissionsServerRoute: ApiSchoolSubmissionsServerRoute,
   ApiSchoolsServerRoute: ApiSchoolsServerRoute,
@@ -2363,6 +2507,7 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiEmailSettingsServerRoute: ApiEmailSettingsServerRoute,
   ApiEmailTemplatesServerRoute: ApiEmailTemplatesServerRouteWithChildren,
   ApiEmailTestServerRoute: ApiEmailTestServerRoute,
+  ApiMarketplaceSearchServerRoute: ApiMarketplaceSearchServerRoute,
   ApiProfilesFamilyMembersServerRoute: ApiProfilesFamilyMembersServerRoute,
   ApiProfilesShopServerRoute: ApiProfilesShopServerRoute,
   ApiRolesRoleIdServerRoute: ApiRolesRoleIdServerRoute,

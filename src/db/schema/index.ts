@@ -117,7 +117,9 @@ export type {
   Notification,
   NewNotification,
   UserProfile,
-  NewUserProfile
+  NewUserProfile,
+  UserFavorite,
+  NewUserFavorite
 } from './spipuniform';
 
 // Export types for school management

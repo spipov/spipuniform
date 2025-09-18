@@ -412,6 +412,29 @@ export const watchlists = pgTable("watchlists", {
 	}).onDelete("cascade"),
 ]);
 
+// User favorites for individual listings
+export const userFavorites = pgTable("user_favorites", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: text("user_id").notNull(),
+	listingId: uuid("listing_id").notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("user_favorites_user_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+	index("user_favorites_listing_idx").using("btree", table.listingId.asc().nullsLast().op("uuid_ops")),
+	index("user_favorites_created_idx").using("btree", table.createdAt.desc().nullsLast().op("timestamp_ops")),
+	unique("user_favorites_user_listing_unique").on(table.userId, table.listingId),
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [user.id],
+		name: "user_favorites_user_id_user_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.listingId],
+		foreignColumns: [listings.id],
+		name: "user_favorites_listing_id_listings_id_fk"
+	}).onDelete("cascade"),
+]);
+
 export const reports = pgTable("reports", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	reporterUserId: text("reporter_user_id").notNull(),
@@ -726,3 +749,5 @@ export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
 export type TransactionMessage = typeof transactionMessages.$inferSelect;
 export type NewTransactionMessage = typeof transactionMessages.$inferInsert;
+export type UserFavorite = typeof userFavorites.$inferSelect;
+export type NewUserFavorite = typeof userFavorites.$inferInsert;

@@ -192,6 +192,12 @@ function MarketplaceDashboard() {
                 My Requests
               </Button>
             </Link>
+            <Link to="/marketplace/favorites" className="w-full">
+              <Button variant="outline" className="w-full justify-start">
+                <Heart className="mr-2 h-4 w-4 text-red-500" />
+                My Favorites
+              </Button>
+            </Link>
             <Link to="/marketplace/messages" className="w-full">
               <Button variant="outline" className="w-full justify-start">
                 <MessageCircle className="mr-2 h-4 w-4" />

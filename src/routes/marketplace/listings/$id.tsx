@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { ArrowLeft, Share2, Heart, MessageCircle, MapPin, Calendar, Eye, Edit, Pause, Trash2, School, Euro } from 'lucide-react';
+import { FavoriteButton } from '@/components/marketplace/favorite-button';
 
 interface Listing {
   id: string;
@@ -268,10 +269,14 @@ function ListingDetailPage() {
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Contact Seller
                   </Button>
-                  <Button variant="outline" className="w-full">
-                    <Heart className="h-4 w-4 mr-2" />
-                    Save to Wishlist
-                  </Button>
+                  <FavoriteButton
+                    listingId={listing.id}
+                    listingTitle={listing.title}
+                    variant="outline"
+                    className="w-full"
+                    showLabel
+                    size="md"
+                  />
                 </div>
               )}
 
