@@ -1379,28 +1379,6 @@ function AttributeValuesManager({ attribute, onUpdate }: { attribute: Attribute;
           </>
         );
       
-      case 'gender_select':
-        return (
-          <>
-            <div className="grid gap-2">
-              <Label htmlFor="gender">Gender *</Label>
-              <Select value={formData.value} onValueChange={(value) => {
-                const displayNames = { boys: 'Boys', girls: 'Girls', unisex: 'Unisex' };
-                setFormData({...formData, value, displayName: displayNames[value as keyof typeof displayNames] || value});
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="boys">Boys</SelectItem>
-                  <SelectItem value="girls">Girls</SelectItem>
-                  <SelectItem value="unisex">Unisex</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        );
-      
       case 'text_input':
         return (
           <>
