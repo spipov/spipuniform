@@ -286,7 +286,7 @@ export function SchoolSelector({
                 <SelectValue placeholder="Filter by county" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All counties</SelectItem>
+                <SelectItem value="all">All counties</SelectItem>
                 {counties.map(county => (
                   <SelectItem key={county} value={county}>{county}</SelectItem>
                 ))}

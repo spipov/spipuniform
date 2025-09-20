@@ -409,7 +409,7 @@ function RequestsPage() {
                     <SelectValue placeholder="Any condition" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any condition</SelectItem>
+                    <SelectItem value="any">Any condition</SelectItem>
                     {conditions?.map((condition: any) => (
                       <SelectItem key={condition.id} value={condition.name}>
                         {condition.name}

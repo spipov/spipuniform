@@ -516,8 +516,8 @@ function CreateListingPage() {
                           className={errors[`attr_${attribute.slug}`] ? 'border-red-500' : ''}
                         />
                       ) : (
-                        <Select 
-                          value={formData.attributes[attribute.slug] || ''} 
+                        <Select
+                          value={formData.attributes[attribute.slug] || undefined}
                           onValueChange={(value) => handleAttributeChange(attribute.slug, value)}
                         >
                           <SelectTrigger className={errors[`attr_${attribute.slug}`] ? 'border-red-500' : ''}>

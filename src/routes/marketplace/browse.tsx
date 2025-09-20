@@ -201,7 +201,7 @@ function BrowsePage() {
             <SelectValue placeholder="All categories" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All categories</SelectItem>
+            <SelectItem value="all">All categories</SelectItem>
             {categories?.map((category: any) => (
               <SelectItem key={category.id} value={category.id}>
                 {category.name}
@@ -223,7 +223,7 @@ function BrowsePage() {
               <SelectValue placeholder="All product types" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All product types</SelectItem>
+              <SelectItem value="all">All product types</SelectItem>
               {categories
                 ?.find((c: any) => c.id === localFilters.categoryId)?.productTypes
                 ?.map((type: any) => (
@@ -247,7 +247,7 @@ function BrowsePage() {
             <SelectValue placeholder="All schools" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All schools</SelectItem>
+            <SelectItem value="all">All schools</SelectItem>
             {schools?.slice(0, 50).map((school: any) => (
               <SelectItem key={school.id} value={school.id}>
                 {school.name}
