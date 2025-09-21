@@ -41,6 +41,7 @@ import { Route as DashboardUserManagementUsersRouteImport } from './routes/dashb
 import { Route as DashboardUserManagementRolesRouteImport } from './routes/dashboard/user-management/roles'
 import { Route as DashboardUserManagementPermissionsRouteImport } from './routes/dashboard/user-management/permissions'
 import { Route as DashboardUserManagementConsolidatedRouteImport } from './routes/dashboard/user-management/consolidated'
+import { Route as DashboardSpipuniformSchoolsRouteImport } from './routes/dashboard/spipuniform/schools'
 import { Route as DashboardSpipuniformDataVerificationRouteImport } from './routes/dashboard/spipuniform/data-verification'
 import { Route as DashboardProfileShopOldRouteImport } from './routes/dashboard/profile/shop-old'
 import { Route as DashboardProfileShopRouteImport } from './routes/dashboard/profile/shop'
@@ -106,6 +107,8 @@ import { ServerRoute as ApiSpipuniformSchoolsIndexServerRouteImport } from './ro
 import { ServerRoute as ApiSpipuniformCountiesIndexServerRouteImport } from './routes/api/spipuniform/counties/index'
 import { ServerRoute as ApiTransactionsIdMessagesServerRouteImport } from './routes/api/transactions/$id/messages'
 import { ServerRoute as ApiSpipuniformLocalitiesSearchServerRouteImport } from './routes/api/spipuniform/localities/search'
+import { ServerRoute as ApiSchoolSubmissionsIdRejectServerRouteImport } from './routes/api/school-submissions/$id.reject'
+import { ServerRoute as ApiSchoolSubmissionsIdApproveServerRouteImport } from './routes/api/school-submissions/$id.approve'
 import { ServerRoute as ApiProfilesFamilyMemberIdServerRouteImport } from './routes/api.profiles.familyMember.$id'
 import { ServerRoute as ApiProductTypesIdAttributesServerRouteImport } from './routes/api/product-types/$id/attributes'
 import { ServerRoute as ApiLocalitiesFetchSplatServerRouteImport } from './routes/api/localities/fetch/$'
@@ -279,6 +282,12 @@ const DashboardUserManagementConsolidatedRoute =
   DashboardUserManagementConsolidatedRouteImport.update({
     id: '/user-management/consolidated',
     path: '/user-management/consolidated',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardSpipuniformSchoolsRoute =
+  DashboardSpipuniformSchoolsRouteImport.update({
+    id: '/spipuniform/schools',
+    path: '/spipuniform/schools',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardSpipuniformDataVerificationRoute =
@@ -628,6 +637,18 @@ const ApiSpipuniformLocalitiesSearchServerRoute =
     path: '/api/spipuniform/localities/search',
     getParentRoute: () => rootServerRouteImport,
   } as any)
+const ApiSchoolSubmissionsIdRejectServerRoute =
+  ApiSchoolSubmissionsIdRejectServerRouteImport.update({
+    id: '/$id/reject',
+    path: '/$id/reject',
+    getParentRoute: () => ApiSchoolSubmissionsServerRoute,
+  } as any)
+const ApiSchoolSubmissionsIdApproveServerRoute =
+  ApiSchoolSubmissionsIdApproveServerRouteImport.update({
+    id: '/$id/approve',
+    path: '/$id/approve',
+    getParentRoute: () => ApiSchoolSubmissionsServerRoute,
+  } as any)
 const ApiProfilesFamilyMemberIdServerRoute =
   ApiProfilesFamilyMemberIdServerRouteImport.update({
     id: '/api/profiles/familyMember/$id',
@@ -745,6 +766,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/profile/shop': typeof DashboardProfileShopRoute
   '/dashboard/profile/shop-old': typeof DashboardProfileShopOldRoute
   '/dashboard/spipuniform/data-verification': typeof DashboardSpipuniformDataVerificationRoute
+  '/dashboard/spipuniform/schools': typeof DashboardSpipuniformSchoolsRoute
   '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
@@ -784,6 +806,7 @@ export interface FileRoutesByTo {
   '/dashboard/profile/shop': typeof DashboardProfileShopRoute
   '/dashboard/profile/shop-old': typeof DashboardProfileShopOldRoute
   '/dashboard/spipuniform/data-verification': typeof DashboardSpipuniformDataVerificationRoute
+  '/dashboard/spipuniform/schools': typeof DashboardSpipuniformSchoolsRoute
   '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
@@ -825,6 +848,7 @@ export interface FileRoutesById {
   '/dashboard/profile/shop': typeof DashboardProfileShopRoute
   '/dashboard/profile/shop-old': typeof DashboardProfileShopOldRoute
   '/dashboard/spipuniform/data-verification': typeof DashboardSpipuniformDataVerificationRoute
+  '/dashboard/spipuniform/schools': typeof DashboardSpipuniformSchoolsRoute
   '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
@@ -867,6 +891,7 @@ export interface FileRouteTypes {
     | '/dashboard/profile/shop'
     | '/dashboard/profile/shop-old'
     | '/dashboard/spipuniform/data-verification'
+    | '/dashboard/spipuniform/schools'
     | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
@@ -906,6 +931,7 @@ export interface FileRouteTypes {
     | '/dashboard/profile/shop'
     | '/dashboard/profile/shop-old'
     | '/dashboard/spipuniform/data-verification'
+    | '/dashboard/spipuniform/schools'
     | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
@@ -946,6 +972,7 @@ export interface FileRouteTypes {
     | '/dashboard/profile/shop'
     | '/dashboard/profile/shop-old'
     | '/dashboard/spipuniform/data-verification'
+    | '/dashboard/spipuniform/schools'
     | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
@@ -994,7 +1021,7 @@ export interface FileServerRoutesByFullPath {
   '/api/product-categories': typeof ApiProductCategoriesServerRoute
   '/api/requests': typeof ApiRequestsServerRouteWithChildren
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
-  '/api/school-submissions': typeof ApiSchoolSubmissionsServerRoute
+  '/api/school-submissions': typeof ApiSchoolSubmissionsServerRouteWithChildren
   '/api/schools': typeof ApiSchoolsServerRoute
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
@@ -1039,6 +1066,8 @@ export interface FileServerRoutesByFullPath {
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
   '/api/product-types/$id/attributes': typeof ApiProductTypesIdAttributesServerRoute
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
+  '/api/school-submissions/$id/approve': typeof ApiSchoolSubmissionsIdApproveServerRoute
+  '/api/school-submissions/$id/reject': typeof ApiSchoolSubmissionsIdRejectServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
   '/api/spipuniform/counties': typeof ApiSpipuniformCountiesIndexServerRoute
@@ -1068,7 +1097,7 @@ export interface FileServerRoutesByTo {
   '/api/product-categories': typeof ApiProductCategoriesServerRoute
   '/api/requests': typeof ApiRequestsServerRouteWithChildren
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
-  '/api/school-submissions': typeof ApiSchoolSubmissionsServerRoute
+  '/api/school-submissions': typeof ApiSchoolSubmissionsServerRouteWithChildren
   '/api/schools': typeof ApiSchoolsServerRoute
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
@@ -1113,6 +1142,8 @@ export interface FileServerRoutesByTo {
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
   '/api/product-types/$id/attributes': typeof ApiProductTypesIdAttributesServerRoute
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
+  '/api/school-submissions/$id/approve': typeof ApiSchoolSubmissionsIdApproveServerRoute
+  '/api/school-submissions/$id/reject': typeof ApiSchoolSubmissionsIdRejectServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
   '/api/spipuniform/counties': typeof ApiSpipuniformCountiesIndexServerRoute
@@ -1143,7 +1174,7 @@ export interface FileServerRoutesById {
   '/api/product-categories': typeof ApiProductCategoriesServerRoute
   '/api/requests': typeof ApiRequestsServerRouteWithChildren
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
-  '/api/school-submissions': typeof ApiSchoolSubmissionsServerRoute
+  '/api/school-submissions': typeof ApiSchoolSubmissionsServerRouteWithChildren
   '/api/schools': typeof ApiSchoolsServerRoute
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
@@ -1188,6 +1219,8 @@ export interface FileServerRoutesById {
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
   '/api/product-types/$id/attributes': typeof ApiProductTypesIdAttributesServerRoute
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
+  '/api/school-submissions/$id/approve': typeof ApiSchoolSubmissionsIdApproveServerRoute
+  '/api/school-submissions/$id/reject': typeof ApiSchoolSubmissionsIdRejectServerRoute
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
   '/api/spipuniform/counties/': typeof ApiSpipuniformCountiesIndexServerRoute
@@ -1264,6 +1297,8 @@ export interface FileServerRouteTypes {
     | '/api/localities/fetch/$'
     | '/api/product-types/$id/attributes'
     | '/api/profiles/familyMember/$id'
+    | '/api/school-submissions/$id/approve'
+    | '/api/school-submissions/$id/reject'
     | '/api/spipuniform/localities/search'
     | '/api/transactions/$id/messages'
     | '/api/spipuniform/counties'
@@ -1338,6 +1373,8 @@ export interface FileServerRouteTypes {
     | '/api/localities/fetch/$'
     | '/api/product-types/$id/attributes'
     | '/api/profiles/familyMember/$id'
+    | '/api/school-submissions/$id/approve'
+    | '/api/school-submissions/$id/reject'
     | '/api/spipuniform/localities/search'
     | '/api/transactions/$id/messages'
     | '/api/spipuniform/counties'
@@ -1412,6 +1449,8 @@ export interface FileServerRouteTypes {
     | '/api/localities/fetch/$'
     | '/api/product-types/$id/attributes'
     | '/api/profiles/familyMember/$id'
+    | '/api/school-submissions/$id/approve'
+    | '/api/school-submissions/$id/reject'
     | '/api/spipuniform/localities/search'
     | '/api/transactions/$id/messages'
     | '/api/spipuniform/counties/'
@@ -1442,7 +1481,7 @@ export interface RootServerRouteChildren {
   ApiProductCategoriesServerRoute: typeof ApiProductCategoriesServerRoute
   ApiRequestsServerRoute: typeof ApiRequestsServerRouteWithChildren
   ApiSchoolApprovalRequestsServerRoute: typeof ApiSchoolApprovalRequestsServerRoute
-  ApiSchoolSubmissionsServerRoute: typeof ApiSchoolSubmissionsServerRoute
+  ApiSchoolSubmissionsServerRoute: typeof ApiSchoolSubmissionsServerRouteWithChildren
   ApiSchoolsServerRoute: typeof ApiSchoolsServerRoute
   ApiShopOptionsServerRoute: typeof ApiShopOptionsServerRoute
   ApiShopsServerRoute: typeof ApiShopsServerRoute
@@ -1700,6 +1739,13 @@ declare module '@tanstack/react-router' {
       path: '/user-management/consolidated'
       fullPath: '/dashboard/user-management/consolidated'
       preLoaderRoute: typeof DashboardUserManagementConsolidatedRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/spipuniform/schools': {
+      id: '/dashboard/spipuniform/schools'
+      path: '/spipuniform/schools'
+      fullPath: '/dashboard/spipuniform/schools'
+      preLoaderRoute: typeof DashboardSpipuniformSchoolsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/spipuniform/data-verification': {
@@ -2161,6 +2207,20 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiSpipuniformLocalitiesSearchServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/school-submissions/$id/reject': {
+      id: '/api/school-submissions/$id/reject'
+      path: '/$id/reject'
+      fullPath: '/api/school-submissions/$id/reject'
+      preLoaderRoute: typeof ApiSchoolSubmissionsIdRejectServerRouteImport
+      parentRoute: typeof ApiSchoolSubmissionsServerRoute
+    }
+    '/api/school-submissions/$id/approve': {
+      id: '/api/school-submissions/$id/approve'
+      path: '/$id/approve'
+      fullPath: '/api/school-submissions/$id/approve'
+      preLoaderRoute: typeof ApiSchoolSubmissionsIdApproveServerRouteImport
+      parentRoute: typeof ApiSchoolSubmissionsServerRoute
+    }
     '/api/profiles/familyMember/$id': {
       id: '/api/profiles/familyMember/$id'
       path: '/api/profiles/familyMember/$id'
@@ -2281,6 +2341,7 @@ interface DashboardRouteChildren {
   DashboardProfileShopRoute: typeof DashboardProfileShopRoute
   DashboardProfileShopOldRoute: typeof DashboardProfileShopOldRoute
   DashboardSpipuniformDataVerificationRoute: typeof DashboardSpipuniformDataVerificationRoute
+  DashboardSpipuniformSchoolsRoute: typeof DashboardSpipuniformSchoolsRoute
   DashboardUserManagementConsolidatedRoute: typeof DashboardUserManagementConsolidatedRoute
   DashboardUserManagementPermissionsRoute: typeof DashboardUserManagementPermissionsRoute
   DashboardUserManagementRolesRoute: typeof DashboardUserManagementRolesRoute
@@ -2307,6 +2368,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardProfileShopOldRoute: DashboardProfileShopOldRoute,
   DashboardSpipuniformDataVerificationRoute:
     DashboardSpipuniformDataVerificationRoute,
+  DashboardSpipuniformSchoolsRoute: DashboardSpipuniformSchoolsRoute,
   DashboardUserManagementConsolidatedRoute:
     DashboardUserManagementConsolidatedRoute,
   DashboardUserManagementPermissionsRoute:
@@ -2403,6 +2465,24 @@ const ApiRequestsServerRouteChildren: ApiRequestsServerRouteChildren = {
 const ApiRequestsServerRouteWithChildren =
   ApiRequestsServerRoute._addFileChildren(ApiRequestsServerRouteChildren)
 
+interface ApiSchoolSubmissionsServerRouteChildren {
+  ApiSchoolSubmissionsIdApproveServerRoute: typeof ApiSchoolSubmissionsIdApproveServerRoute
+  ApiSchoolSubmissionsIdRejectServerRoute: typeof ApiSchoolSubmissionsIdRejectServerRoute
+}
+
+const ApiSchoolSubmissionsServerRouteChildren: ApiSchoolSubmissionsServerRouteChildren =
+  {
+    ApiSchoolSubmissionsIdApproveServerRoute:
+      ApiSchoolSubmissionsIdApproveServerRoute,
+    ApiSchoolSubmissionsIdRejectServerRoute:
+      ApiSchoolSubmissionsIdRejectServerRoute,
+  }
+
+const ApiSchoolSubmissionsServerRouteWithChildren =
+  ApiSchoolSubmissionsServerRoute._addFileChildren(
+    ApiSchoolSubmissionsServerRouteChildren,
+  )
+
 interface ApiEmailFragmentsServerRouteChildren {
   ApiEmailFragmentsDefaultServerRoute: typeof ApiEmailFragmentsDefaultServerRoute
 }
@@ -2487,7 +2567,7 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiProductCategoriesServerRoute: ApiProductCategoriesServerRoute,
   ApiRequestsServerRoute: ApiRequestsServerRouteWithChildren,
   ApiSchoolApprovalRequestsServerRoute: ApiSchoolApprovalRequestsServerRoute,
-  ApiSchoolSubmissionsServerRoute: ApiSchoolSubmissionsServerRoute,
+  ApiSchoolSubmissionsServerRoute: ApiSchoolSubmissionsServerRouteWithChildren,
   ApiSchoolsServerRoute: ApiSchoolsServerRoute,
   ApiShopOptionsServerRoute: ApiShopOptionsServerRoute,
   ApiShopsServerRoute: ApiShopsServerRoute,

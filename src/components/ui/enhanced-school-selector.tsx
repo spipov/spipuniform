@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Search, X, Plus, AlertTriangle, CheckCircle, School, Building, MapPin, ExternalLink, Info } from 'lucide-react';
+import { getCounties, getLocalities, getLocalitiesByCounty, type County as FallbackCounty, type Locality as FallbackLocality } from '@/data/irish-geographic-data';
 
 interface School {
   id: string;
@@ -113,10 +114,14 @@ export function EnhancedSchoolSelector({
         fetch('/api/localities')
       ]);
 
+      let countiesLoaded = false;
+      let localitiesLoaded = false;
+
       if (countiesResponse.ok) {
         const countiesData = await countiesResponse.json();
         if (countiesData.success) {
           setCounties(countiesData.counties);
+          countiesLoaded = true;
         }
       }
 
@@ -124,10 +129,26 @@ export function EnhancedSchoolSelector({
         const localitiesData = await localitiesResponse.json();
         if (localitiesData.success) {
           setLocalities(localitiesData.localities);
+          localitiesLoaded = true;
         }
       }
+
+      // If API calls failed, use fallback data
+      if (!countiesLoaded) {
+        console.warn('Using fallback data for counties');
+        setCounties(getCounties());
+      }
+
+      if (!localitiesLoaded) {
+        console.warn('Using fallback data for localities');
+        setLocalities(getLocalities());
+      }
+
     } catch (error) {
-      console.error('Error fetching geographic data:', error);
+      console.error('Error fetching geographic data, using fallback data:', error);
+      // Use fallback data when API calls fail
+      setCounties(getCounties());
+      setLocalities(getLocalities());
     }
   };
 
@@ -164,9 +185,9 @@ export function EnhancedSchoolSelector({
   };
 
   const handleSubmitSchool = async () => {
-    if (!submissionForm.schoolName.trim() || !submissionForm.address.trim() || 
-        !submissionForm.countyId || !submissionForm.level || !submissionForm.submissionReason.trim()) {
-      toast.error('Please fill in all required fields');
+    if (!submissionForm.schoolName.trim() || !submissionForm.address.trim() ||
+        !submissionForm.level || !submissionForm.submissionReason.trim()) {
+      toast.error('Please fill in all required fields (School Name, Address, Level, and Reason)');
       return;
     }
 
@@ -272,34 +293,48 @@ export function EnhancedSchoolSelector({
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="county">County *</Label>
+                      <Label htmlFor="county">County</Label>
                       <Select value={submissionForm.countyId} onValueChange={(value) => setSubmissionForm({...submissionForm, countyId: value, localityId: ''})}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select county" />
+                          <SelectValue placeholder="Select county (optional)" />
                         </SelectTrigger>
                         <SelectContent>
-                          {counties.map((county) => (
+                          {counties.length > 0 ? counties.map((county) => (
                             <SelectItem key={county.id} value={county.id}>
                               {county.name}
                             </SelectItem>
-                          ))}
+                          )) : (
+                            <SelectItem value="no-counties" disabled>
+                              No counties available - please include county in address
+                            </SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Optional - you can include the county in the address field instead
+                      </p>
                     </div>
                     <div>
-                      <Label htmlFor="locality">Locality</Label>
+                      <Label htmlFor="locality">Locality/Town</Label>
                       <Select value={submissionForm.localityId} onValueChange={(value) => setSubmissionForm({...submissionForm, localityId: value})}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select locality (optional)" />
                         </SelectTrigger>
                         <SelectContent>
-                          {filteredLocalities.map((locality) => (
+                          {filteredLocalities.length > 0 ? filteredLocalities.map((locality) => (
                             <SelectItem key={locality.id} value={locality.id}>
                               {locality.name}
                             </SelectItem>
-                          ))}
+                          )) : (
+                            <SelectItem value="no-localities" disabled>
+                              No localities available - please include town in address
+                            </SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Optional - you can include the town/locality in the address field instead
+                      </p>
                     </div>
                   </div>
 

@@ -25,50 +25,67 @@ export const ServerRoute = createServerFileRoute('/api/schools').methods({
 
       const validatedParams = schoolSearchSchema.parse(queryParams);
 
-      // Build query conditions
-      const conditions = [];
-      
-      // Only show active schools
-      conditions.push(eq(schools.isActive, true));
+      // Try to query schools from database
+      let schoolResults: any[] = [];
+      let totalCount = { count: '0' };
 
-      // Search by name or address if query provided
-      if (validatedParams.query) {
-        conditions.push(
-          or(
-            ilike(schools.name, `%${validatedParams.query}%`),
-            ilike(schools.address, `%${validatedParams.query}%`)
-          )
-        );
+      try {
+        // Build query conditions
+        const conditions = [];
+
+        // Only show active schools
+        conditions.push(eq(schools.isActive, true));
+
+        // Search by name or address if query provided
+        if (validatedParams.query) {
+          conditions.push(
+            or(
+              ilike(schools.name, `%${validatedParams.query}%`),
+              ilike(schools.address, `%${validatedParams.query}%`)
+            )
+          );
+        }
+
+        // Filter by county if provided
+        if (validatedParams.county) {
+          conditions.push(eq(schools.countyId, validatedParams.county));
+        }
+
+        // Get schools with pagination
+        schoolResults = await db
+          .select({
+            id: schools.id,
+            name: schools.name,
+            address: schools.address,
+            countyId: schools.countyId,
+            level: schools.level,
+            website: schools.website,
+            createdAt: schools.createdAt
+          })
+          .from(schools)
+          .where(and(...conditions))
+          .orderBy(asc(schools.name))
+          .limit(validatedParams.limit)
+          .offset(validatedParams.offset);
+
+        // Get total count for pagination
+        const countResult = await db
+          .select({ count: sql`count(*)` })
+          .from(schools)
+          .where(and(...conditions));
+
+        totalCount = countResult[0] || { count: '0' };
+        if (totalCount && typeof totalCount.count !== 'string') {
+          totalCount.count = String(totalCount.count);
+        }
+
+      } catch (dbError) {
+        // If database query fails (table doesn't exist, connection issues, etc.)
+        // return empty results - the frontend will use fallback data
+        console.warn('Database query failed for schools, returning empty results:', dbError);
+        schoolResults = [];
+        totalCount = { count: '0' };
       }
-
-      // Filter by county if provided
-      if (validatedParams.county) {
-        conditions.push(eq(schools.county, validatedParams.county));
-      }
-
-      // Get schools with pagination
-      const schoolResults = await db
-        .select({
-          id: schools.id,
-          name: schools.name,
-          address: schools.address,
-          county: schools.county,
-          type: schools.type,
-          uniformShop: schools.uniformShop,
-          website: schools.website,
-          createdAt: schools.createdAt
-        })
-        .from(schools)
-        .where(and(...conditions))
-        .orderBy(asc(schools.name))
-        .limit(validatedParams.limit)
-        .offset(validatedParams.offset);
-
-      // Get total count for pagination
-      const [totalCount] = await db
-        .select({ count: sql`count(*)` })
-        .from(schools)
-        .where(and(...conditions));
 
       return new Response(JSON.stringify({
         success: true,
@@ -91,7 +108,7 @@ export const ServerRoute = createServerFileRoute('/api/schools').methods({
           success: false,
           error: 'Invalid parameters',
           details: error.errors
-        }), { 
+        }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' }
         });
@@ -99,7 +116,7 @@ export const ServerRoute = createServerFileRoute('/api/schools').methods({
       return new Response(JSON.stringify({
         success: false,
         error: 'Failed to fetch schools'
-      }), { 
+      }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
       });

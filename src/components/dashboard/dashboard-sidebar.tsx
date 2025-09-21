@@ -110,7 +110,13 @@ const productsNavigation = [
 
 const spipUniformNavigation = [
   {
-    title: "Data Verification",
+    title: "Schools",
+    url: "/dashboard/spipuniform/schools",
+    icon: School,
+    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
+  },
+  {
+    title: "Localities",
     url: "/dashboard/spipuniform/data-verification",
     icon: MapPin,
     requiredPermission: "viewDashboard", // Using basic dashboard permission for now

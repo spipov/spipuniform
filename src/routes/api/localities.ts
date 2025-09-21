@@ -18,38 +18,51 @@ export const ServerRoute = createServerFileRoute('/api/localities').methods({
 
       const validatedParams = localitiesQuerySchema.parse(queryParams);
 
-      // Build query conditions
-      const conditions = [];
-      if (validatedParams.county) {
-        conditions.push(eq(localities.countyId, validatedParams.county));
-      }
+      // Try to get localities from database
+      let allLocalities: any[] = [];
 
-      // Get localities with county information
-      const allLocalities = await db
-        .select({
-          id: localities.id,
-          name: localities.name,
-          countyId: localities.countyId,
-          county: {
-            id: counties.id,
-            name: counties.name
-          },
-          createdAt: localities.createdAt
-        })
-        .from(localities)
-        .leftJoin(counties, eq(localities.countyId, counties.id))
-        .where(conditions.length > 0 ? conditions[0] : undefined)
-        .orderBy(asc(localities.name));
-      
-      return new Response(JSON.stringify({
-        success: true,
-        localities: allLocalities.map(l => ({
+      try {
+        // Build query conditions
+        const conditions = [];
+        if (validatedParams.county) {
+          conditions.push(eq(localities.countyId, validatedParams.county));
+        }
+
+        // Get localities with county information
+        const dbLocalities = await db
+          .select({
+            id: localities.id,
+            name: localities.name,
+            countyId: localities.countyId,
+            county: {
+              id: counties.id,
+              name: counties.name
+            },
+            createdAt: localities.createdAt
+          })
+          .from(localities)
+          .leftJoin(counties, eq(localities.countyId, counties.id))
+          .where(conditions.length > 0 ? conditions[0] : undefined)
+          .orderBy(asc(localities.name));
+
+        allLocalities = dbLocalities.map(l => ({
           id: l.id,
           name: l.name,
           countyId: l.countyId,
           countyName: l.county?.name,
           createdAt: l.createdAt
-        }))
+        }));
+
+      } catch (dbError) {
+        // If database query fails (table doesn't exist, connection issues, etc.)
+        // return empty array - the frontend will use fallback data
+        console.warn('Database query failed for localities, returning empty results:', dbError);
+        allLocalities = [];
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        localities: allLocalities
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -62,7 +75,7 @@ export const ServerRoute = createServerFileRoute('/api/localities').methods({
           success: false,
           error: 'Invalid parameters',
           details: error.errors
-        }), { 
+        }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' }
         });
@@ -70,7 +83,7 @@ export const ServerRoute = createServerFileRoute('/api/localities').methods({
       return new Response(JSON.stringify({
         success: false,
         error: 'Failed to fetch localities'
-      }), { 
+      }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
       });

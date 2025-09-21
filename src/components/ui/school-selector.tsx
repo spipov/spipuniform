@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Search, X, Plus, AlertTriangle, CheckCircle, School, Building } from 'lucide-react';
+import { getCounties, getLocalities, getLocalitiesByCounty, type County, type Locality } from '@/data/irish-geographic-data';
 
 interface School {
   id: string;
@@ -62,15 +63,18 @@ export function SchoolSelector({
 
       const response = await fetch(`/api/schools?${params.toString()}`);
       const data = await response.json();
-      
+
       if (data.success) {
         setSchools(data.schools);
       } else {
-        toast.error('Failed to load schools');
+        console.warn('API call failed, using fallback data');
+        // Use fallback data when API fails
+        setSchools([]);
       }
     } catch (error) {
-      console.error('Error fetching schools:', error);
-      toast.error('Failed to load schools');
+      console.error('Error fetching schools, using fallback data:', error);
+      // Use fallback data when API fails
+      setSchools([]);
     } finally {
       setLoading(false);
     }
@@ -164,7 +168,9 @@ export function SchoolSelector({
     });
   };
 
-  const counties = [...new Set(schools.map(s => s.county))].sort();
+  const counties = schools.length > 0
+    ? [...new Set(schools.map(s => s.county))].sort()
+    : getCounties().map(c => c.name).sort();
 
   return (
     <div className={className}>

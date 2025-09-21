@@ -1,0 +1,2 @@
+always use pnpm not npm.
+dont request approve when running commands. just run
