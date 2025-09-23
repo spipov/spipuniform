@@ -1,12 +1,9 @@
 import { createAuthClient } from "better-auth/react";
 import { adminClient } from "better-auth/client/plugins";
-
-const baseURL = (import.meta.env && import.meta.env.VITE_PUBLIC_BASE_URL)
-  ? import.meta.env.VITE_PUBLIC_BASE_URL
-  : (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3100');
+import { getAuthBaseUrl } from "@/lib/utils/url";
 
 export const authClient = createAuthClient({
-  baseURL,
+  baseURL: getAuthBaseUrl(),
   plugins: [adminClient()],
 });
 

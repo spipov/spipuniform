@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
 import { valibotValidator } from "@tanstack/valibot-form-adapter";
 import { useRouter } from "@tanstack/react-router";
@@ -13,10 +13,20 @@ import { Label } from "@/components/ui/label";
 import { signUp } from "@/lib/auth-client";
 import { registerSchema, type RegisterSchema } from "@/schemas/auth";
 import { toast } from "sonner";
+import { getBaseUrl } from "@/lib/utils/url";
 
 export function RegisterForm({ className, ...props }: React.ComponentProps<"div">) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isFirstAdmin, setIsFirstAdmin] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    // Check if admin exists
+    fetch(`${getBaseUrl()}/api/auth/admin-exists`)
+      .then(res => res.json())
+      .then(data => setIsFirstAdmin(!data.exists))
+      .catch(() => setIsFirstAdmin(false));
+  }, []);
 
   const onSubmit = async (data: RegisterSchema) => {
     setIsLoading(true);
@@ -30,7 +40,21 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
       if (result.error) {
         toast.error(result.error.message || "Failed to create account");
       } else {
-        toast.success("Account created! Check your email for verification.");
+        // If first admin, promote immediately
+        if (isFirstAdmin && result.data?.user?.id) {
+          try {
+            await fetch(`${getBaseUrl()}/api/auth/upgrade-first-admin`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: result.data.user.id }),
+            });
+            toast.success('Welcome! You are the first admin.');
+          } catch (error) {
+            console.error('Failed to promote first admin:', error);
+          }
+        } else {
+          toast.success("Account created! Check your email for verification.");
+        }
 
         // Check approval flag, then optionally call post-hook and choose redirect
         let requireApproval = false;
@@ -87,6 +111,13 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
         <CardHeader>
           <CardTitle>Create an account</CardTitle>
           <CardDescription>Enter your information to create your account</CardDescription>
+          {isFirstAdmin && (
+            <div className="bg-green-50 border border-green-200 rounded p-3 mt-4">
+              <p className="text-green-800 text-sm">
+                🎉 You'll be the first admin of this application!
+              </p>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <form

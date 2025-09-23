@@ -97,8 +97,10 @@ import { ServerRoute as ApiEmailSettingsServerRouteImport } from './routes/api/e
 import { ServerRoute as ApiEmailLogsServerRouteImport } from './routes/api/email/logs'
 import { ServerRoute as ApiEmailFragmentsServerRouteImport } from './routes/api/email/fragments'
 import { ServerRoute as ApiBrandingActiveServerRouteImport } from './routes/api/branding/active'
+import { ServerRoute as ApiAuthUpgradeFirstAdminServerRouteImport } from './routes/api/auth/upgrade-first-admin'
 import { ServerRoute as ApiAuthSignupPostHookServerRouteImport } from './routes/api/auth/signup-post-hook'
 import { ServerRoute as ApiAuthPermissionsServerRouteImport } from './routes/api/auth/permissions'
+import { ServerRoute as ApiAuthAdminExistsServerRouteImport } from './routes/api/auth/admin-exists'
 import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth/$'
 import { ServerRoute as ApiAuthSettingsFlagServerRouteImport } from './routes/api/auth-settings.flag'
 import { ServerRoute as ApiAdminDashboardStatsServerRouteImport } from './routes/api/admin/dashboard-stats'
@@ -579,6 +581,12 @@ const ApiBrandingActiveServerRoute = ApiBrandingActiveServerRouteImport.update({
   path: '/api/branding/active',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiAuthUpgradeFirstAdminServerRoute =
+  ApiAuthUpgradeFirstAdminServerRouteImport.update({
+    id: '/api/auth/upgrade-first-admin',
+    path: '/api/auth/upgrade-first-admin',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiAuthSignupPostHookServerRoute =
   ApiAuthSignupPostHookServerRouteImport.update({
     id: '/api/auth/signup-post-hook',
@@ -589,6 +597,12 @@ const ApiAuthPermissionsServerRoute =
   ApiAuthPermissionsServerRouteImport.update({
     id: '/api/auth/permissions',
     path: '/api/auth/permissions',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiAuthAdminExistsServerRoute =
+  ApiAuthAdminExistsServerRouteImport.update({
+    id: '/api/auth/admin-exists',
+    path: '/api/auth/admin-exists',
     getParentRoute: () => rootServerRouteImport,
   } as any)
 const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
@@ -1034,8 +1048,10 @@ export interface FileServerRoutesByFullPath {
   '/api/admin/dashboard-stats': typeof ApiAdminDashboardStatsServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/auth/admin-exists': typeof ApiAuthAdminExistsServerRoute
   '/api/auth/permissions': typeof ApiAuthPermissionsServerRoute
   '/api/auth/signup-post-hook': typeof ApiAuthSignupPostHookServerRoute
+  '/api/auth/upgrade-first-admin': typeof ApiAuthUpgradeFirstAdminServerRoute
   '/api/branding/active': typeof ApiBrandingActiveServerRoute
   '/api/email/fragments': typeof ApiEmailFragmentsServerRouteWithChildren
   '/api/email/logs': typeof ApiEmailLogsServerRoute
@@ -1110,8 +1126,10 @@ export interface FileServerRoutesByTo {
   '/api/admin/dashboard-stats': typeof ApiAdminDashboardStatsServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/auth/admin-exists': typeof ApiAuthAdminExistsServerRoute
   '/api/auth/permissions': typeof ApiAuthPermissionsServerRoute
   '/api/auth/signup-post-hook': typeof ApiAuthSignupPostHookServerRoute
+  '/api/auth/upgrade-first-admin': typeof ApiAuthUpgradeFirstAdminServerRoute
   '/api/branding/active': typeof ApiBrandingActiveServerRoute
   '/api/email/fragments': typeof ApiEmailFragmentsServerRouteWithChildren
   '/api/email/logs': typeof ApiEmailLogsServerRoute
@@ -1187,8 +1205,10 @@ export interface FileServerRoutesById {
   '/api/admin/dashboard-stats': typeof ApiAdminDashboardStatsServerRoute
   '/api/auth-settings/flag': typeof ApiAuthSettingsFlagServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/auth/admin-exists': typeof ApiAuthAdminExistsServerRoute
   '/api/auth/permissions': typeof ApiAuthPermissionsServerRoute
   '/api/auth/signup-post-hook': typeof ApiAuthSignupPostHookServerRoute
+  '/api/auth/upgrade-first-admin': typeof ApiAuthUpgradeFirstAdminServerRoute
   '/api/branding/active': typeof ApiBrandingActiveServerRoute
   '/api/email/fragments': typeof ApiEmailFragmentsServerRouteWithChildren
   '/api/email/logs': typeof ApiEmailLogsServerRoute
@@ -1265,8 +1285,10 @@ export interface FileServerRouteTypes {
     | '/api/admin/dashboard-stats'
     | '/api/auth-settings/flag'
     | '/api/auth/$'
+    | '/api/auth/admin-exists'
     | '/api/auth/permissions'
     | '/api/auth/signup-post-hook'
+    | '/api/auth/upgrade-first-admin'
     | '/api/branding/active'
     | '/api/email/fragments'
     | '/api/email/logs'
@@ -1341,8 +1363,10 @@ export interface FileServerRouteTypes {
     | '/api/admin/dashboard-stats'
     | '/api/auth-settings/flag'
     | '/api/auth/$'
+    | '/api/auth/admin-exists'
     | '/api/auth/permissions'
     | '/api/auth/signup-post-hook'
+    | '/api/auth/upgrade-first-admin'
     | '/api/branding/active'
     | '/api/email/fragments'
     | '/api/email/logs'
@@ -1417,8 +1441,10 @@ export interface FileServerRouteTypes {
     | '/api/admin/dashboard-stats'
     | '/api/auth-settings/flag'
     | '/api/auth/$'
+    | '/api/auth/admin-exists'
     | '/api/auth/permissions'
     | '/api/auth/signup-post-hook'
+    | '/api/auth/upgrade-first-admin'
     | '/api/branding/active'
     | '/api/email/fragments'
     | '/api/email/logs'
@@ -1493,8 +1519,10 @@ export interface RootServerRouteChildren {
   ApiAdminAnalyticsServerRoute: typeof ApiAdminAnalyticsServerRoute
   ApiAdminDashboardStatsServerRoute: typeof ApiAdminDashboardStatsServerRoute
   ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
+  ApiAuthAdminExistsServerRoute: typeof ApiAuthAdminExistsServerRoute
   ApiAuthPermissionsServerRoute: typeof ApiAuthPermissionsServerRoute
   ApiAuthSignupPostHookServerRoute: typeof ApiAuthSignupPostHookServerRoute
+  ApiAuthUpgradeFirstAdminServerRoute: typeof ApiAuthUpgradeFirstAdminServerRoute
   ApiBrandingActiveServerRoute: typeof ApiBrandingActiveServerRoute
   ApiEmailFragmentsServerRoute: typeof ApiEmailFragmentsServerRouteWithChildren
   ApiEmailLogsServerRoute: typeof ApiEmailLogsServerRoute
@@ -2137,6 +2165,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiBrandingActiveServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/auth/upgrade-first-admin': {
+      id: '/api/auth/upgrade-first-admin'
+      path: '/api/auth/upgrade-first-admin'
+      fullPath: '/api/auth/upgrade-first-admin'
+      preLoaderRoute: typeof ApiAuthUpgradeFirstAdminServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/auth/signup-post-hook': {
       id: '/api/auth/signup-post-hook'
       path: '/api/auth/signup-post-hook'
@@ -2149,6 +2184,13 @@ declare module '@tanstack/react-start/server' {
       path: '/api/auth/permissions'
       fullPath: '/api/auth/permissions'
       preLoaderRoute: typeof ApiAuthPermissionsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/admin-exists': {
+      id: '/api/auth/admin-exists'
+      path: '/api/auth/admin-exists'
+      fullPath: '/api/auth/admin-exists'
+      preLoaderRoute: typeof ApiAuthAdminExistsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/auth/$': {
@@ -2579,8 +2621,10 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiAdminAnalyticsServerRoute: ApiAdminAnalyticsServerRoute,
   ApiAdminDashboardStatsServerRoute: ApiAdminDashboardStatsServerRoute,
   ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
+  ApiAuthAdminExistsServerRoute: ApiAuthAdminExistsServerRoute,
   ApiAuthPermissionsServerRoute: ApiAuthPermissionsServerRoute,
   ApiAuthSignupPostHookServerRoute: ApiAuthSignupPostHookServerRoute,
+  ApiAuthUpgradeFirstAdminServerRoute: ApiAuthUpgradeFirstAdminServerRoute,
   ApiBrandingActiveServerRoute: ApiBrandingActiveServerRoute,
   ApiEmailFragmentsServerRoute: ApiEmailFragmentsServerRouteWithChildren,
   ApiEmailLogsServerRoute: ApiEmailLogsServerRoute,
