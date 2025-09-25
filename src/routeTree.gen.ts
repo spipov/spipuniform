@@ -83,6 +83,7 @@ import { ServerRoute as ApiUsersActionsServerRouteImport } from './routes/api/us
 import { ServerRoute as ApiUsersUserIdServerRouteImport } from './routes/api/users/$userId'
 import { ServerRoute as ApiTransactionsIdServerRouteImport } from './routes/api/transactions/$id'
 import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api/storage/settings'
+import { ServerRoute as ApiSchoolsIdServerRouteImport } from './routes/api/schools/$id'
 import { ServerRoute as ApiRolesRoleIdServerRouteImport } from './routes/api/roles/$roleId'
 import { ServerRoute as ApiRequestsIdServerRouteImport } from './routes/api/requests/$id'
 import { ServerRoute as ApiProfilesShopServerRouteImport } from './routes/api.profiles.shop'
@@ -507,6 +508,11 @@ const ApiStorageSettingsServerRoute =
     path: '/api/storage/settings',
     getParentRoute: () => rootServerRouteImport,
   } as any)
+const ApiSchoolsIdServerRoute = ApiSchoolsIdServerRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiSchoolsServerRoute,
+} as any)
 const ApiRolesRoleIdServerRoute = ApiRolesRoleIdServerRouteImport.update({
   id: '/api/roles/$roleId',
   path: '/api/roles/$roleId',
@@ -1036,7 +1042,7 @@ export interface FileServerRoutesByFullPath {
   '/api/requests': typeof ApiRequestsServerRouteWithChildren
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
   '/api/school-submissions': typeof ApiSchoolSubmissionsServerRouteWithChildren
-  '/api/schools': typeof ApiSchoolsServerRoute
+  '/api/schools': typeof ApiSchoolsServerRouteWithChildren
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
   '/api/test': typeof ApiTestServerRoute
@@ -1066,6 +1072,7 @@ export interface FileServerRoutesByFullPath {
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
   '/api/requests/$id': typeof ApiRequestsIdServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
+  '/api/schools/$id': typeof ApiSchoolsIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/transactions/$id': typeof ApiTransactionsIdServerRouteWithChildren
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
@@ -1114,7 +1121,7 @@ export interface FileServerRoutesByTo {
   '/api/requests': typeof ApiRequestsServerRouteWithChildren
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
   '/api/school-submissions': typeof ApiSchoolSubmissionsServerRouteWithChildren
-  '/api/schools': typeof ApiSchoolsServerRoute
+  '/api/schools': typeof ApiSchoolsServerRouteWithChildren
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
   '/api/test': typeof ApiTestServerRoute
@@ -1144,6 +1151,7 @@ export interface FileServerRoutesByTo {
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
   '/api/requests/$id': typeof ApiRequestsIdServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
+  '/api/schools/$id': typeof ApiSchoolsIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/transactions/$id': typeof ApiTransactionsIdServerRouteWithChildren
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
@@ -1193,7 +1201,7 @@ export interface FileServerRoutesById {
   '/api/requests': typeof ApiRequestsServerRouteWithChildren
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
   '/api/school-submissions': typeof ApiSchoolSubmissionsServerRouteWithChildren
-  '/api/schools': typeof ApiSchoolsServerRoute
+  '/api/schools': typeof ApiSchoolsServerRouteWithChildren
   '/api/shop-options': typeof ApiShopOptionsServerRoute
   '/api/shops': typeof ApiShopsServerRoute
   '/api/test': typeof ApiTestServerRoute
@@ -1223,6 +1231,7 @@ export interface FileServerRoutesById {
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
   '/api/requests/$id': typeof ApiRequestsIdServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
+  '/api/schools/$id': typeof ApiSchoolsIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/transactions/$id': typeof ApiTransactionsIdServerRouteWithChildren
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
@@ -1303,6 +1312,7 @@ export interface FileServerRouteTypes {
     | '/api/profiles/shop'
     | '/api/requests/$id'
     | '/api/roles/$roleId'
+    | '/api/schools/$id'
     | '/api/storage/settings'
     | '/api/transactions/$id'
     | '/api/users/$userId'
@@ -1381,6 +1391,7 @@ export interface FileServerRouteTypes {
     | '/api/profiles/shop'
     | '/api/requests/$id'
     | '/api/roles/$roleId'
+    | '/api/schools/$id'
     | '/api/storage/settings'
     | '/api/transactions/$id'
     | '/api/users/$userId'
@@ -1459,6 +1470,7 @@ export interface FileServerRouteTypes {
     | '/api/profiles/shop'
     | '/api/requests/$id'
     | '/api/roles/$roleId'
+    | '/api/schools/$id'
     | '/api/storage/settings'
     | '/api/transactions/$id'
     | '/api/users/$userId'
@@ -1508,7 +1520,7 @@ export interface RootServerRouteChildren {
   ApiRequestsServerRoute: typeof ApiRequestsServerRouteWithChildren
   ApiSchoolApprovalRequestsServerRoute: typeof ApiSchoolApprovalRequestsServerRoute
   ApiSchoolSubmissionsServerRoute: typeof ApiSchoolSubmissionsServerRouteWithChildren
-  ApiSchoolsServerRoute: typeof ApiSchoolsServerRoute
+  ApiSchoolsServerRoute: typeof ApiSchoolsServerRouteWithChildren
   ApiShopOptionsServerRoute: typeof ApiShopOptionsServerRoute
   ApiShopsServerRoute: typeof ApiShopsServerRoute
   ApiTestServerRoute: typeof ApiTestServerRoute
@@ -2067,6 +2079,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiStorageSettingsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/schools/$id': {
+      id: '/api/schools/$id'
+      path: '/$id'
+      fullPath: '/api/schools/$id'
+      preLoaderRoute: typeof ApiSchoolsIdServerRouteImport
+      parentRoute: typeof ApiSchoolsServerRoute
+    }
     '/api/roles/$roleId': {
       id: '/api/roles/$roleId'
       path: '/api/roles/$roleId'
@@ -2525,6 +2544,17 @@ const ApiSchoolSubmissionsServerRouteWithChildren =
     ApiSchoolSubmissionsServerRouteChildren,
   )
 
+interface ApiSchoolsServerRouteChildren {
+  ApiSchoolsIdServerRoute: typeof ApiSchoolsIdServerRoute
+}
+
+const ApiSchoolsServerRouteChildren: ApiSchoolsServerRouteChildren = {
+  ApiSchoolsIdServerRoute: ApiSchoolsIdServerRoute,
+}
+
+const ApiSchoolsServerRouteWithChildren =
+  ApiSchoolsServerRoute._addFileChildren(ApiSchoolsServerRouteChildren)
+
 interface ApiEmailFragmentsServerRouteChildren {
   ApiEmailFragmentsDefaultServerRoute: typeof ApiEmailFragmentsDefaultServerRoute
 }
@@ -2610,7 +2640,7 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiRequestsServerRoute: ApiRequestsServerRouteWithChildren,
   ApiSchoolApprovalRequestsServerRoute: ApiSchoolApprovalRequestsServerRoute,
   ApiSchoolSubmissionsServerRoute: ApiSchoolSubmissionsServerRouteWithChildren,
-  ApiSchoolsServerRoute: ApiSchoolsServerRoute,
+  ApiSchoolsServerRoute: ApiSchoolsServerRouteWithChildren,
   ApiShopOptionsServerRoute: ApiShopOptionsServerRoute,
   ApiShopsServerRoute: ApiShopsServerRoute,
   ApiTestServerRoute: ApiTestServerRoute,

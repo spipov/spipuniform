@@ -82,12 +82,12 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
           fallbackConditions.push(eq(schools.level, level as 'primary' | 'secondary'));
         }
         if (search && search.trim().length > 0) {
-          fallbackConditions.push(
-            or(
-              like(schools.name, `%${search.trim()}%`),
-              like(schools.address, `%${search.trim()}%`)
-            )
-          );
+          const searchTerm = search.trim();
+          if (searchTerm) {
+            const nameCondition = like(schools.name, `%${searchTerm}%`);
+            const addressCondition = like(schools.address, `%${searchTerm}%`);
+            fallbackConditions.push(or(nameCondition, addressCondition));
+          }
         }
         
         const fallbackResult = await db
@@ -138,7 +138,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
   POST: async ({ request }) => {
     try {
       const body = await request.json();
-      const { name, address, countyId, localityId, level, website, phone, email } = body;
+      const { name, address, countyId, localityId, level, website, phone, email, isActive } = body;
 
       // Validate required fields
       if (!name || !countyId || !level) {
@@ -159,8 +159,8 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
           website,
           phone,
           email,
-          csvSourceRow: null, // Mark as manually added
-          isActive: true
+          csvSourceRow: null, // Mark as manually added (not from CSV)
+          isActive: isActive || false // Use the isActive value from the form
         })
         .returning();
 
