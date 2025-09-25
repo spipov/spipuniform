@@ -41,6 +41,7 @@ import { Route as DashboardUserManagementUsersRouteImport } from './routes/dashb
 import { Route as DashboardUserManagementRolesRouteImport } from './routes/dashboard/user-management/roles'
 import { Route as DashboardUserManagementPermissionsRouteImport } from './routes/dashboard/user-management/permissions'
 import { Route as DashboardUserManagementConsolidatedRouteImport } from './routes/dashboard/user-management/consolidated'
+import { Route as DashboardSpipuniformShopRouteImport } from './routes/dashboard/spipuniform/shop'
 import { Route as DashboardSpipuniformSchoolsRouteImport } from './routes/dashboard/spipuniform/schools'
 import { Route as DashboardSpipuniformDataVerificationRouteImport } from './routes/dashboard/spipuniform/data-verification'
 import { Route as DashboardProfileShopOldRouteImport } from './routes/dashboard/profile/shop-old'
@@ -285,6 +286,12 @@ const DashboardUserManagementConsolidatedRoute =
   DashboardUserManagementConsolidatedRouteImport.update({
     id: '/user-management/consolidated',
     path: '/user-management/consolidated',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardSpipuniformShopRoute =
+  DashboardSpipuniformShopRouteImport.update({
+    id: '/spipuniform/shop',
+    path: '/spipuniform/shop',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardSpipuniformSchoolsRoute =
@@ -787,6 +794,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/profile/shop-old': typeof DashboardProfileShopOldRoute
   '/dashboard/spipuniform/data-verification': typeof DashboardSpipuniformDataVerificationRoute
   '/dashboard/spipuniform/schools': typeof DashboardSpipuniformSchoolsRoute
+  '/dashboard/spipuniform/shop': typeof DashboardSpipuniformShopRoute
   '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
@@ -827,6 +835,7 @@ export interface FileRoutesByTo {
   '/dashboard/profile/shop-old': typeof DashboardProfileShopOldRoute
   '/dashboard/spipuniform/data-verification': typeof DashboardSpipuniformDataVerificationRoute
   '/dashboard/spipuniform/schools': typeof DashboardSpipuniformSchoolsRoute
+  '/dashboard/spipuniform/shop': typeof DashboardSpipuniformShopRoute
   '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
@@ -869,6 +878,7 @@ export interface FileRoutesById {
   '/dashboard/profile/shop-old': typeof DashboardProfileShopOldRoute
   '/dashboard/spipuniform/data-verification': typeof DashboardSpipuniformDataVerificationRoute
   '/dashboard/spipuniform/schools': typeof DashboardSpipuniformSchoolsRoute
+  '/dashboard/spipuniform/shop': typeof DashboardSpipuniformShopRoute
   '/dashboard/user-management/consolidated': typeof DashboardUserManagementConsolidatedRoute
   '/dashboard/user-management/permissions': typeof DashboardUserManagementPermissionsRoute
   '/dashboard/user-management/roles': typeof DashboardUserManagementRolesRoute
@@ -912,6 +922,7 @@ export interface FileRouteTypes {
     | '/dashboard/profile/shop-old'
     | '/dashboard/spipuniform/data-verification'
     | '/dashboard/spipuniform/schools'
+    | '/dashboard/spipuniform/shop'
     | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
@@ -952,6 +963,7 @@ export interface FileRouteTypes {
     | '/dashboard/profile/shop-old'
     | '/dashboard/spipuniform/data-verification'
     | '/dashboard/spipuniform/schools'
+    | '/dashboard/spipuniform/shop'
     | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
@@ -993,6 +1005,7 @@ export interface FileRouteTypes {
     | '/dashboard/profile/shop-old'
     | '/dashboard/spipuniform/data-verification'
     | '/dashboard/spipuniform/schools'
+    | '/dashboard/spipuniform/shop'
     | '/dashboard/user-management/consolidated'
     | '/dashboard/user-management/permissions'
     | '/dashboard/user-management/roles'
@@ -1781,6 +1794,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardUserManagementConsolidatedRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/spipuniform/shop': {
+      id: '/dashboard/spipuniform/shop'
+      path: '/spipuniform/shop'
+      fullPath: '/dashboard/spipuniform/shop'
+      preLoaderRoute: typeof DashboardSpipuniformShopRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/spipuniform/schools': {
       id: '/dashboard/spipuniform/schools'
       path: '/spipuniform/schools'
@@ -2403,6 +2423,7 @@ interface DashboardRouteChildren {
   DashboardProfileShopOldRoute: typeof DashboardProfileShopOldRoute
   DashboardSpipuniformDataVerificationRoute: typeof DashboardSpipuniformDataVerificationRoute
   DashboardSpipuniformSchoolsRoute: typeof DashboardSpipuniformSchoolsRoute
+  DashboardSpipuniformShopRoute: typeof DashboardSpipuniformShopRoute
   DashboardUserManagementConsolidatedRoute: typeof DashboardUserManagementConsolidatedRoute
   DashboardUserManagementPermissionsRoute: typeof DashboardUserManagementPermissionsRoute
   DashboardUserManagementRolesRoute: typeof DashboardUserManagementRolesRoute
@@ -2430,6 +2451,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardSpipuniformDataVerificationRoute:
     DashboardSpipuniformDataVerificationRoute,
   DashboardSpipuniformSchoolsRoute: DashboardSpipuniformSchoolsRoute,
+  DashboardSpipuniformShopRoute: DashboardSpipuniformShopRoute,
   DashboardUserManagementConsolidatedRoute:
     DashboardUserManagementConsolidatedRoute,
   DashboardUserManagementPermissionsRoute:
