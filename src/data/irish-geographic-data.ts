@@ -12,6 +12,15 @@ export interface Locality {
   countyId: string;
 }
 
+export interface School {
+  id: string;
+  name: string;
+  address?: string;
+  countyId: string;
+  localityId: string;
+  level: 'primary' | 'secondary';
+}
+
 // Irish counties with UUIDs
 export const fallbackCounties: County[] = [
   { id: 'cork-county', name: 'Cork' },
@@ -161,6 +170,69 @@ export const fallbackLocalities: Locality[] = [
   { id: 'portlaoise', name: 'Portlaoise', countyId: 'laois-county' },
   { id: 'kilkenny-city', name: 'Kilkenny City', countyId: 'kilkenny-county' },
   { id: 'carlow-town', name: 'Carlow Town', countyId: 'carlow-county' }
+];
+
+// Sample schools for fallback data
+export const fallbackSchools: School[] = [
+  // Cork Schools
+  { id: 'cork-primary-1', name: 'St. Mary\'s Primary School', address: 'Main Street, Cork City', countyId: 'cork-county', localityId: 'cork-city', level: 'primary' },
+  { id: 'cork-primary-2', name: 'Scoil Naomh Seosamh', address: 'Ballincollig', countyId: 'cork-county', localityId: 'ballincollig', level: 'primary' },
+  { id: 'cork-secondary-1', name: 'Coláiste Chríost Rí', address: 'Cork City', countyId: 'cork-county', localityId: 'cork-city', level: 'secondary' },
+  { id: 'cork-secondary-2', name: 'Presentation Secondary School', address: 'Ballincollig', countyId: 'cork-county', localityId: 'ballincollig', level: 'secondary' },
+
+  // Dublin Schools
+  { id: 'dublin-primary-1', name: 'St. Patrick\'s National School', address: 'Dublin City', countyId: 'dublin-county', localityId: 'dublin-city', level: 'primary' },
+  { id: 'dublin-primary-2', name: 'Sacred Heart Primary School', address: 'Tallaght', countyId: 'dublin-county', localityId: 'tallaght', level: 'primary' },
+  { id: 'dublin-secondary-1', name: 'St. Joseph\'s Secondary School', address: 'Dublin City', countyId: 'dublin-county', localityId: 'dublin-city', level: 'secondary' },
+  { id: 'dublin-secondary-2', name: 'Tallaght Community School', address: 'Tallaght', countyId: 'dublin-county', localityId: 'tallaght', level: 'secondary' },
+
+  // Galway Schools
+  { id: 'galway-primary-1', name: 'Scoil Íde Primary School', address: 'Galway City', countyId: 'galway-county', localityId: 'galway-city', level: 'primary' },
+  { id: 'galway-primary-2', name: 'Scoil Naomh Pádraig', address: 'Oranmore', countyId: 'galway-county', localityId: 'oramnore', level: 'primary' },
+  { id: 'galway-secondary-1', name: 'Coláiste Éinde', address: 'Galway City', countyId: 'galway-county', localityId: 'galway-city', level: 'secondary' },
+  { id: 'galway-secondary-2', name: 'Oranmore Community School', address: 'Oranmore', countyId: 'galway-county', localityId: 'oramnore', level: 'secondary' },
+
+  // Kerry Schools
+  { id: 'kerry-primary-1', name: 'St. John\'s Primary School', address: 'Tralee', countyId: 'kerry-county', localityId: 'tralee', level: 'primary' },
+  { id: 'kerry-primary-2', name: 'Scoil Mhuire', address: 'Killarney', countyId: 'kerry-county', localityId: 'killarney', level: 'primary' },
+  { id: 'kerry-secondary-1', name: 'Tralee Community College', address: 'Tralee', countyId: 'kerry-county', localityId: 'tralee', level: 'secondary' },
+  { id: 'kerry-secondary-2', name: 'St. Brigid\'s Secondary School', address: 'Killarney', countyId: 'kerry-county', localityId: 'killarney', level: 'secondary' },
+
+  // Limerick Schools
+  { id: 'limerick-primary-1', name: 'St. Mary\'s Primary School', address: 'Limerick City', countyId: 'limerick-county', localityId: 'limerick-city', level: 'primary' },
+  { id: 'limerick-primary-2', name: 'Scoil Naomh Seosamh', address: 'Newcastle West', countyId: 'limerick-county', localityId: 'newcastle-west', level: 'primary' },
+  { id: 'limerick-secondary-1', name: 'Ardscoil Rís', address: 'Limerick City', countyId: 'limerick-county', localityId: 'limerick-city', level: 'secondary' },
+  { id: 'limerick-secondary-2', name: 'Coláiste Chiaráin', address: 'Newcastle West', countyId: 'limerick-county', localityId: 'newcastle-west', level: 'secondary' },
+
+  // Waterford Schools
+  { id: 'waterford-primary-1', name: 'St. Declan\'s Primary School', address: 'Waterford City', countyId: 'waterford-county', localityId: 'waterford-city', level: 'primary' },
+  { id: 'waterford-primary-2', name: 'Scoil Naomh Pádraig', address: 'Dungarvan', countyId: 'waterford-county', localityId: 'dungarvan', level: 'primary' },
+  { id: 'waterford-secondary-1', name: 'De La Salle College', address: 'Waterford City', countyId: 'waterford-county', localityId: 'waterford-city', level: 'secondary' },
+  { id: 'waterford-secondary-2', name: 'St. Augustine\'s College', address: 'Dungarvan', countyId: 'waterford-county', localityId: 'dungarvan', level: 'secondary' },
+
+  // Wexford Schools
+  { id: 'wexford-primary-1', name: 'St. Iberius Primary School', address: 'Wexford Town', countyId: 'wexford-county', localityId: 'wexford-town', level: 'primary' },
+  { id: 'wexford-primary-2', name: 'Scoil Naomh Bríd', address: 'Enniscorthy', countyId: 'wexford-county', localityId: 'enniscorthy', level: 'primary' },
+  { id: 'wexford-secondary-1', name: 'Wexford CBS', address: 'Wexford Town', countyId: 'wexford-county', localityId: 'wexford-town', level: 'secondary' },
+  { id: 'wexford-secondary-2', name: 'Enniscorthy Vocational College', address: 'Enniscorthy', countyId: 'wexford-county', localityId: 'enniscorthy', level: 'secondary' },
+
+  // Wicklow Schools
+  { id: 'wicklow-primary-1', name: 'St. Patrick\'s Primary School', address: 'Bray', countyId: 'wicklow-county', localityId: 'bray', level: 'primary' },
+  { id: 'wicklow-primary-2', name: 'Scoil Naomh Pádraig', address: 'Wicklow Town', countyId: 'wicklow-county', localityId: 'wicklow-town', level: 'primary' },
+  { id: 'wicklow-secondary-1', name: 'St. Kilian\'s Community School', address: 'Bray', countyId: 'wicklow-county', localityId: 'bray', level: 'secondary' },
+  { id: 'wicklow-secondary-2', name: 'Wicklow Town Community School', address: 'Wicklow Town', countyId: 'wicklow-county', localityId: 'wicklow-town', level: 'secondary' },
+
+  // Meath Schools
+  { id: 'meath-primary-1', name: 'St. Mary\'s Primary School', address: 'Navan', countyId: 'meath-county', localityId: 'navan', level: 'primary' },
+  { id: 'meath-primary-2', name: 'Scoil Naomh Seosamh', address: 'Ashbourne', countyId: 'meath-county', localityId: 'ashbourne', level: 'primary' },
+  { id: 'meath-secondary-1', name: 'St. Patrick\'s Classical School', address: 'Navan', countyId: 'meath-county', localityId: 'navan', level: 'secondary' },
+  { id: 'meath-secondary-2', name: 'Ashbourne Community School', address: 'Ashbourne', countyId: 'meath-county', localityId: 'ashbourne', level: 'secondary' },
+
+  // Kildare Schools
+  { id: 'kildare-primary-1', name: 'St. Conleth\'s Primary School', address: 'Naas', countyId: 'kildare-county', localityId: 'naas', level: 'primary' },
+  { id: 'kildare-primary-2', name: 'Scoil Naomh Bríd', address: 'Newbridge', countyId: 'kildare-county', localityId: 'newbridge', level: 'primary' },
+  { id: 'kildare-secondary-1', name: 'Naas CBS', address: 'Naas', countyId: 'kildare-county', localityId: 'naas', level: 'secondary' },
+  { id: 'kildare-secondary-2', name: 'Newbridge College', address: 'Newbridge', countyId: 'kildare-county', localityId: 'newbridge', level: 'secondary' }
 ];
 
 // Helper functions

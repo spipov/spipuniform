@@ -132,56 +132,88 @@ export const ServerRoute = createServerFileRoute('/api/marketplace/search').meth
         .leftJoin(counties, eq(localities.countyId, counties.id));
       
       // Build where conditions
-      const whereConditions = [
-        // Only show active listings
-        validatedParams.availableOnly ? eq(listings.status, 'active') : undefined,
-        
-        // Exclude expired listings
-        or(
-          eq(listings.expiredAt, null),
-          gte(listings.expiredAt, new Date().toISOString())
-        ),
-        
-        // Text search across title, description, school name
-        validatedParams.q ? or(
+      const whereConditions = [];
+
+      // Only show active listings
+      if (validatedParams.availableOnly) {
+        whereConditions.push(eq(listings.status, 'active'));
+      }
+
+      // Exclude expired listings
+      whereConditions.push(or(
+        eq(listings.expiredAt, null),
+        gte(listings.expiredAt, new Date().toISOString())
+      ));
+
+      // Text search across title, description, school name
+      if (validatedParams.q) {
+        whereConditions.push(or(
           ilike(listings.title, `%${validatedParams.q}%`),
           ilike(listings.description, `%${validatedParams.q}%`),
           ilike(schools.name, `%${validatedParams.q}%`)
-        ) : undefined,
-        
-        // Category filter
-        validatedParams.categoryId ? eq(productCategories.id, validatedParams.categoryId) : undefined,
-        
-        // Product type filter
-        validatedParams.productTypeId ? eq(listings.productTypeId, validatedParams.productTypeId) : undefined,
-        
-        // School filter
-        validatedParams.schoolId ? eq(listings.schoolId, validatedParams.schoolId) : undefined,
-        
-        // Location filters
-        validatedParams.localityId ? eq(listings.localityId, validatedParams.localityId) : undefined,
-        validatedParams.countyId ? eq(localities.countyId, validatedParams.countyId) : undefined,
-        
-        // Price filters
-        validatedParams.minPrice !== undefined ? or(
-          and(eq(listings.isFree, false), gte(sql`CAST(${listings.price} AS DECIMAL)`, validatedParams.minPrice)),
-          validatedParams.includeFree ? eq(listings.isFree, true) : sql`FALSE`
-        ) : undefined,
-        
-        validatedParams.maxPrice !== undefined ? or(
-          and(eq(listings.isFree, false), lte(sql`CAST(${listings.price} AS DECIMAL)`, validatedParams.maxPrice)),
-          validatedParams.includeFree ? eq(listings.isFree, true) : sql`FALSE`
-        ) : undefined,
-        
-        // Condition filters
-        validatedParams.conditionIds && validatedParams.conditionIds.length > 0 
-          ? inArray(listings.conditionId, validatedParams.conditionIds) 
-          : undefined,
-          
-        // Advanced filters
-        validatedParams.hasImages ? sql`EXISTS (SELECT 1 FROM ${listingImages} WHERE ${listingImages.listingId} = ${listings.id})` : undefined,
-        validatedParams.allowOffers !== undefined ? eq(listings.allowOffers, validatedParams.allowOffers) : undefined
-      ].filter(Boolean);
+        ));
+      }
+
+      // Category filter
+      if (validatedParams.categoryId) {
+        whereConditions.push(eq(productCategories.id, validatedParams.categoryId));
+      }
+
+      // Product type filter
+      if (validatedParams.productTypeId) {
+        whereConditions.push(eq(listings.productTypeId, validatedParams.productTypeId));
+      }
+
+      // School filter
+      if (validatedParams.schoolId) {
+        whereConditions.push(eq(listings.schoolId, validatedParams.schoolId));
+      }
+
+      // Location filters
+      if (validatedParams.localityId) {
+        whereConditions.push(eq(listings.localityId, validatedParams.localityId));
+      }
+      if (validatedParams.countyId) {
+        whereConditions.push(eq(localities.countyId, validatedParams.countyId));
+      }
+
+      // Price filters
+      if (validatedParams.minPrice !== undefined) {
+        const priceCondition = gte(sql`CAST(${listings.price} AS DECIMAL)`, validatedParams.minPrice);
+        if (validatedParams.includeFree) {
+          whereConditions.push(or(
+            and(eq(listings.isFree, false), priceCondition),
+            eq(listings.isFree, true)
+          ));
+        } else {
+          whereConditions.push(and(eq(listings.isFree, false), priceCondition));
+        }
+      }
+
+      if (validatedParams.maxPrice !== undefined) {
+        const priceCondition = lte(sql`CAST(${listings.price} AS DECIMAL)`, validatedParams.maxPrice);
+        if (validatedParams.includeFree) {
+          whereConditions.push(or(
+            and(eq(listings.isFree, false), priceCondition),
+            eq(listings.isFree, true)
+          ));
+        } else {
+          whereConditions.push(and(eq(listings.isFree, false), priceCondition));
+        }
+      }
+
+      // Condition filters
+      if (validatedParams.conditionIds && validatedParams.conditionIds.length > 0) {
+        whereConditions.push(inArray(listings.conditionId, validatedParams.conditionIds));
+      }
+
+      // Advanced filters
+      if (validatedParams.hasImages) {
+        whereConditions.push(sql`EXISTS (SELECT 1 FROM ${listingImages} WHERE ${listingImages.listingId} = ${listings.id})`);
+      }
+      if (validatedParams.allowOffers !== undefined) {
+        whereConditions.push(eq(listings.allowOffers, validatedParams.allowOffers));
+      }
       
       // Apply where conditions
       const queryWithWhere = whereConditions.length > 0 

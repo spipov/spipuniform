@@ -34,6 +34,7 @@ import {
 import { toast } from 'sonner';
 import { useSession } from '@/lib/auth-client';
 import { FavoriteButton } from '@/components/marketplace/favorite-button';
+import { HierarchicalMarketplaceFlow } from '@/components/marketplace/hierarchical-marketplace-flow';
 
 // Search parameters schema
 interface SearchParams {
@@ -51,6 +52,21 @@ interface SearchParams {
   page?: number;
   hasImages?: boolean;
   allowOffers?: boolean;
+}
+
+interface Listing {
+  id: string;
+  title: string;
+  price?: number;
+  isFree: boolean;
+  condition?: { name: string };
+  category?: { name: string };
+  school?: { name: string };
+  primaryImage?: string;
+  imageCount?: number;
+  viewCount?: number;
+  publishedAt: string;
+  distance?: number;
 }
 
 export const Route = createFileRoute('/marketplace/browse')({
@@ -353,7 +369,7 @@ function BrowsePage() {
     </div>
   );
   
-  const ListingCard = ({ listing, index }: { listing: any, index: number }) => (
+  const ListingCard = ({ listing, index }: { listing: Listing, index: number }) => (
     <Card key={listing.id} className="hover:shadow-md transition-shadow">
       <CardContent className="p-0">
         <div className={viewMode === 'grid' ? 'space-y-4' : 'flex space-x-4'}>
@@ -370,7 +386,7 @@ function BrowsePage() {
                 <Package className="h-8 w-8 text-muted-foreground" />
               </div>
             )}
-            {listing.imageCount > 1 && (
+            {listing.imageCount && listing.imageCount > 1 && (
               <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
                 +{listing.imageCount - 1}
               </div>
@@ -389,12 +405,12 @@ function BrowsePage() {
           {/* Content */}
           <div className={`${viewMode === 'grid' ? 'p-4' : 'flex-1 py-4 pr-4'} space-y-2`}>
             <div className="flex items-start justify-between">
-              <Link 
-                to={`/marketplace/listings/${listing.id}`}
+              <a
+                href={`/marketplace/listings/${listing.id}`}
                 className="text-lg font-medium hover:underline line-clamp-1"
               >
                 {listing.title}
-              </Link>
+              </a>
               <div className="flex items-center gap-2 ml-2">
                 {listing.isFree ? (
                   <Badge className="bg-green-500 text-xs">FREE</Badge>
@@ -461,214 +477,235 @@ function BrowsePage() {
           <div>
             <h1 className="text-3xl font-bold">Browse Uniforms</h1>
             <p className="text-muted-foreground">
-              {summary ? `${summary.totalResults.toLocaleString()} items available` : 'Loading...'}
+              Find uniforms by location or use advanced search
             </p>
           </div>
         </div>
-        
-        <div className="flex items-center gap-3">
-          {/* View Toggle */}
-          <div className="flex items-center border rounded-lg p-1">
-            <Button 
-              variant={viewMode === 'grid' ? 'default' : 'ghost'} 
-              size="sm"
-              onClick={() => setViewMode('grid')}
-              className="h-7 w-7 p-0"
-            >
-              <Grid3x3 className="h-4 w-4" />
-            </Button>
-            <Button 
-              variant={viewMode === 'list' ? 'default' : 'ghost'} 
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="h-7 w-7 p-0"
-            >
-              <List className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          {/* Mobile Filters */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="sm" className="md:hidden">
-                <Filter className="h-4 w-4 mr-2" />
-                Filters
-                {activeFiltersCount > 0 && (
-                  <Badge variant="secondary" className="ml-2">
-                    {activeFiltersCount}
-                  </Badge>
-                )}
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-80">
-              <SheetHeader>
-                <SheetTitle>Filters</SheetTitle>
-                <SheetDescription>
-                  Narrow down your search
-                </SheetDescription>
-              </SheetHeader>
-              <div className="mt-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
-                <FilterContent />
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
       </div>
-      
-      <div className="flex gap-6">
-        {/* Desktop Sidebar Filters */}
-        <div className="hidden md:block w-80 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <SlidersHorizontal className="h-4 w-4" />
-                  Filters
-                </span>
-                {activeFiltersCount > 0 && (
-                  <Badge variant="secondary">{activeFiltersCount}</Badge>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <FilterContent />
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* Main Content */}
-        <div className="flex-1 space-y-4">
-          {/* Results Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {searchParams.q && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Search results for:</span>
-                  <Badge variant="outline">
-                    "{searchParams.q}"
-                    <button 
-                      onClick={() => updateSearch({ q: undefined })}
-                      className="ml-2 hover:text-destructive"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                </div>
-              )}
-              
-              {activeFiltersCount > 0 && (
-                <Button variant="outline" size="sm" onClick={clearFilters}>
-                  Clear filters ({activeFiltersCount})
-                </Button>
-              )}
-            </div>
-            
-            {/* Sort */}
-            <Select 
-              value={searchParams.sortBy || 'newest'} 
-              onValueChange={(value) => updateSearch({ sortBy: value as any })}
-            >
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest first</SelectItem>
-                <SelectItem value="oldest">Oldest first</SelectItem>
-                <SelectItem value="price_low">Price: Low to High</SelectItem>
-                <SelectItem value="price_high">Price: High to Low</SelectItem>
-                <SelectItem value="popularity">Most popular</SelectItem>
-                <SelectItem value="distance">Nearest first</SelectItem>
-              </SelectContent>
-            </Select>
+
+      {/* Mobile-first hierarchical marketplace flow */}
+      <HierarchicalMarketplaceFlow
+        onRequestCreate={(schoolId) => {
+          // Handle request creation - could navigate to requests page or show dialog
+          toast.info('Request creation flow would start here');
+        }}
+        onListingCreate={(schoolId) => {
+          // Handle listing creation - navigate to create page with school pre-filled
+          window.location.href = `/marketplace/create?schoolId=${schoolId}`;
+        }}
+      />
+
+      {/* Advanced search section */}
+      <div className="mt-8 pt-8 border-t">
+        <h2 className="text-xl font-semibold mb-4">Advanced Search</h2>
+
+        <div className="flex gap-6">
+          {/* Desktop Sidebar Filters */}
+          <div className="hidden md:block w-80 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <SlidersHorizontal className="h-4 w-4" />
+                    Filters
+                  </span>
+                  {activeFiltersCount > 0 && (
+                    <Badge variant="secondary">{activeFiltersCount}</Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FilterContent />
+              </CardContent>
+            </Card>
           </div>
-          
-          {/* Results */}
-          {isLoading ? (
-            <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-              {Array.from({ length: 12 }).map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="p-0">
-                    <div className={viewMode === 'grid' ? 'space-y-4' : 'flex space-x-4'}>
-                      <Skeleton className={`${viewMode === 'grid' ? 'aspect-square' : 'w-32 h-32'} rounded-lg`} />
-                      <div className={`${viewMode === 'grid' ? 'p-4' : 'flex-1 py-4 pr-4'} space-y-2`}>
-                        <Skeleton className="h-4 w-3/4" />
-                        <Skeleton className="h-3 w-1/2" />
-                        <div className="flex gap-2">
-                          <Skeleton className="h-5 w-16" />
-                          <Skeleton className="h-5 w-20" />
+
+          {/* Main Content */}
+          <div className="flex-1 space-y-4">
+            {/* Results Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {searchParams.q && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Search results for:</span>
+                    <Badge variant="outline">
+                      "{searchParams.q}"
+                      <button
+                        onClick={() => updateSearch({ q: undefined })}
+                        className="ml-2 hover:text-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  </div>
+                )}
+
+                {activeFiltersCount > 0 && (
+                  <Button variant="outline" size="sm" onClick={clearFilters}>
+                    Clear filters ({activeFiltersCount})
+                  </Button>
+                )}
+              </div>
+
+              {/* Sort */}
+              <Select
+                value={searchParams.sortBy || 'newest'}
+                onValueChange={(value) => updateSearch({ sortBy: value as any })}
+              >
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest first</SelectItem>
+                  <SelectItem value="oldest">Oldest first</SelectItem>
+                  <SelectItem value="price_low">Price: Low to High</SelectItem>
+                  <SelectItem value="price_high">Price: High to Low</SelectItem>
+                  <SelectItem value="popularity">Most popular</SelectItem>
+                  <SelectItem value="distance">Nearest first</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Results */}
+            {isLoading ? (
+              <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <Card key={i}>
+                    <CardContent className="p-0">
+                      <div className={viewMode === 'grid' ? 'space-y-4' : 'flex space-x-4'}>
+                        <Skeleton className={`${viewMode === 'grid' ? 'aspect-square' : 'w-32 h-32'} rounded-lg`} />
+                        <div className={`${viewMode === 'grid' ? 'p-4' : 'flex-1 py-4 pr-4'} space-y-2`}>
+                          <Skeleton className="h-4 w-3/4" />
+                          <Skeleton className="h-3 w-1/2" />
+                          <div className="flex gap-2">
+                            <Skeleton className="h-5 w-16" />
+                            <Skeleton className="h-5 w-20" />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : error ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <p className="text-destructive mb-4">Failed to load listings</p>
-                <Button onClick={() => refetch()}>Try Again</Button>
-              </CardContent>
-            </Card>
-          ) : results.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No uniforms found</h3>
-                <p className="text-muted-foreground mb-4">
-                  Try adjusting your search or filters to find what you're looking for.
-                </p>
-                <div className="flex gap-3 justify-center">
-                  <Button variant="outline" onClick={clearFilters}>
-                    Clear Filters
-                  </Button>
-                  <Link to="/marketplace/create">
-                    <Button>
-                      Create a Listing
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                {results.map((listing, index) => (
-                  <ListingCard key={listing.id} listing={listing} index={index} />
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
-              
-              {/* Pagination */}
-              {pagination && pagination.totalPages > 1 && (
-                <div className="flex items-center justify-center space-x-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    disabled={!pagination.hasPreviousPage}
-                    onClick={() => updateSearch({ page: (searchParams.page || 1) - 1 })}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous
-                  </Button>
-                  
-                  <span className="text-sm text-muted-foreground">
-                    Page {pagination.currentPage} of {pagination.totalPages}
-                  </span>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    disabled={!pagination.hasNextPage}
-                    onClick={() => updateSearch({ page: (searchParams.page || 1) + 1 })}
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+            ) : error ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <p className="text-destructive mb-4">Failed to load listings</p>
+                  <Button onClick={() => refetch()}>Try Again</Button>
+                </CardContent>
+              </Card>
+            ) : results.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No uniforms found</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Try adjusting your search or filters to find what you're looking for.
+                  </p>
+                  <div className="flex gap-3 justify-center">
+                    <Button variant="outline" onClick={clearFilters}>
+                      Clear Filters
+                    </Button>
+                    <Link to="/marketplace/create">
+                      <Button>
+                        Create a Listing
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm text-muted-foreground">
+                    {summary ? `${summary.totalResults.toLocaleString()} items found` : ''}
+                  </p>
+
+                  {/* View Toggle */}
+                  <div className="flex items-center border rounded-lg p-1">
+                    <Button
+                      variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('grid')}
+                      className="h-7 w-7 p-0"
+                    >
+                      <Grid3x3 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('list')}
+                      className="h-7 w-7 p-0"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              )}
-            </>
-          )}
+
+                <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                  {results.map((listing: Listing, index: number) => (
+                    <ListingCard key={listing.id} listing={listing} index={index} />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {pagination && pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!pagination.hasPreviousPage}
+                      onClick={() => updateSearch({ page: (searchParams.page || 1) - 1 })}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+
+                    <span className="text-sm text-muted-foreground">
+                      Page {pagination.currentPage} of {pagination.totalPages}
+                    </span>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!pagination.hasNextPage}
+                      onClick={() => updateSearch({ page: (searchParams.page || 1) + 1 })}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
+
+        {/* Mobile Filters */}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="sm" className="md:hidden mt-4">
+              <Filter className="h-4 w-4 mr-2" />
+              Filters
+              {activeFiltersCount > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {activeFiltersCount}
+                </Badge>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-80">
+            <SheetHeader>
+              <SheetTitle>Filters</SheetTitle>
+              <SheetDescription>
+                Narrow down your search
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
+              <FilterContent />
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   );

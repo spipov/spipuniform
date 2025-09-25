@@ -69,7 +69,10 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
         .orderBy(schools.name);
 
       // If OSM locality filtering returned very few results, also include broader results
-      if (osmLocalityName && result.length <= 1) {
+      // But for marketplace queries, don't fall back - show what we found or empty
+      const isMarketplaceQuery = request.headers.get('referer')?.includes('/marketplace') ||
+                                 url.searchParams.has('marketplace');
+      if (osmLocalityName && result.length <= 1 && !isMarketplaceQuery) {
         console.log(`Only ${result.length} schools found for locality '${osmLocalityName}', including broader county results`);
         
         // Get broader county results as fallback

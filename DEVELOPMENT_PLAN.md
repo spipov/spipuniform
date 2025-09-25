@@ -1,8 +1,8 @@
 # SpipUniform Development Plan
 
 ## 🚀 **CURRENT STATUS: Phase 4.3 - Core User Pages**
-**Last Completed: 3.4.3 Matching System APIs ✅**
-**Next Phase: 4.3.1 Browse & Search UI (Frontend)**
+**Last Completed: 4.3.1 Hierarchical Marketplace Flow ✅**
+**Next Phase: 4.3.2 Browse & Search UI (Frontend)**
 
 ### 📊 **Progress Summary**
 - ✅ **Phase 3.4 Complete**: Marketplace Core APIs (Listings, Requests, Matching)
@@ -254,13 +254,20 @@ scripts/spipuniform/
 - [ ] **CHECKPOINT: Dynamic forms render correctly for all product types**
 
 ### 4.3 Core User Pages 📄
-**Goal: Build the main user-facing pages**
+**Goal: Build the main user-facing pages with hierarchical marketplace flow**
 
-#### Step 4.3.1: Browse & Search ✋ **CHECKPOINT**
-- [ ] Browse listings page
-- [ ] Advanced search functionality
-- [ ] Filter by location/school/product
-- [ ] **CHECKPOINT: Users can find listings easily**
+#### Step 4.3.1: Hierarchical Marketplace Flow ✅ **COMPLETED**
+- [x] Implement county → locality → school selection flow
+- [x] School availability checking and item population
+- [x] Request creation workflow when no items available
+- [x] Listing creation with same hierarchical flow
+- [x] **CHECKPOINT: Users can navigate marketplace by geographic hierarchy**
+
+#### Step 4.3.2: Browse & Search UI ✋ **CHECKPOINT**
+- [ ] Enhanced browse page with hierarchical filters
+- [ ] Advanced search functionality within selected school
+- [ ] Filter by product type, condition, price within school
+- [ ] **CHECKPOINT: Users can find listings easily within school context**
 
 #### Step 4.3.2: Listing Management ✋ **CHECKPOINT**
 - [ ] Create listing page (uses dynamic product forms)
@@ -273,6 +280,46 @@ scripts/spipuniform/
 - [ ] Shop listing analytics
 - [ ] Bulk listing tools
 - [ ] **CHECKPOINT: Shop owners can manage their business**
+
+---
+
+## 🎯 Phase 4.4: School Stock Management 📚
+**Goal: Enable schools to manage and list available uniform stock for families**
+
+### 4.4.1 School Stock Database Schema ✋ **CHECKPOINT**
+- [ ] Create school stock/inventory tables
+- [ ] Link stock items to schools and product types
+- [ ] Add stock quantity and availability tracking
+- [ ] Add stock condition and notes fields
+- [ ] **CHECKPOINT: Database schema supports school inventory**
+
+### 4.4.2 School Stock Management APIs ✋ **CHECKPOINT**
+- [ ] Create school stock CRUD APIs
+- [ ] Add stock search and filtering by school
+- [ ] Add bulk stock import/export functionality
+- [ ] Add stock availability checking
+- [ ] **CHECKPOINT: APIs support full stock management**
+
+### 4.4.3 School Stock Management UI ✋ **CHECKPOINT**
+- [ ] School stock dashboard for administrators
+- [ ] Stock item creation/editing forms
+- [ ] Bulk stock import interface (CSV/Excel)
+- [ ] Stock level monitoring and alerts
+- [ ] **CHECKPOINT: Schools can manage their inventory**
+
+### 4.4.4 Integration with Marketplace ✋ **CHECKPOINT**
+- [ ] School stock items appear in marketplace search
+- [ ] Match school stock with family requests
+- [ ] Priority matching for school stock items
+- [ ] Stock reservation system for matched items
+- [ ] **CHECKPOINT: School stock integrates with existing marketplace**
+
+### 4.4.5 School Stock Analytics ✋ **CHECKPOINT**
+- [ ] Stock movement tracking and history
+- [ ] Popular item reports
+- [ ] Low stock alerts and notifications
+- [ ] Usage analytics for school administrators
+- [ ] **CHECKPOINT: Schools have visibility into stock performance**
 
 ---
 
@@ -366,6 +413,13 @@ scripts/spipuniform/
 - [ ] Create basic conditions (New, Excellent, Good, Fair, etc.)
 - [ ] Seed initial data via migration or script
 - [ ] **CHECKPOINT: Basic product system ready for admin UI**
+
+### Step 3: Database Cleanup Tasks 📋
+- [ ] Remove duplicate schools from database (e.g., multiple "Greystones Community NS")
+- [ ] Standardize school address formats for better locality matching
+- [ ] Clean up test data created during development
+- [ ] Add database constraints to prevent future duplicates
+- [ ] **CHECKPOINT: Database is clean and consistent**
 
 **Only proceed to admin UI development after these checkpoints pass!**
 
