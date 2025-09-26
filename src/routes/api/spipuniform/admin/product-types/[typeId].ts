@@ -9,7 +9,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/product
       const productType = await db
         .select()
         .from(productTypes)
-        .where(eq(productTypes.id, params.typeId))
+        .where(eq(productTypes.id, (params as any).typeId))
         .limit(1);
 
       if (!productType[0]) {
@@ -37,7 +37,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/product
   PUT: async ({ params, request }) => {
     try {
       const body = await request.json();
-      const { categoryId, name, slug, description, isActive } = body;
+      const { categoryId, name, slug, description, isActive, imageFileId } = body;
 
       if (!categoryId || !name || !slug) {
         return new Response(
@@ -46,17 +46,24 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/product
         );
       }
 
+      const updateData: any = {
+        categoryId,
+        name,
+        slug,
+        description,
+        isActive: isActive !== undefined ? isActive : true,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Only add imageFileId if provided
+      if (imageFileId !== undefined) {
+        updateData.imageFileId = imageFileId;
+      }
+
       const updated = await db
         .update(productTypes)
-        .set({
-          categoryId,
-          name,
-          slug,
-          description,
-          isActive: isActive !== undefined ? isActive : true,
-          updatedAt: new Date().toISOString()
-        })
-        .where(eq(productTypes.id, params.typeId))
+        .set(updateData)
+        .where(eq(productTypes.id, (params as any).typeId))
         .returning();
 
       if (!updated[0]) {
@@ -85,7 +92,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/product
     try {
       const deleted = await db
         .delete(productTypes)
-        .where(eq(productTypes.id, params.typeId))
+        .where(eq(productTypes.id, (params as any).typeId))
         .returning();
 
       if (!deleted[0]) {

@@ -1,6 +1,6 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { db } from '@/db';
-import { productTypes, productCategories, attributes } from '@/db/schema';
+import { productTypes, productCategories, attributes, files } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/product-types/').methods({
@@ -9,7 +9,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/product
       const url = new URL(request.url);
       const categoryId = url.searchParams.get('categoryId');
 
-      let query = db
+      const types = await db
         .select({
           id: productTypes.id,
           categoryId: productTypes.categoryId,
@@ -19,16 +19,15 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/product
           isActive: productTypes.isActive,
           createdAt: productTypes.createdAt,
           updatedAt: productTypes.updatedAt,
-          categoryName: productCategories.name
+          categoryName: productCategories.name,
+          imageFileId: productTypes.imageFileId,
+          imageUrl: files.url
         })
         .from(productTypes)
-        .leftJoin(productCategories, eq(productTypes.categoryId, productCategories.id));
-
-      if (categoryId) {
-        query = query.where(eq(productTypes.categoryId, categoryId));
-      }
-
-      const types = await query.orderBy(productCategories.sortOrder, productTypes.name);
+        .leftJoin(productCategories, eq(productTypes.categoryId, productCategories.id))
+        .leftJoin(files, eq(productTypes.imageFileId, files.id))
+        .where(categoryId ? eq(productTypes.categoryId, categoryId) : undefined)
+        .orderBy(productCategories.sortOrder, productTypes.name);
 
       // Get attributes count for each type
       const typesWithAttributes = await Promise.all(
@@ -63,7 +62,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/product
   POST: async ({ request }) => {
     try {
       const body = await request.json();
-      const { categoryId, name, slug, description } = body;
+      const { categoryId, name, slug, description, imageFileId } = body;
 
       if (!categoryId || !name || !slug) {
         return new Response(
@@ -72,15 +71,22 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/product
         );
       }
 
+      const insertData: any = {
+        categoryId,
+        name,
+        slug,
+        description,
+        isActive: true
+      };
+
+      // Only add imageFileId if provided (column may not exist yet)
+      if (imageFileId) {
+        insertData.imageFileId = imageFileId;
+      }
+
       const created = await db
         .insert(productTypes)
-        .values({
-          categoryId,
-          name,
-          slug,
-          description,
-          isActive: true
-        })
+        .values(insertData)
         .returning();
 
       return new Response(JSON.stringify({

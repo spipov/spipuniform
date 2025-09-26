@@ -71,6 +71,7 @@ export const schools = pgTable("schools", {
 	website: text(),
 	phone: text(),
 	email: text(),
+	crestFileId: uuid("crest_file_id"),
 	isActive: boolean("is_active").default(true),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
@@ -88,6 +89,11 @@ export const schools = pgTable("schools", {
 		columns: [table.localityId],
 		foreignColumns: [localities.id],
 		name: "schools_locality_id_localities_id_fk"
+	}).onDelete("set null"),
+	foreignKey({
+		columns: [table.crestFileId],
+		foreignColumns: [files.id],
+		name: "schools_crest_file_id_files_id_fk"
 	}).onDelete("set null"),
 ]);
 
@@ -130,39 +136,51 @@ export const shops = pgTable("shops", {
 
 // Product Management System
 export const productCategories = pgTable("product_categories", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	name: text().notNull(),
-	slug: text().notNull(),
-	description: text(),
-	sortOrder: integer("sort_order").default(0),
-	isActive: boolean("is_active").default(true),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("product_categories_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
-	index("product_categories_sort_idx").using("btree", table.sortOrder.asc().nullsLast().op("int4_ops")),
-	unique("product_categories_slug_unique").on(table.slug),
-]);
+  	id: uuid().defaultRandom().primaryKey().notNull(),
+  	name: text().notNull(),
+  	slug: text().notNull(),
+  	description: text(),
+  	imageFileId: uuid("image_file_id"),
+  	sortOrder: integer("sort_order").default(0),
+  	isActive: boolean("is_active").default(true),
+  	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+  	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+  }, (table) => [
+  	index("product_categories_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
+  	index("product_categories_sort_idx").using("btree", table.sortOrder.asc().nullsLast().op("int4_ops")),
+  	unique("product_categories_slug_unique").on(table.slug),
+  	foreignKey({
+  		columns: [table.imageFileId],
+  		foreignColumns: [files.id],
+  		name: "product_categories_image_file_id_files_id_fk"
+  	}).onDelete("set null"),
+  ]);
 
 export const productTypes = pgTable("product_types", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	categoryId: uuid("category_id").notNull(),
-	name: text().notNull(),
-	slug: text().notNull(),
-	description: text(),
-	isActive: boolean("is_active").default(true),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("product_types_category_idx").using("btree", table.categoryId.asc().nullsLast().op("uuid_ops")),
-	index("product_types_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
-	unique("product_types_slug_unique").on(table.slug),
-	foreignKey({
-		columns: [table.categoryId],
-		foreignColumns: [productCategories.id],
-		name: "product_types_category_id_product_categories_id_fk"
-	}).onDelete("cascade"),
-]);
+  	id: uuid().defaultRandom().primaryKey().notNull(),
+  	categoryId: uuid("category_id").notNull(),
+  	name: text().notNull(),
+  	slug: text().notNull(),
+  	description: text(),
+  	imageFileId: uuid("image_file_id"),
+  	isActive: boolean("is_active").default(true),
+  	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+  	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+  }, (table) => [
+  	index("product_types_category_idx").using("btree", table.categoryId.asc().nullsLast().op("uuid_ops")),
+  	index("product_types_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
+  	unique("product_types_slug_unique").on(table.slug),
+  	foreignKey({
+  		columns: [table.categoryId],
+  		foreignColumns: [productCategories.id],
+  		name: "product_types_category_id_product_categories_id_fk"
+  	}).onDelete("cascade"),
+  	foreignKey({
+  		columns: [table.imageFileId],
+  		foreignColumns: [files.id],
+  		name: "product_types_image_file_id_files_id_fk"
+  	}).onDelete("set null"),
+  ]);
 
 export const attributes = pgTable("attributes", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
@@ -307,66 +325,89 @@ export const listingAttributeValues = pgTable("listing_attribute_values", {
 ]);
 
 export const listingImages = pgTable("listing_images", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	listingId: uuid("listing_id").notNull(),
-	fileId: uuid("file_id").notNull(),
-	altText: text("alt_text"),
-	order: integer().default(0),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+  id: uuid().defaultRandom().primaryKey().notNull(),
+  listingId: uuid("listing_id").notNull(),
+  fileId: uuid("file_id").notNull(),
+  altText: text("alt_text"),
+  order: integer().default(0),
+  createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("listing_images_listing_idx").using("btree", table.listingId.asc().nullsLast().op("uuid_ops")),
-	index("listing_images_order_idx").using("btree", table.order.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-		columns: [table.listingId],
-		foreignColumns: [listings.id],
-		name: "listing_images_listing_id_listings_id_fk"
-	}).onDelete("cascade"),
-	foreignKey({
-		columns: [table.fileId],
-		foreignColumns: [files.id],
-		name: "listing_images_file_id_files_id_fk"
-	}).onDelete("cascade"),
+  index("listing_images_listing_idx").using("btree", table.listingId.asc().nullsLast().op("uuid_ops")),
+  index("listing_images_order_idx").using("btree", table.order.asc().nullsLast().op("int4_ops")),
+  foreignKey({
+    columns: [table.listingId],
+    foreignColumns: [listings.id],
+    name: "listing_images_listing_id_listings_id_fk"
+  }).onDelete("cascade"),
+  foreignKey({
+    columns: [table.fileId],
+    foreignColumns: [files.id],
+    name: "listing_images_file_id_files_id_fk"
+  }).onDelete("cascade"),
+]);
+
+export const requestImages = pgTable("request_images", {
+  id: uuid().defaultRandom().primaryKey().notNull(),
+  requestId: uuid("request_id").notNull(),
+  fileId: uuid("file_id").notNull(),
+  altText: text("alt_text"),
+  order: integer().default(0),
+  createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+  index("request_images_request_idx").using("btree", table.requestId.asc().nullsLast().op("uuid_ops")),
+  index("request_images_order_idx").using("btree", table.order.asc().nullsLast().op("int4_ops")),
+  foreignKey({
+    columns: [table.requestId],
+    foreignColumns: [requests.id],
+    name: "request_images_request_id_requests_id_fk"
+  }).onDelete("cascade"),
+  foreignKey({
+    columns: [table.fileId],
+    foreignColumns: [files.id],
+    name: "request_images_file_id_files_id_fk"
+  }).onDelete("cascade"),
 ]);
 
 export const requests = pgTable("requests", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: text("user_id").notNull(),
-	productTypeId: uuid("product_type_id").notNull(),
-	schoolId: uuid("school_id"),
-	size: text(),
-	conditionPreference: text("condition_preference"),
-	description: text(),
-	maxPrice: decimal("max_price", { precision: 10, scale: 2 }),
-	localityId: uuid("locality_id").notNull(),
-	status: requestStatus().default('open'),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+  id: uuid().defaultRandom().primaryKey().notNull(),
+  userId: text("user_id").notNull(),
+  productTypeId: uuid("product_type_id").notNull(),
+  schoolId: uuid("school_id"),
+  attributes: jsonb(),
+  conditionPreference: text("condition_preference"),
+  description: text(),
+  maxPrice: decimal("max_price", { precision: 10, scale: 2 }).$type<number>(),
+  localityId: uuid("locality_id").notNull(),
+  status: requestStatus().default('open'),
+  hasSchoolCrest: boolean("has_school_crest").default(false),
+  createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("requests_user_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
-	index("requests_product_type_idx").using("btree", table.productTypeId.asc().nullsLast().op("uuid_ops")),
-	index("requests_school_idx").using("btree", table.schoolId.asc().nullsLast().op("uuid_ops")),
-	index("requests_locality_idx").using("btree", table.localityId.asc().nullsLast().op("uuid_ops")),
-	index("requests_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
-	foreignKey({
-		columns: [table.userId],
-		foreignColumns: [user.id],
-		name: "requests_user_id_user_id_fk"
-	}).onDelete("cascade"),
-	foreignKey({
-		columns: [table.productTypeId],
-		foreignColumns: [productTypes.id],
-		name: "requests_product_type_id_product_types_id_fk"
-	}),
-	foreignKey({
-		columns: [table.schoolId],
-		foreignColumns: [schools.id],
-		name: "requests_school_id_schools_id_fk"
-	}).onDelete("set null"),
-	foreignKey({
-		columns: [table.localityId],
-		foreignColumns: [localities.id],
-		name: "requests_locality_id_localities_id_fk"
-	}),
+  index("requests_user_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+  index("requests_product_type_idx").using("btree", table.productTypeId.asc().nullsLast().op("uuid_ops")),
+  index("requests_school_idx").using("btree", table.schoolId.asc().nullsLast().op("uuid_ops")),
+  index("requests_locality_idx").using("btree", table.localityId.asc().nullsLast().op("uuid_ops")),
+  index("requests_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+  foreignKey({
+    columns: [table.userId],
+    foreignColumns: [user.id],
+    name: "requests_user_id_user_id_fk"
+  }).onDelete("cascade"),
+  foreignKey({
+    columns: [table.productTypeId],
+    foreignColumns: [productTypes.id],
+    name: "requests_product_type_id_product_types_id_fk"
+  }),
+  foreignKey({
+    columns: [table.schoolId],
+    foreignColumns: [schools.id],
+    name: "requests_school_id_schools_id_fk"
+  }).onDelete("set null"),
+  foreignKey({
+    columns: [table.localityId],
+    foreignColumns: [localities.id],
+    name: "requests_locality_id_localities_id_fk"
+  }),
 ]);
 
 // Matching and Social Features
@@ -494,6 +535,106 @@ export const notifications = pgTable("notifications", {
 		columns: [table.userId],
 		foreignColumns: [user.id],
 		name: "notifications_user_id_user_id_fk"
+	}).onDelete("cascade"),
+]);
+
+// School Owners/Managers (for school stock management)
+export const schoolOwners = pgTable("school_owners", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: text("user_id").notNull(),
+	schoolId: uuid("school_id").notNull(),
+	role: text().default('owner'), // 'owner', 'manager', 'parent'
+	isActive: boolean("is_active").default(true),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("school_owners_user_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+	index("school_owners_school_idx").using("btree", table.schoolId.asc().nullsLast().op("uuid_ops")),
+	unique("school_owners_user_school_unique").on(table.userId, table.schoolId),
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [user.id],
+		name: "school_owners_user_id_user_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.schoolId],
+		foreignColumns: [schools.id],
+		name: "school_owners_school_id_schools_id_fk"
+	}).onDelete("cascade"),
+]);
+
+// School Stock Listings (separate from regular user listings)
+export const schoolStock = pgTable("school_stock", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	schoolId: uuid("school_id").notNull(),
+	managedByUserId: text("managed_by_user_id").notNull(), // School owner who manages this stock
+	productTypeId: uuid("product_type_id").notNull(),
+	title: text().notNull(),
+	description: text(),
+	categoryId: uuid("category_id").notNull(),
+	attributes: jsonb(),
+	conditionId: uuid("condition_id").notNull(),
+	quantity: integer().default(1),
+	price: decimal({ precision: 10, scale: 2 }),
+	isFree: boolean("is_free").default(false),
+	hasSchoolCrest: boolean("has_school_crest").default(false),
+	status: text().default('active'), // 'active', 'sold', 'removed'
+	viewCount: integer("view_count").default(0),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("school_stock_school_idx").using("btree", table.schoolId.asc().nullsLast().op("uuid_ops")),
+	index("school_stock_manager_idx").using("btree", table.managedByUserId.asc().nullsLast().op("text_ops")),
+	index("school_stock_product_type_idx").using("btree", table.productTypeId.asc().nullsLast().op("uuid_ops")),
+	index("school_stock_category_idx").using("btree", table.categoryId.asc().nullsLast().op("uuid_ops")),
+	index("school_stock_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
+	foreignKey({
+		columns: [table.schoolId],
+		foreignColumns: [schools.id],
+		name: "school_stock_school_id_schools_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.managedByUserId],
+		foreignColumns: [user.id],
+		name: "school_stock_managed_by_user_id_user_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.productTypeId],
+		foreignColumns: [productTypes.id],
+		name: "school_stock_product_type_id_product_types_id_fk"
+	}),
+	foreignKey({
+		columns: [table.categoryId],
+		foreignColumns: [productCategories.id],
+		name: "school_stock_category_id_product_categories_id_fk"
+	}),
+	foreignKey({
+		columns: [table.conditionId],
+		foreignColumns: [conditions.id],
+		name: "school_stock_condition_id_conditions_id_fk"
+	}),
+]);
+
+// School Stock Images
+export const schoolStockImages = pgTable("school_stock_images", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	schoolStockId: uuid("school_stock_id").notNull(),
+	fileId: uuid("file_id").notNull(),
+	altText: text("alt_text"),
+	order: integer().default(0),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("school_stock_images_stock_idx").using("btree", table.schoolStockId.asc().nullsLast().op("uuid_ops")),
+	index("school_stock_images_order_idx").using("btree", table.order.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+		columns: [table.schoolStockId],
+		foreignColumns: [schoolStock.id],
+		name: "school_stock_images_school_stock_id_school_stock_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.fileId],
+		foreignColumns: [files.id],
+		name: "school_stock_images_file_id_files_id_fk"
 	}).onDelete("cascade"),
 ]);
 
@@ -729,6 +870,8 @@ export type ListingAttributeValue = typeof listingAttributeValues.$inferSelect;
 export type NewListingAttributeValue = typeof listingAttributeValues.$inferInsert;
 export type ListingImage = typeof listingImages.$inferSelect;
 export type NewListingImage = typeof listingImages.$inferInsert;
+export type RequestImage = typeof requestImages.$inferSelect;
+export type NewRequestImage = typeof requestImages.$inferInsert;
 export type Request = typeof requests.$inferSelect;
 export type NewRequest = typeof requests.$inferInsert;
 export type Match = typeof matches.$inferSelect;
@@ -751,3 +894,9 @@ export type TransactionMessage = typeof transactionMessages.$inferSelect;
 export type NewTransactionMessage = typeof transactionMessages.$inferInsert;
 export type UserFavorite = typeof userFavorites.$inferSelect;
 export type NewUserFavorite = typeof userFavorites.$inferInsert;
+export type SchoolOwner = typeof schoolOwners.$inferSelect;
+export type NewSchoolOwner = typeof schoolOwners.$inferInsert;
+export type SchoolStock = typeof schoolStock.$inferSelect;
+export type NewSchoolStock = typeof schoolStock.$inferInsert;
+export type SchoolStockImage = typeof schoolStockImages.$inferSelect;
+export type NewSchoolStockImage = typeof schoolStockImages.$inferInsert;

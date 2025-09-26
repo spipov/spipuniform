@@ -1,11 +1,12 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { db } from '@/db';
-import { 
-  requests, 
+import {
+  requests,
+  requestImages,
   matches,
   listings,
-  schools, 
-  productTypes, 
+  schools,
+  productTypes,
   productCategories,
   conditions as conditionsTable,
   localities,
@@ -20,10 +21,16 @@ import { auth } from '@/lib/auth';
 const createRequestSchema = z.object({
   productTypeId: z.string().uuid('Valid product type is required'),
   schoolId: z.string().uuid().optional(),
-  size: z.string().optional(),
+  attributes: z.record(z.string()).optional(),
   conditionPreference: z.string().optional(),
   description: z.string().max(1000, 'Description too long').optional(),
   maxPrice: z.coerce.number().min(0).max(10000).optional(),
+  images: z.array(z.object({
+    fileId: z.string().uuid(),
+    altText: z.string().optional(),
+    order: z.number().optional()
+  })).optional(),
+  hasSchoolCrest: z.boolean().optional()
 });
 
 const updateRequestSchema = createRequestSchema.partial().extend({
@@ -317,14 +324,27 @@ export const ServerRoute = createServerFileRoute('/api/requests').methods({
           userId,
           productTypeId: validatedData.productTypeId,
           schoolId: validatedData.schoolId,
-          size: validatedData.size,
+          attributes: validatedData.attributes,
           conditionPreference: validatedData.conditionPreference,
           description: validatedData.description,
-          maxPrice: validatedData.maxPrice?.toString(),
+          maxPrice: validatedData.maxPrice,
           localityId: userProfile.localityId,
-          status: 'open'
+          status: 'open',
+          hasSchoolCrest: validatedData.hasSchoolCrest
         })
         .returning();
+
+      // Insert images if provided
+      if (validatedData.images && validatedData.images.length > 0) {
+        await db.insert(requestImages).values(
+          validatedData.images.map(img => ({
+            requestId: newRequest.id,
+            fileId: img.fileId,
+            altText: img.altText,
+            order: img.order || 0
+          }))
+        );
+      }
 
       return new Response(JSON.stringify({
         success: true,

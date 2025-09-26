@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Search, Package, Euro, Target } from 'lucide-react';
+import { Search, Package, Euro, Target, Upload, X } from 'lucide-react';
 
 interface RequestCreationDialogProps {
   schoolId: string;
@@ -28,14 +29,19 @@ export function RequestCreationDialog({
   const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState({
+    categoryId: '',
     productTypeId: '',
-    size: '',
+    attributes: {} as Record<string, string>,
     conditionPreference: '',
     description: '',
-    maxPrice: ''
+    maxPrice: '',
+    images: [] as { id: string; url: string; altText?: string; order: number }[],
+    hasSchoolCrest: false
   });
 
-  // Fetch filter options
+  const [uploadingImages, setUploadingImages] = useState(false);
+
+  // Fetch product categories
   const { data: categories } = useQuery({
     queryKey: ['product-categories'],
     queryFn: async () => {
@@ -44,6 +50,19 @@ export function RequestCreationDialog({
       const data = await response.json();
       return data.categories;
     }
+  });
+
+  // Fetch product types for selected category
+  const { data: productTypes } = useQuery({
+    queryKey: ['product-types', formData.categoryId],
+    queryFn: async () => {
+      if (!formData.categoryId) return [];
+      const response = await fetch(`/api/product-categories/${formData.categoryId}/types`);
+      if (!response.ok) throw new Error('Failed to fetch product types');
+      const data = await response.json();
+      return data.productTypes;
+    },
+    enabled: !!formData.categoryId
   });
 
   const { data: conditions } = useQuery({
@@ -55,6 +74,20 @@ export function RequestCreationDialog({
       return data.conditions;
     }
   });
+
+  // Fetch attributes for selected product type
+  const { data: productAttributes } = useQuery({
+    queryKey: ['product-attributes', formData.productTypeId],
+    queryFn: async () => {
+      if (!formData.productTypeId) return null;
+      const response = await fetch(`/api/product-types/${formData.productTypeId}/attributes`);
+      if (!response.ok) throw new Error('Failed to fetch attributes');
+      const data = await response.json();
+      return data.attributes;
+    },
+    enabled: !!formData.productTypeId
+  });
+
 
   // Create request mutation
   const createRequestMutation = useMutation({
@@ -73,7 +106,7 @@ export function RequestCreationDialog({
     },
     onSuccess: () => {
       toast.success('Request created successfully!');
-      setFormData({ productTypeId: '', size: '', conditionPreference: '', description: '', maxPrice: '' });
+      setFormData({ categoryId: '', productTypeId: '', attributes: {}, conditionPreference: '', description: '', maxPrice: '', images: [], hasSchoolCrest: false });
       queryClient.invalidateQueries({ queryKey: ['my-requests'] });
       onSuccess?.();
       onClose();
@@ -92,14 +125,73 @@ export function RequestCreationDialog({
     const requestData = {
       ...formData,
       schoolId,
-      maxPrice: formData.maxPrice ? parseFloat(formData.maxPrice) : undefined
+      maxPrice: formData.maxPrice ? parseFloat(formData.maxPrice) : undefined,
+      images: formData.images.map(img => ({
+        fileId: img.id,
+        altText: img.altText,
+        order: img.order
+      }))
     };
 
     createRequestMutation.mutate(requestData);
   };
 
+  const handleImageUpload = async (files: FileList) => {
+    if (files.length === 0) return;
+
+    setUploadingImages(true);
+    const newImages: { id: string; url: string; altText?: string; order: number }[] = [];
+
+    try {
+      for (let i = 0; i < files.length && i < 5; i++) {
+        const file = files[i];
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', file);
+        formDataUpload.append('category', 'request');
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          credentials: 'include',
+          body: formDataUpload
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          newImages.push({
+            id: data.file.id,
+            url: data.file.url,
+            altText: `Request image ${formData.images.length + newImages.length + 1}`,
+            order: formData.images.length + newImages.length
+          });
+        }
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, ...newImages]
+      }));
+
+      toast.success(`${newImages.length} image(s) uploaded successfully`);
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      toast.error('Failed to upload images');
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const removeImage = (imageId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter(img => img.id !== imageId).map((img, index) => ({
+        ...img,
+        order: index
+      }))
+    }));
+  };
+
   const handleClose = () => {
-    setFormData({ productTypeId: '', size: '', conditionPreference: '', description: '', maxPrice: '' });
+    setFormData({ categoryId: '', productTypeId: '', attributes: {}, conditionPreference: '', description: '', maxPrice: '', images: [], hasSchoolCrest: false });
     onClose();
   };
 
@@ -131,36 +223,98 @@ export function RequestCreationDialog({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="productType">Product Type *</Label>
+              <Label htmlFor="category">Category *</Label>
               <Select
-                value={formData.productTypeId}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, productTypeId: value }))}
+                value={formData.categoryId}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, categoryId: value, productTypeId: '' }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select what you're looking for" />
+                  <SelectValue placeholder="Select category first" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories?.map((category: any) =>
-                    category.productTypes?.map((type: any) => (
-                      <SelectItem key={type.id} value={type.id}>
-                        {category.name} - {type.name}
-                      </SelectItem>
-                    ))
-                  )}
+                  {categories?.map((category: any) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="size">Size</Label>
-              <Input
-                id="size"
-                value={formData.size}
-                onChange={(e) => setFormData(prev => ({ ...prev, size: e.target.value }))}
-                placeholder="e.g., Age 7-8, Size 10, Medium"
-              />
+              <Label htmlFor="productType">Product Type *</Label>
+              <Select
+                value={formData.productTypeId}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, productTypeId: value }))}
+                disabled={!formData.categoryId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={formData.categoryId ? "Select product type" : "Select category first"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {productTypes?.map((type: any) => (
+                    <SelectItem key={type.id} value={type.id}>
+                      {type.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
+
+          {/* Dynamic attributes based on product type */}
+          {productAttributes && productAttributes.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Product Details</h3>
+              {productAttributes.map((attribute: any) => (
+                <div key={attribute.id}>
+                  <Label htmlFor={attribute.slug}>
+                    {attribute.name}
+                    {attribute.required && <span className="text-red-500 ml-1">*</span>}
+                  </Label>
+                  {attribute.inputType === 'text_input' ? (
+                    <Input
+                      id={attribute.slug}
+                      value={formData.attributes[attribute.slug] || ''}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        attributes: {
+                          ...prev.attributes,
+                          [attribute.slug]: e.target.value
+                        }
+                      }))}
+                      placeholder={attribute.placeholder}
+                    />
+                  ) : (
+                    <Select
+                      value={formData.attributes[attribute.slug] || undefined}
+                      onValueChange={(value) => setFormData(prev => ({
+                        ...prev,
+                        attributes: {
+                          ...prev.attributes,
+                          [attribute.slug]: value
+                        }
+                      }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={`Select ${attribute.name.toLowerCase()}`} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {attribute.values?.map((value: any) => (
+                          <SelectItem key={value.id} value={value.value}>
+                            {value.displayName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {attribute.helpText && (
+                    <p className="text-sm text-muted-foreground mt-1">{attribute.helpText}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -210,6 +364,64 @@ export function RequestCreationDialog({
               placeholder="Any specific requirements, preferred brands, colors, etc."
               rows={3}
             />
+          </div>
+
+          {/* Images */}
+          <div>
+            <Label>Images (Optional)</Label>
+            <div className="border-2 border-dashed border-muted-foreground rounded-lg p-4 text-center">
+              <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">
+                  Add photos to help others understand what you're looking for
+                </p>
+                <Input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <Label htmlFor="image-upload" className="cursor-pointer">
+                  <Button type="button" variant="outline" size="sm" disabled={uploadingImages}>
+                    {uploadingImages ? 'Uploading...' : 'Choose Files'}
+                  </Button>
+                </Label>
+              </div>
+            </div>
+
+            {formData.images.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
+                {formData.images.map((image) => (
+                  <div key={image.id} className="relative">
+                    <img
+                      src={image.url}
+                      alt={image.altText}
+                      className="w-full h-20 object-cover rounded-lg"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-1 right-1 h-5 w-5 p-0"
+                      onClick={() => removeImage(image.id)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* School Crest */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="hasSchoolCrest"
+              checked={formData.hasSchoolCrest}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasSchoolCrest: checked as boolean }))}
+            />
+            <Label htmlFor="hasSchoolCrest">Item should have school crest</Label>
           </div>
 
           <div className="bg-green-50 border border-green-200 rounded-lg p-3">

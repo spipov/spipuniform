@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Search, MoreHorizontal, CheckCircle, XCircle, Tags, Package } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, MoreHorizontal, CheckCircle, XCircle, Tags, Package, Upload, X } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -23,6 +23,8 @@ interface Category {
   createdAt?: string;
   updatedAt?: string;
   types?: Array<{ id: string; name: string; }>;
+  imageFileId?: string;
+  imageUrl?: string;
 }
 
 export const Route = createFileRoute('/dashboard/spipuniform/products/categories')({
@@ -39,7 +41,8 @@ function ProductCategoriesPage() {
     name: '',
     slug: '',
     description: '',
-    sortOrder: 0
+    sortOrder: 0,
+    image: null as { id: string; url: string; altText?: string } | null
   });
   
   const filteredCategories = categories.filter(category =>
@@ -84,27 +87,35 @@ function ProductCategoriesPage() {
 
   const handleSubmit = async () => {
     try {
-      const url = editingCategory 
+      const url = editingCategory
         ? `/api/spipuniform/admin/categories/${editingCategory.id}`
         : '/api/spipuniform/admin/categories/';
-      
+
       const method = editingCategory ? 'PUT' : 'POST';
-      
+
+      const submitData = {
+        name: formData.name,
+        slug: formData.slug,
+        description: formData.description,
+        sortOrder: formData.sortOrder,
+        imageFileId: formData.image?.id || null
+      };
+
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submitData)
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         toast.success(editingCategory ? 'Category updated successfully' : 'Category created successfully');
         setIsDialogOpen(false);
         setEditingCategory(null);
-        setFormData({ name: '', slug: '', description: '', sortOrder: 0 });
+        setFormData({ name: '', slug: '', description: '', sortOrder: 0, image: null });
         fetchCategories();
       } else {
         toast.error(data.error || 'Failed to save category');
@@ -173,21 +184,65 @@ function ProductCategoriesPage() {
       name: category.name,
       slug: category.slug,
       description: category.description || '',
-      sortOrder: category.sortOrder
+      sortOrder: category.sortOrder,
+      image: category.imageFileId ? { id: category.imageFileId, url: category.imageUrl || '', altText: `Image for ${category.name}` } : null
     });
     setIsDialogOpen(true);
   };
 
   const handleCreate = () => {
     setEditingCategory(null);
-    setFormData({ 
-      name: '', 
-      slug: '', 
-      description: '', 
-      sortOrder: categories.length + 1 
+    setFormData({
+      name: '',
+      slug: '',
+      description: '',
+      sortOrder: categories.length + 1,
+      image: null
     });
     setIsDialogOpen(true);
   };
+
+  const handleImageUpload = async (files: FileList) => {
+    if (files.length === 0) return;
+
+    try {
+      const file = files[0]; // Only allow one image per category
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+      formDataUpload.append('category', 'product_category');
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: formDataUpload
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFormData(prev => ({
+          ...prev,
+          image: {
+            id: data.file.id,
+            url: data.file.url,
+            altText: `Category image for ${prev.name || 'new category'}`
+          }
+        }));
+      } else {
+        toast.error('Failed to upload image');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
+    }
+  };
+
+  const removeImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      image: null
+    }));
+  };
+
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return 'Unknown';
@@ -413,6 +468,44 @@ function ProductCategoriesPage() {
                 onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
                 min="1"
               />
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Category Image (Optional)</Label>
+              <div className="border-2 border-dashed border-muted-foreground rounded-lg p-4 text-center">
+                <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground mb-2">
+                  Drag and drop an image here, or click to browse
+                </p>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
+                  className="hidden"
+                  id="category-image-upload"
+                />
+                <Label htmlFor="category-image-upload" className="cursor-pointer text-sm text-primary hover:underline">
+                  Choose File
+                </Label>
+              </div>
+
+              {formData.image && (
+                <div className="relative inline-block">
+                  <img
+                    src={formData.image.url}
+                    alt={formData.image.altText}
+                    className="w-32 h-32 object-cover rounded border"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-1 right-1 h-6 w-6 p-0"
+                    onClick={removeImage}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           

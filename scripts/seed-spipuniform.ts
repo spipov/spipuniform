@@ -205,7 +205,7 @@ async function seedSpipUniformData() {
       {
         name: 'Size',
         slug: 'size',
-        inputType: 'select' as const,
+        inputType: 'alpha_sizes' as const,
         required: true,
         order: 1,
         values: [
@@ -220,7 +220,7 @@ async function seedSpipUniformData() {
       {
         name: 'Color',
         slug: 'color',
-        inputType: 'select' as const,
+        inputType: 'color_select' as const,
         required: false,
         order: 2,
         values: [
@@ -230,7 +230,7 @@ async function seedSpipUniformData() {
       {
         name: 'Gender',
         slug: 'gender',
-        inputType: 'select' as const,
+        inputType: 'gender_select' as const,
         required: false,
         order: 3,
         values: ['Boys', 'Girls', 'Unisex']
@@ -238,7 +238,7 @@ async function seedSpipUniformData() {
       {
         name: 'Brand',
         slug: 'brand',
-        inputType: 'text' as const,
+        inputType: 'text_input' as const,
         required: false,
         order: 4,
         values: []
@@ -267,7 +267,7 @@ async function seedSpipUniformData() {
             inputType: attrData.inputType,
             required: attrData.required,
             order: attrData.order,
-            placeholder: attrData.inputType === 'text' ? `Enter ${attrData.name.toLowerCase()}...` : null
+            placeholder: attrData.inputType === 'text_input' ? `Enter ${attrData.name.toLowerCase()}...` : null
           }).returning();
 
           insertedAttributes.push(insertedAttribute);

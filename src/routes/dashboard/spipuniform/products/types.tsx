@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Package, Plus, Edit, Trash2, Tags, Search, MoreHorizontal, CheckCircle, XCircle } from 'lucide-react';
+import { Package, Plus, Edit, Trash2, Tags, Search, MoreHorizontal, CheckCircle, XCircle, Upload, X } from 'lucide-react';
 
 export const Route = createFileRoute('/dashboard/spipuniform/products/types')({
   component: ProductTypesPage,
@@ -30,6 +30,8 @@ interface ProductType {
   name: string;
   slug: string;
   description?: string;
+  imageFileId?: string;
+  imageUrl?: string;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -49,7 +51,8 @@ function ProductTypesPage() {
     categoryId: '',
     name: '',
     slug: '',
-    description: ''
+    description: '',
+    image: null as { id: string; url: string; altText?: string } | null
   });
   
   const filteredTypes = productTypes.filter(type => {
@@ -126,12 +129,20 @@ function ProductTypesPage() {
       
       const method = editingType ? 'PUT' : 'POST';
       
+      const submitData = {
+        categoryId: formData.categoryId,
+        name: formData.name,
+        slug: formData.slug,
+        description: formData.description,
+        imageFileId: formData.image?.id || null
+      };
+
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submitData)
       });
       
       const data = await response.json();
@@ -140,7 +151,7 @@ function ProductTypesPage() {
         toast.success(editingType ? 'Product type updated successfully' : 'Product type created successfully');
         setIsDialogOpen(false);
         setEditingType(null);
-        setFormData({ categoryId: '', name: '', slug: '', description: '' });
+        setFormData({ categoryId: '', name: '', slug: '', description: '', image: null });
         fetchProductTypes();
       } else {
         toast.error(data.error || 'Failed to save product type');
@@ -209,21 +220,65 @@ function ProductTypesPage() {
       categoryId: type.categoryId,
       name: type.name,
       slug: type.slug,
-      description: type.description || ''
+      description: type.description || '',
+      image: type.imageFileId ? { id: type.imageFileId, url: type.imageUrl || '', altText: `Image for ${type.name}` } : null
     });
     setIsDialogOpen(true);
   };
 
   const handleCreate = () => {
     setEditingType(null);
-    setFormData({ 
+    setFormData({
       categoryId: selectedCategory !== 'all' ? selectedCategory : '',
-      name: '', 
-      slug: '', 
-      description: ''
+      name: '',
+      slug: '',
+      description: '',
+      image: null
     });
     setIsDialogOpen(true);
   };
+
+  const handleImageUpload = async (files: FileList) => {
+    if (files.length === 0) return;
+
+    try {
+      const file = files[0]; // Only allow one image per type
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+      formDataUpload.append('category', 'product_type');
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: formDataUpload
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFormData(prev => ({
+          ...prev,
+          image: {
+            id: data.file.id,
+            url: data.file.url,
+            altText: `Type image for ${prev.name || 'new type'}`
+          }
+        }));
+      } else {
+        toast.error('Failed to upload image');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
+    }
+  };
+
+  const removeImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      image: null
+    }));
+  };
+
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return 'Unknown';
@@ -470,6 +525,45 @@ function ProductTypesPage() {
                 rows={3}
               />
             </div>
+
+            <div className="grid gap-2">
+              <Label>Product Type Image (Optional)</Label>
+              <div className="border-2 border-dashed border-muted-foreground rounded-lg p-4 text-center">
+                <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground mb-2">
+                  Drag and drop an image here, or click to browse
+                </p>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
+                  className="hidden"
+                  id="type-image-upload"
+                />
+                <Label htmlFor="type-image-upload" className="cursor-pointer text-sm text-primary hover:underline">
+                  Choose File
+                </Label>
+              </div>
+
+              {formData.image && (
+                <div className="relative inline-block">
+                  <img
+                    src={formData.image.url}
+                    alt={formData.image.altText}
+                    className="w-32 h-32 object-cover rounded border"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-1 right-1 h-6 w-6 p-0"
+                    onClick={removeImage}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+
           </div>
           
           <DialogFooter>

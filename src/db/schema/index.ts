@@ -118,8 +118,22 @@ export type {
   NewNotification,
   UserProfile,
   NewUserProfile,
+  FamilyMember,
+  NewFamilyMember,
+  ShopProfile,
+  NewShopProfile,
+  Transaction,
+  NewTransaction,
+  TransactionMessage,
+  NewTransactionMessage,
   UserFavorite,
-  NewUserFavorite
+  NewUserFavorite,
+  SchoolOwner,
+  NewSchoolOwner,
+  SchoolStock,
+  NewSchoolStock,
+  SchoolStockImage,
+  NewSchoolStockImage
 } from './spipuniform';
 
 // Export types for school management

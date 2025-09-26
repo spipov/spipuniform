@@ -136,6 +136,12 @@ const profileNavigation = [
     icon: Building2,
     requiredPermission: "viewDashboard", // All authenticated users can access (shop owners will see content)
   },
+  {
+    title: "School Stock Management",
+    url: "/dashboard/spipuniform/school-stock",
+    icon: Package,
+    requiredPermission: "viewDashboard", // All authenticated users can access (school owners will see content)
+  },
 ] as const;
 
 export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

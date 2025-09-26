@@ -1,6 +1,6 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { db } from '@/db';
-import { productCategories, productTypes, attributes, attributeValues, conditions } from '@/db/schema';
+import { productCategories, productTypes, attributes, attributeValues, conditions, files } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/categories/').methods({
@@ -16,9 +16,12 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/categor
           sortOrder: productCategories.sortOrder,
           isActive: productCategories.isActive,
           createdAt: productCategories.createdAt,
-          updatedAt: productCategories.updatedAt
+          updatedAt: productCategories.updatedAt,
+          imageFileId: productCategories.imageFileId,
+          imageUrl: files.url
         })
         .from(productCategories)
+        .leftJoin(files, eq(productCategories.imageFileId, files.id))
         .orderBy(productCategories.sortOrder);
 
       // Fetch all product types
@@ -121,7 +124,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/categor
   POST: async ({ request }) => {
     try {
       const body = await request.json();
-      const { name, slug, description, sortOrder } = body;
+      const { name, slug, description, imageFileId, sortOrder } = body;
 
       if (!name || !slug) {
         return new Response(
@@ -130,15 +133,22 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/categor
         );
       }
 
+      const insertData: any = {
+        name,
+        slug,
+        description,
+        sortOrder: sortOrder || 0,
+        isActive: true
+      };
+
+      // Only add imageFileId if provided (column may not exist yet)
+      if (imageFileId) {
+        insertData.imageFileId = imageFileId;
+      }
+
       const created = await db
         .insert(productCategories)
-        .values({
-          name,
-          slug,
-          description,
-          sortOrder: sortOrder || 0,
-          isActive: true
-        })
+        .values(insertData)
         .returning();
 
       return new Response(JSON.stringify({

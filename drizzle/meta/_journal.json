@@ -71,6 +71,27 @@
       "when": 1758146278558,
       "tag": "0009_even_chimera",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1758834812117,
+      "tag": "0010_stormy_pretty_boy",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1758873391639,
+      "tag": "0011_sticky_demogoblin",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1758896800422,
+      "tag": "0012_dry_luminals",
+      "breakpoints": true
     }
   ]
 }

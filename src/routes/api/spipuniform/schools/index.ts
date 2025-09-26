@@ -33,6 +33,9 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
       // Build WHERE conditions
       const conditions: any[] = [eq(schools.isActive, true)];
 
+      // Only show schools that were created through proper channels (not CSV imports)
+      conditions.push(isNull(schools.csvSourceRow));
+
       if (countyId) {
         conditions.push(eq(schools.countyId, countyId));
       }
@@ -77,6 +80,9 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
         
         // Get broader county results as fallback
         const fallbackConditions = [eq(schools.isActive, true)];
+
+        // Only show schools that were created through proper channels (not CSV imports)
+        fallbackConditions.push(isNull(schools.csvSourceRow));
         
         if (countyId) {
           fallbackConditions.push(eq(schools.countyId, countyId));
@@ -84,14 +90,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
         if (level) {
           fallbackConditions.push(eq(schools.level, level as 'primary' | 'secondary'));
         }
-        if (search && search.trim().length > 0) {
-          const searchTerm = search.trim();
-          if (searchTerm) {
-            const nameCondition = like(schools.name, `%${searchTerm}%`);
-            const addressCondition = like(schools.address, `%${searchTerm}%`);
-            fallbackConditions.push(or(nameCondition, addressCondition));
-          }
-        }
+        // Note: Skipping search in fallback for simplicity - main filtering handles search
         
         const fallbackResult = await db
           .select({

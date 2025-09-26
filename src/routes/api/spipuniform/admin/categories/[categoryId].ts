@@ -37,7 +37,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/categor
   PUT: async ({ params, request }) => {
     try {
       const body = await request.json();
-      const { name, slug, description, sortOrder, isActive } = body;
+      const { name, slug, description, sortOrder, isActive, imageFileId } = body;
 
       if (!name || !slug) {
         return new Response(
@@ -46,16 +46,23 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/admin/categor
         );
       }
 
+      const updateData: any = {
+        name,
+        slug,
+        description,
+        sortOrder: sortOrder || 0,
+        isActive: isActive !== undefined ? isActive : true,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Only add imageFileId if provided
+      if (imageFileId !== undefined) {
+        updateData.imageFileId = imageFileId;
+      }
+
       const updated = await db
         .update(productCategories)
-        .set({
-          name,
-          slug,
-          description,
-          sortOrder: sortOrder || 0,
-          isActive: isActive !== undefined ? isActive : true,
-          updatedAt: new Date().toISOString()
-        })
+        .set(updateData)
         .where(eq(productCategories.id, params.categoryId))
         .returning();
 
