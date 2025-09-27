@@ -47,7 +47,7 @@ export function FilterPanel({
   const updateFilter = (sectionId: string, value: any) => {
     const newFilters = { ...activeFilters };
 
-    if (value === null || value === undefined || value === '') {
+    if (value === null || value === undefined || value === '' || value === 'all') {
       delete newFilters[sectionId];
     } else {
       newFilters[sectionId] = value;
@@ -96,9 +96,9 @@ export function FilterPanel({
               <div key={option.id} className="flex items-center space-x-2">
                 <Checkbox
                   id={`${section.id}-${option.id}`}
-                  checked={activeValue?.includes(option.id) || false}
+                  checked={Array.isArray(activeValue) && activeValue.includes(option.id)}
                   onCheckedChange={(checked) => {
-                    const currentValues = activeValue || [];
+                    const currentValues = Array.isArray(activeValue) ? activeValue : [];
                     let newValues;
 
                     if (checked) {
@@ -127,28 +127,28 @@ export function FilterPanel({
         )}
 
         {section.type === 'select' && section.options && (
-          <Select
-            value={activeValue || ''}
-            onValueChange={(value) => updateFilter(section.id, value || null)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={`Select ${section.title.toLowerCase()}`} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All {section.title.toLowerCase()}</SelectItem>
-              {section.options.map(option => (
-                <SelectItem key={option.id} value={option.id}>
-                  {option.label}
-                  {option.count !== undefined && (
-                    <Badge variant="secondary" className="ml-2 text-xs">
-                      {option.count}
-                    </Badge>
-                  )}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+            <Select
+              value={activeValue || 'all'}
+              onValueChange={(value) => updateFilter(section.id, value === 'all' ? 'all' : value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={`Select ${section.title.toLowerCase()}`} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All {section.title.toLowerCase()}</SelectItem>
+                {section.options.map(option => (
+                  <SelectItem key={option.id} value={option.id}>
+                    {option.label}
+                    {option.count !== undefined && (
+                      <Badge variant="secondary" className="ml-2 text-xs">
+                        {option.count}
+                      </Badge>
+                    )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
         {section.type === 'range' && section.min !== undefined && section.max !== undefined && (
           <div className="space-y-3">

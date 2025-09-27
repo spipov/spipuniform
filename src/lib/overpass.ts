@@ -114,6 +114,9 @@ export async function getCountyBounds(countyName: string): Promise<CountyBounds 
     });
 
     if (!response.ok) {
+      if (response.status === 429) {
+        throw new Error(`Overpass API error: ${response.status} - Rate limited. Please try again later.`);
+      }
       throw new Error(`Overpass API error: ${response.status}`);
     }
 
@@ -172,7 +175,7 @@ export async function fetchTownsForCounty(countyName: string): Promise<TownItem[
   try {
     // First try area-based query
     const areaQuery = await buildTownsQuery(countyName, false);
-    let towns = await executeTownsQuery(areaQuery);
+    let towns = areaQuery ? await executeTownsQuery(areaQuery) : [];
 
     // If no results or few results, try bounding box fallback
     if (towns.length < 10) {

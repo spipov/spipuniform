@@ -39,9 +39,9 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/localities/se
         // Search specific localities matching the query
         localities = await searchPlacesInCounty(countyName, query.trim()) || [];
       } else {
-        // When no search query, return empty array to encourage searching
-        // This prevents loading thousands of localities upfront
-        localities = [];
+        // When no search query, return all localities for the county
+        // This populates the dropdown initially
+        localities = await fetchTownsForCounty(countyName) || [];
       }
 
       return new Response(JSON.stringify({

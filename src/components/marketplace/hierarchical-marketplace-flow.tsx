@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { Link } from '@tanstack/react-router';
 import { FavoriteButton } from '@/components/marketplace/favorite-button';
 import { RequestCreationDialog } from '@/components/marketplace/request-creation-dialog';
+import { SchoolRequestDialog } from '@/components/marketplace/school-request-dialog';
 
 // Simple debounce function (like data verification page)
 function debounce<T extends (...args: any[]) => void>(func: T, delay: number): T {
@@ -100,6 +101,7 @@ export function HierarchicalMarketplaceFlow({
   const [selectedSchool, setSelectedSchool] = useState<string>('');
   const [schoolType, setSchoolType] = useState<'primary' | 'secondary'>('primary');
   const [showRequestDialog, setShowRequestDialog] = useState(false);
+  const [showSchoolRequestDialog, setShowSchoolRequestDialog] = useState(false);
   const [localitySearchTerm, setLocalitySearchTerm] = useState<string>('');
   const [isLocalitySearchOpen, setIsLocalitySearchOpen] = useState(false);
 
@@ -487,22 +489,51 @@ export function HierarchicalMarketplaceFlow({
         {/* School Selection */}
         {selectedLocality && (
           <div className="space-y-2">
-            <label className="text-sm font-medium">School</label>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">School</label>
+              {schools && schools.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowRequestDialog(true)}
+                  className="text-xs"
+                >
+                  + Request School
+                </Button>
+              )}
+            </div>
             <Select value={selectedSchool} onValueChange={handleSchoolSelect}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={`Select ${schoolType} school`} />
               </SelectTrigger>
               <SelectContent>
-                {schools?.map((school) => (
-                  <SelectItem key={school.id} value={school.id}>
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium">{school.name}</span>
-                      {school.address && (
-                        <span className="text-xs text-muted-foreground">{school.address}</span>
-                      )}
+                {schools && schools.length > 0 ? (
+                  schools.map((school) => (
+                    <SelectItem key={school.id} value={school.id}>
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">{school.name}</span>
+                        {school.address && (
+                          <span className="text-xs text-muted-foreground">{school.address}</span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))
+                ) : (
+                  <div className="p-4 text-center">
+                    <div className="text-sm text-muted-foreground mb-3">
+                      No {schoolType} schools found in {searchedLocalities?.find(l => l.id === selectedLocality)?.name}
                     </div>
-                  </SelectItem>
-                ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowRequestDialog(true)}
+                      className="w-full"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Request to Add School
+                    </Button>
+                  </div>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -595,6 +626,20 @@ export function HierarchicalMarketplaceFlow({
         onClose={() => setShowRequestDialog(false)}
         onSuccess={() => {
           toast.success('Request created successfully!');
+        }}
+      />
+
+      {/* School Request Dialog */}
+      <SchoolRequestDialog
+        countyId={selectedCounty}
+        countyName={counties?.find(c => c.id === selectedCounty)?.name || ''}
+        localityId={selectedLocality}
+        localityName={searchedLocalities?.find(l => l.id === selectedLocality)?.name || ''}
+        schoolType={schoolType}
+        isOpen={showSchoolRequestDialog}
+        onClose={() => setShowSchoolRequestDialog(false)}
+        onSuccess={() => {
+          toast.success('School request submitted! We\'ll review and add it soon.');
         }}
       />
     </div>

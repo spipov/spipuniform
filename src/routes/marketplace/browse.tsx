@@ -92,6 +92,7 @@ function BrowsePage() {
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [loading, setLoading] = useState(false);
+  const [localFilters, setLocalFilters] = useState<Record<string, any>>({});
 
   // Fetch filter options for the FilterPanel component
   const { data: categories } = useQuery({
@@ -124,14 +125,33 @@ function BrowsePage() {
     }
   });
 
+  // Fetch product types for selected category
+  const { data: productTypes } = useQuery({
+    queryKey: ['product-types', localFilters.category],
+    queryFn: async () => {
+      if (!localFilters.category) return [];
+      const response = await fetch(`/api/product-categories/${localFilters.category}/types`);
+      if (!response.ok) throw new Error('Failed to fetch product types');
+      const data = await response.json();
+      return data.productTypes;
+    },
+    enabled: !!localFilters.category
+  });
+
   // Main search query
   const { data: searchResults, isLoading, error, refetch } = useQuery({
-    queryKey: ['marketplace-search', searchParams],
+    queryKey: ['marketplace-search', localFilters, searchParams.q, searchParams.sortBy],
     queryFn: async () => {
       const params = new URLSearchParams();
 
-      Object.entries(searchParams).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
+      // Add search query
+      if (searchParams.q) {
+        params.set('q', searchParams.q);
+      }
+
+      // Add filters
+      Object.entries(localFilters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '' && value !== 'all') {
           if (Array.isArray(value)) {
             params.set(key, value.join(','));
           } else {
@@ -139,6 +159,11 @@ function BrowsePage() {
           }
         }
       });
+
+      // Add sort
+      if (searchParams.sortBy) {
+        params.set('sortBy', searchParams.sortBy);
+      }
 
       const response = await fetch(`/api/marketplace/search?${params}`, {
         credentials: 'include'
@@ -149,21 +174,40 @@ function BrowsePage() {
     retry: 1
   });
 
+  // Initialize local filters from URL params
+  useEffect(() => {
+    const initialFilters: Record<string, any> = {};
+
+    if (searchParams.categoryId) initialFilters.category = searchParams.categoryId;
+    if (searchParams.productTypeId) initialFilters.productType = searchParams.productTypeId;
+    if (searchParams.schoolId) initialFilters.school = searchParams.schoolId;
+    if (searchParams.minPrice !== undefined || searchParams.maxPrice !== undefined) {
+      initialFilters.price = [searchParams.minPrice || 0, searchParams.maxPrice || 200];
+    }
+    if (searchParams.conditionIds) initialFilters.condition = searchParams.conditionIds;
+    if (searchParams.includeFree) initialFilters.includeFree = searchParams.includeFree;
+    if (searchParams.hasImages) initialFilters.hasImages = searchParams.hasImages;
+    if (searchParams.allowOffers) initialFilters.allowOffers = searchParams.allowOffers;
+
+    setLocalFilters(initialFilters);
+  }, [searchParams]);
+
   const updateSearch = (newParams: Partial<SearchParams>) => {
     const updatedParams = { ...searchParams, ...newParams, page: 1 };
     navigate({ search: updatedParams });
   };
 
   const clearFilters = () => {
-    navigate({ search: { sortBy: 'newest' } });
+    setLocalFilters({});
+    navigate({ search: { q: searchParams.q, sortBy: 'newest' } });
   };
 
   const results = searchResults?.results || [];
   const pagination = searchResults?.pagination;
   const summary = searchResults?.resultsSummary;
 
-  const activeFiltersCount = Object.values(searchParams).filter(v =>
-    v !== undefined && v !== null && v !== '' && v !== 'newest'
+  const activeFiltersCount = Object.values(localFilters).filter(v =>
+    v !== undefined && v !== null && v !== '' && v !== 'all'
   ).length;
 
   // Transform listings to ResultItem format for ResultsList component
@@ -183,42 +227,40 @@ function BrowsePage() {
     favorite: false
   }));
   
-  // Filter sections for FilterPanel component
-  const filterSections = [
-    {
-      id: 'category',
-      title: 'Category',
-      type: 'select' as const,
-      options: [
-        { id: '', label: 'All categories', count: 0 },
-        ...(categories?.map((category: any) => ({
-          id: category.id,
-          label: category.name,
-          count: 0 // Would need to be calculated from API
-        })) || [])
-      ]
-    },
-    {
-      id: 'productType',
-      title: 'Product Type',
-      type: 'select' as const,
-      options: [
-        { id: '', label: 'All product types', count: 0 },
-        ...(categories
-          ?.find((c: any) => c.id === searchParams.categoryId)?.productTypes
-          ?.map((type: any) => ({
-            id: type.id,
-            label: type.name,
-            count: 0
-          })) || [])
-      ]
-    },
+ // Filter sections for FilterPanel component
+ const filterSections = [
+   {
+     id: 'category',
+     title: 'Category',
+     type: 'select' as const,
+     options: [
+       { id: 'all', label: 'All categories', count: 0 },
+       ...(categories?.map((category: any) => ({
+         id: category.id,
+         label: category.name,
+         count: 0 // Would need to be calculated from API
+       })) || [])
+     ]
+   },
+   {
+     id: 'productType',
+     title: 'Product Type',
+     type: 'select' as const,
+     options: [
+       { id: 'all', label: 'All product types', count: 0 },
+       ...(productTypes?.map((type: any) => ({
+         id: type.id,
+         label: type.name,
+         count: 0
+       })) || [])
+     ]
+   },
     {
       id: 'school',
       title: 'School',
       type: 'select' as const,
       options: [
-        { id: '', label: 'All schools', count: 0 },
+        { id: 'all', label: 'All schools', count: 0 },
         ...(schools?.slice(0, 50).map((school: any) => ({
           id: school.id,
           label: school.name,
@@ -278,33 +320,51 @@ function BrowsePage() {
   };
 
   const handleFiltersChange = (filters: Record<string, any>) => {
+    setLocalFilters(filters);
+
     const newParams: Partial<SearchParams> = {};
 
+    // Handle category filter
     if (filters.category && filters.category !== 'all') {
       newParams.categoryId = filters.category;
+    } else {
+      newParams.categoryId = undefined;
     }
+
+    // Handle product type filter
     if (filters.productType && filters.productType !== 'all') {
       newParams.productTypeId = filters.productType;
+    } else {
+      newParams.productTypeId = undefined;
     }
+
+    // Handle school filter
     if (filters.school && filters.school !== 'all') {
       newParams.schoolId = filters.school;
+    } else {
+      newParams.schoolId = undefined;
     }
+
+    // Handle price range filter
     if (filters.price && Array.isArray(filters.price) && filters.price.length === 2) {
       newParams.minPrice = filters.price[0] > 0 ? filters.price[0] : undefined;
       newParams.maxPrice = filters.price[1] < 200 ? filters.price[1] : undefined;
+    } else {
+      newParams.minPrice = undefined;
+      newParams.maxPrice = undefined;
     }
-    if (filters.condition && Array.isArray(filters.condition)) {
+
+    // Handle condition filter
+    if (filters.condition && Array.isArray(filters.condition) && filters.condition.length > 0) {
       newParams.conditionIds = filters.condition;
+    } else {
+      newParams.conditionIds = undefined;
     }
-    if (filters.includeFree) {
-      newParams.includeFree = true;
-    }
-    if (filters.hasImages) {
-      newParams.hasImages = true;
-    }
-    if (filters.allowOffers) {
-      newParams.allowOffers = true;
-    }
+
+    // Handle boolean filters
+    newParams.includeFree = filters.includeFree || undefined;
+    newParams.hasImages = filters.hasImages || undefined;
+    newParams.allowOffers = filters.allowOffers || undefined;
 
     updateSearch(newParams);
   };
@@ -363,16 +423,7 @@ function BrowsePage() {
           <div className="hidden md:block w-80 space-y-6">
             <FilterPanel
               sections={filterSections}
-              activeFilters={{
-                category: searchParams.categoryId,
-                productType: searchParams.productTypeId,
-                school: searchParams.schoolId,
-                price: [searchParams.minPrice || 0, searchParams.maxPrice || 200],
-                condition: searchParams.conditionIds,
-                includeFree: searchParams.includeFree,
-                hasImages: searchParams.hasImages,
-                allowOffers: searchParams.allowOffers
-              }}
+              activeFilters={localFilters}
               onFiltersChange={handleFiltersChange}
               collapsible={true}
             />
@@ -499,24 +550,6 @@ function BrowsePage() {
           </div>
         </div>
 
-        {/* Mobile Filters */}
-        <div className="md:hidden">
-          <FilterPanel
-            sections={filterSections}
-            activeFilters={{
-              category: searchParams.categoryId,
-              productType: searchParams.productTypeId,
-              school: searchParams.schoolId,
-              price: [searchParams.minPrice || 0, searchParams.maxPrice || 200],
-              condition: searchParams.conditionIds,
-              includeFree: searchParams.includeFree,
-              hasImages: searchParams.hasImages,
-              allowOffers: searchParams.allowOffers
-            }}
-            onFiltersChange={handleFiltersChange}
-            collapsible={false}
-          />
-        </div>
       </div>
     </div>
   );
