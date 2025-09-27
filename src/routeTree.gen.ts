@@ -109,8 +109,10 @@ import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth/
 import { ServerRoute as ApiAuthSettingsFlagServerRouteImport } from './routes/api/auth-settings.flag'
 import { ServerRoute as ApiAdminDashboardStatsServerRouteImport } from './routes/api/admin/dashboard-stats'
 import { ServerRoute as ApiAdminAnalyticsServerRouteImport } from './routes/api/admin/analytics'
+import { ServerRoute as ApiSpipuniformShopsIndexServerRouteImport } from './routes/api/spipuniform/shops/index'
 import { ServerRoute as ApiSpipuniformSchoolsIndexServerRouteImport } from './routes/api/spipuniform/schools/index'
 import { ServerRoute as ApiSpipuniformSchoolStockIndexServerRouteImport } from './routes/api/spipuniform/school-stock/index'
+import { ServerRoute as ApiSpipuniformLocalitiesIndexServerRouteImport } from './routes/api/spipuniform/localities/index'
 import { ServerRoute as ApiSpipuniformCountiesIndexServerRouteImport } from './routes/api/spipuniform/counties/index'
 import { ServerRoute as ApiTransactionsIdMessagesServerRouteImport } from './routes/api/transactions/$id/messages'
 import { ServerRoute as ApiSpipuniformLocalitiesSearchServerRouteImport } from './routes/api/spipuniform/localities/search'
@@ -660,6 +662,12 @@ const ApiAdminAnalyticsServerRoute = ApiAdminAnalyticsServerRouteImport.update({
   path: '/api/admin/analytics',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiSpipuniformShopsIndexServerRoute =
+  ApiSpipuniformShopsIndexServerRouteImport.update({
+    id: '/api/spipuniform/shops/',
+    path: '/api/spipuniform/shops/',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiSpipuniformSchoolsIndexServerRoute =
   ApiSpipuniformSchoolsIndexServerRouteImport.update({
     id: '/api/spipuniform/schools/',
@@ -670,6 +678,12 @@ const ApiSpipuniformSchoolStockIndexServerRoute =
   ApiSpipuniformSchoolStockIndexServerRouteImport.update({
     id: '/api/spipuniform/school-stock/',
     path: '/api/spipuniform/school-stock/',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiSpipuniformLocalitiesIndexServerRoute =
+  ApiSpipuniformLocalitiesIndexServerRouteImport.update({
+    id: '/api/spipuniform/localities/',
+    path: '/api/spipuniform/localities/',
     getParentRoute: () => rootServerRouteImport,
   } as any)
 const ApiSpipuniformCountiesIndexServerRoute =
@@ -1171,8 +1185,10 @@ export interface FileServerRoutesByFullPath {
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
   '/api/spipuniform/counties': typeof ApiSpipuniformCountiesIndexServerRoute
+  '/api/spipuniform/localities': typeof ApiSpipuniformLocalitiesIndexServerRoute
   '/api/spipuniform/school-stock': typeof ApiSpipuniformSchoolStockIndexServerRoute
   '/api/spipuniform/schools': typeof ApiSpipuniformSchoolsIndexServerRoute
+  '/api/spipuniform/shops': typeof ApiSpipuniformShopsIndexServerRoute
   '/api/spipuniform/admin/attribute-values/valueId': typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
   '/api/spipuniform/admin/attributes/attributeId': typeof ApiSpipuniformAdminAttributesAttributeIdServerRoute
   '/api/spipuniform/admin/categories/categoryId': typeof ApiSpipuniformAdminCategoriesCategoryIdServerRoute
@@ -1257,8 +1273,10 @@ export interface FileServerRoutesByTo {
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
   '/api/spipuniform/counties': typeof ApiSpipuniformCountiesIndexServerRoute
+  '/api/spipuniform/localities': typeof ApiSpipuniformLocalitiesIndexServerRoute
   '/api/spipuniform/school-stock': typeof ApiSpipuniformSchoolStockIndexServerRoute
   '/api/spipuniform/schools': typeof ApiSpipuniformSchoolsIndexServerRoute
+  '/api/spipuniform/shops': typeof ApiSpipuniformShopsIndexServerRoute
   '/api/spipuniform/admin/attribute-values/valueId': typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
   '/api/spipuniform/admin/attributes/attributeId': typeof ApiSpipuniformAdminAttributesAttributeIdServerRoute
   '/api/spipuniform/admin/categories/categoryId': typeof ApiSpipuniformAdminCategoriesCategoryIdServerRoute
@@ -1344,8 +1362,10 @@ export interface FileServerRoutesById {
   '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
   '/api/spipuniform/counties/': typeof ApiSpipuniformCountiesIndexServerRoute
+  '/api/spipuniform/localities/': typeof ApiSpipuniformLocalitiesIndexServerRoute
   '/api/spipuniform/school-stock/': typeof ApiSpipuniformSchoolStockIndexServerRoute
   '/api/spipuniform/schools/': typeof ApiSpipuniformSchoolsIndexServerRoute
+  '/api/spipuniform/shops/': typeof ApiSpipuniformShopsIndexServerRoute
   '/api/spipuniform/admin/attribute-values/valueId': typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
   '/api/spipuniform/admin/attributes/attributeId': typeof ApiSpipuniformAdminAttributesAttributeIdServerRoute
   '/api/spipuniform/admin/categories/categoryId': typeof ApiSpipuniformAdminCategoriesCategoryIdServerRoute
@@ -1432,8 +1452,10 @@ export interface FileServerRouteTypes {
     | '/api/spipuniform/localities/search'
     | '/api/transactions/$id/messages'
     | '/api/spipuniform/counties'
+    | '/api/spipuniform/localities'
     | '/api/spipuniform/school-stock'
     | '/api/spipuniform/schools'
+    | '/api/spipuniform/shops'
     | '/api/spipuniform/admin/attribute-values/valueId'
     | '/api/spipuniform/admin/attributes/attributeId'
     | '/api/spipuniform/admin/categories/categoryId'
@@ -1518,8 +1540,10 @@ export interface FileServerRouteTypes {
     | '/api/spipuniform/localities/search'
     | '/api/transactions/$id/messages'
     | '/api/spipuniform/counties'
+    | '/api/spipuniform/localities'
     | '/api/spipuniform/school-stock'
     | '/api/spipuniform/schools'
+    | '/api/spipuniform/shops'
     | '/api/spipuniform/admin/attribute-values/valueId'
     | '/api/spipuniform/admin/attributes/attributeId'
     | '/api/spipuniform/admin/categories/categoryId'
@@ -1604,8 +1628,10 @@ export interface FileServerRouteTypes {
     | '/api/spipuniform/localities/search'
     | '/api/transactions/$id/messages'
     | '/api/spipuniform/counties/'
+    | '/api/spipuniform/localities/'
     | '/api/spipuniform/school-stock/'
     | '/api/spipuniform/schools/'
+    | '/api/spipuniform/shops/'
     | '/api/spipuniform/admin/attribute-values/valueId'
     | '/api/spipuniform/admin/attributes/attributeId'
     | '/api/spipuniform/admin/categories/categoryId'
@@ -1676,8 +1702,10 @@ export interface RootServerRouteChildren {
   ApiProfilesFamilyMemberIdServerRoute: typeof ApiProfilesFamilyMemberIdServerRoute
   ApiSpipuniformLocalitiesSearchServerRoute: typeof ApiSpipuniformLocalitiesSearchServerRoute
   ApiSpipuniformCountiesIndexServerRoute: typeof ApiSpipuniformCountiesIndexServerRoute
+  ApiSpipuniformLocalitiesIndexServerRoute: typeof ApiSpipuniformLocalitiesIndexServerRoute
   ApiSpipuniformSchoolStockIndexServerRoute: typeof ApiSpipuniformSchoolStockIndexServerRoute
   ApiSpipuniformSchoolsIndexServerRoute: typeof ApiSpipuniformSchoolsIndexServerRoute
+  ApiSpipuniformShopsIndexServerRoute: typeof ApiSpipuniformShopsIndexServerRoute
   ApiSpipuniformAdminAttributeValuesValueIdServerRoute: typeof ApiSpipuniformAdminAttributeValuesValueIdServerRoute
   ApiSpipuniformAdminAttributesAttributeIdServerRoute: typeof ApiSpipuniformAdminAttributesAttributeIdServerRoute
   ApiSpipuniformAdminCategoriesCategoryIdServerRoute: typeof ApiSpipuniformAdminCategoriesCategoryIdServerRoute
@@ -2384,6 +2412,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiAdminAnalyticsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/spipuniform/shops/': {
+      id: '/api/spipuniform/shops/'
+      path: '/api/spipuniform/shops'
+      fullPath: '/api/spipuniform/shops'
+      preLoaderRoute: typeof ApiSpipuniformShopsIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/spipuniform/schools/': {
       id: '/api/spipuniform/schools/'
       path: '/api/spipuniform/schools'
@@ -2396,6 +2431,13 @@ declare module '@tanstack/react-start/server' {
       path: '/api/spipuniform/school-stock'
       fullPath: '/api/spipuniform/school-stock'
       preLoaderRoute: typeof ApiSpipuniformSchoolStockIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/spipuniform/localities/': {
+      id: '/api/spipuniform/localities/'
+      path: '/api/spipuniform/localities'
+      fullPath: '/api/spipuniform/localities'
+      preLoaderRoute: typeof ApiSpipuniformLocalitiesIndexServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/spipuniform/counties/': {
@@ -2887,9 +2929,12 @@ const rootServerRouteChildren: RootServerRouteChildren = {
     ApiSpipuniformLocalitiesSearchServerRoute,
   ApiSpipuniformCountiesIndexServerRoute:
     ApiSpipuniformCountiesIndexServerRoute,
+  ApiSpipuniformLocalitiesIndexServerRoute:
+    ApiSpipuniformLocalitiesIndexServerRoute,
   ApiSpipuniformSchoolStockIndexServerRoute:
     ApiSpipuniformSchoolStockIndexServerRoute,
   ApiSpipuniformSchoolsIndexServerRoute: ApiSpipuniformSchoolsIndexServerRoute,
+  ApiSpipuniformShopsIndexServerRoute: ApiSpipuniformShopsIndexServerRoute,
   ApiSpipuniformAdminAttributeValuesValueIdServerRoute:
     ApiSpipuniformAdminAttributeValuesValueIdServerRoute,
   ApiSpipuniformAdminAttributesAttributeIdServerRoute:
