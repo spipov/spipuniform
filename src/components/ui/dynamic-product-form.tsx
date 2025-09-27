@@ -8,8 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { AttributeInput, type ProductAttribute } from './attribute-input';
-import { Save, Upload, X, AlertCircle, CheckCircle } from 'lucide-react';
+import { EnhancedSchoolSelector } from './enhanced-school-selector';
+import { Save, Upload, X, AlertCircle, CheckCircle, Euro, Package, MapPin, School, Info } from 'lucide-react';
 
 export interface ProductFormData {
   title: string;
@@ -18,34 +22,112 @@ export interface ProductFormData {
   currency: string;
   category: string;
   condition: string;
-  images: string[];
+  images: Array<string | { id: string; url: string; altText?: string; order: number }>;
   attributes: Record<string, any>;
   tags: string[];
 }
 
+interface ProductCategory {
+  id: string;
+  name: string;
+  slug: string;
+  productTypes: ProductType[];
+}
+
+interface ProductType {
+  id: string;
+  name: string;
+  slug: string;
+  categoryId: string;
+  description?: string;
+}
+
+interface Condition {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+interface UploadedImage {
+  id: string;
+  url: string;
+  altText?: string;
+  order: number;
+}
+
+interface MarketplaceFormData extends ProductFormData {
+  schoolId: string;
+  categoryId: string;
+  productTypeId: string;
+  conditionId: string;
+  isFree: boolean;
+  allowOffers: boolean;
+  autoRenew: boolean;
+  isPreview: boolean;
+  images: UploadedImage[];
+}
+
 interface DynamicProductFormProps {
+  // Data
+  categories: ProductCategory[];
+  conditions: Condition[];
   productType?: {
     id: string;
     name: string;
     description?: string;
     attributes: ProductAttribute[];
   };
-  initialData?: Partial<ProductFormData>;
-  onSubmit: (data: ProductFormData) => void;
+
+  // Form state
+  selectedSchoolId?: string;
+  selectedCategoryId?: string;
+  selectedProductTypeId?: string;
+  selectedConditionId?: string;
+
+  // Event handlers
+  onSchoolChange?: (schoolId: string | null) => void;
+  onCategoryChange?: (categoryId: string) => void;
+  onProductTypeChange?: (productTypeId: string) => void;
+  onConditionChange?: (conditionId: string) => void;
+  onImageUpload?: (files: FileList) => void;
+  onImageRemove?: (imageId: string) => void;
+
+  // Form data
+  initialData?: Partial<MarketplaceFormData>;
+  onSubmit: (data: MarketplaceFormData) => void;
   onCancel?: () => void;
+
+  // UI state
   loading?: boolean;
+  uploadingImages?: boolean;
+  errors?: Record<string, string>;
   className?: string;
 }
 
 export function DynamicProductForm({
+  categories,
+  conditions,
   productType,
+  selectedSchoolId,
+  selectedCategoryId,
+  selectedProductTypeId,
+  selectedConditionId,
+  onSchoolChange,
+  onCategoryChange,
+  onProductTypeChange,
+  onConditionChange,
+  onImageUpload,
+  onImageRemove,
   initialData = {},
   onSubmit,
   onCancel,
   loading = false,
+  uploadingImages = false,
+  errors = {},
   className = ''
 }: DynamicProductFormProps) {
-  const [formData, setFormData] = useState<ProductFormData>({
+  const [activeTab, setActiveTab] = useState('details');
+  const [formData, setFormData] = useState<MarketplaceFormData>({
     title: '',
     description: '',
     price: 0,
@@ -55,12 +137,19 @@ export function DynamicProductForm({
     images: [],
     attributes: {},
     tags: [],
+    schoolId: '',
+    categoryId: '',
+    productTypeId: '',
+    conditionId: '',
+    isFree: false,
+    allowOffers: true,
+    autoRenew: false,
+    isPreview: false,
     ...initialData
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [newTag, setNewTag] = useState('');
-  const [imageUrls, setImageUrls] = useState<string[]>(formData.images || []);
+  const [imageUrls, setImageUrls] = useState<Array<string | { id: string; url: string; altText?: string; order: number }>>(formData.images || []);
 
   // Update form data when initialData changes
   useEffect(() => {
@@ -70,12 +159,12 @@ export function DynamicProductForm({
     }
   }, [initialData]);
 
-  const updateField = (field: keyof ProductFormData, value: any) => {
+  const updateField = (field: keyof MarketplaceFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
     // Clear error when field is updated
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      // Error clearing logic would go here
     }
   };
 
@@ -84,11 +173,6 @@ export function DynamicProductForm({
       ...prev,
       attributes: { ...prev.attributes, [attributeId]: value }
     }));
-
-    // Clear attribute error
-    if (errors[`attribute_${attributeId}`]) {
-      setErrors(prev => ({ ...prev, [`attribute_${attributeId}`]: '' }));
-    }
   };
 
   const addTag = () => {
@@ -103,7 +187,7 @@ export function DynamicProductForm({
   };
 
   const addImageUrl = () => {
-    if (newTag.trim() && !imageUrls.includes(newTag.trim())) {
+    if (newTag.trim() && !imageUrls.some(img => typeof img === 'string' ? img === newTag.trim() : img.url === newTag.trim())) {
       const updated = [...imageUrls, newTag.trim()];
       setImageUrls(updated);
       updateField('images', updated);
@@ -111,313 +195,363 @@ export function DynamicProductForm({
     }
   };
 
-  const removeImage = (imageToRemove: string) => {
-    const updated = imageUrls.filter(img => img !== imageToRemove);
+  const removeImage = (imageToRemove: string | { id: string; url: string; altText?: string; order: number }) => {
+    const updated = imageUrls.filter(img =>
+      typeof img === 'string' ? img !== imageToRemove : img.id !== (imageToRemove as any).id
+    );
     setImageUrls(updated);
     updateField('images', updated);
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    // Basic field validation
-    if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
-    }
-
-    if (formData.price <= 0) {
-      newErrors.price = 'Price must be greater than 0';
-    }
-
-    if (!formData.category) {
-      newErrors.category = 'Category is required';
-    }
-
-    if (!formData.condition) {
-      newErrors.condition = 'Condition is required';
-    }
-
-    // Attribute validation
-    productType?.attributes.forEach(attr => {
-      if (attr.required) {
-        const value = formData.attributes[attr.id];
-        if (value === undefined || value === null || value === '') {
-          newErrors[`attribute_${attr.id}`] = `${attr.name} is required`;
-        }
-      }
-    });
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (validateForm()) {
-      onSubmit(formData);
-    }
+    onSubmit(formData);
   };
 
-  const basicConditions = [
-    'New',
-    'Excellent',
-    'Very Good',
-    'Good',
-    'Fair',
-    'Poor'
-  ];
+  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+  const selectedProductType = selectedCategory?.productTypes?.find(pt => pt.id === selectedProductTypeId);
 
   return (
-    <form onSubmit={handleSubmit} className={className}>
-      <div className="space-y-6">
-        {/* Basic Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
-            <CardDescription>
-              Enter the basic details for your listing
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+    <div className={className}>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="details" className="flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            Details
+          </TabsTrigger>
+          <TabsTrigger value="images" className="flex items-center gap-2">
+            <Upload className="h-4 w-4" />
+            Images
+          </TabsTrigger>
+          <TabsTrigger value="pricing" className="flex items-center gap-2">
+            <Euro className="h-4 w-4" />
+            Pricing
+          </TabsTrigger>
+          <TabsTrigger value="preview" className="flex items-center gap-2">
+            <CheckCircle className="h-4 w-4" />
+            Review
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="details" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Listing Details</CardTitle>
+              <CardDescription>
+                Tell us about the uniform item you're selling
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="title">Listing Title *</Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => updateField('title', e.target.value)}
-                  placeholder="e.g., School Blazer - Navy Blue"
+                  placeholder="e.g., Navy School Jumper - Age 7-8, Excellent Condition"
                   className={errors.title ? 'border-red-500' : ''}
                 />
-                {errors.title && (
-                  <p className="text-xs text-red-500">{errors.title}</p>
-                )}
+                {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title}</p>}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="category">Category *</Label>
-                <Select value={formData.category} onValueChange={(value) => updateField('category', value)}>
-                  <SelectTrigger className={errors.category ? 'border-red-500' : ''}>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="primary">Primary School</SelectItem>
-                    <SelectItem value="secondary">Secondary School</SelectItem>
-                    <SelectItem value="sports">Sports</SelectItem>
-                    <SelectItem value="accessories">Accessories</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.category && (
-                  <p className="text-xs text-red-500">{errors.category}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description *</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => updateField('description', e.target.value)}
-                placeholder="Describe the item condition, size, and any other relevant details..."
-                rows={4}
-                className={errors.description ? 'border-red-500' : ''}
-              />
-              {errors.description && (
-                <p className="text-xs text-red-500">{errors.description}</p>
-              )}
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="price">Price (€) *</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.price || ''}
-                  onChange={(e) => updateField('price', parseFloat(e.target.value) || 0)}
-                  placeholder="0.00"
-                  className={errors.price ? 'border-red-500' : ''}
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => updateField('description', e.target.value)}
+                  placeholder="Describe the condition, size, any special features..."
+                  rows={4}
                 />
-                {errors.price && (
-                  <p className="text-xs text-red-500">{errors.price}</p>
-                )}
               </div>
 
-              <div className="space-y-2">
+              <EnhancedSchoolSelector
+                selectedSchoolId={selectedSchoolId}
+                onSchoolChange={(schoolId) => onSchoolChange?.(schoolId)}
+                required
+                label="School *"
+                placeholder="Search for the school this uniform is from..."
+                className={errors.schoolId ? 'border-red-500' : ''}
+              />
+              {errors.schoolId && <p className="text-sm text-red-500">{errors.schoolId}</p>}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="category">Category *</Label>
+                  <Select value={selectedCategoryId} onValueChange={onCategoryChange}>
+                    <SelectTrigger className={errors.categoryId ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map(category => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.categoryId && <p className="text-sm text-red-500 mt-1">{errors.categoryId}</p>}
+                </div>
+
+                <div>
+                  <Label htmlFor="productType">Product Type *</Label>
+                  <Select
+                    value={selectedProductTypeId}
+                    onValueChange={onProductTypeChange}
+                    disabled={!selectedCategoryId}
+                  >
+                    <SelectTrigger className={errors.productTypeId ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select product type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectedCategory?.productTypes?.map(productType => (
+                        <SelectItem key={productType.id} value={productType.id}>
+                          {productType.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.productTypeId && <p className="text-sm text-red-500 mt-1">{errors.productTypeId}</p>}
+                </div>
+              </div>
+
+              <div>
                 <Label htmlFor="condition">Condition *</Label>
-                <Select value={formData.condition} onValueChange={(value) => updateField('condition', value)}>
-                  <SelectTrigger className={errors.condition ? 'border-red-500' : ''}>
+                <Select value={selectedConditionId} onValueChange={onConditionChange}>
+                  <SelectTrigger className={errors.conditionId ? 'border-red-500' : ''}>
                     <SelectValue placeholder="Select condition" />
                   </SelectTrigger>
                   <SelectContent>
-                    {basicConditions.map(condition => (
-                      <SelectItem key={condition} value={condition.toLowerCase()}>
-                        {condition}
+                    {conditions.map(condition => (
+                      <SelectItem key={condition.id} value={condition.id}>
+                        <div>
+                          <div className="font-medium">{condition.name}</div>
+                          {condition.description && (
+                            <div className="text-sm text-muted-foreground">{condition.description}</div>
+                          )}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.condition && (
-                  <p className="text-xs text-red-500">{errors.condition}</p>
-                )}
+                {errors.conditionId && <p className="text-sm text-red-500 mt-1">{errors.conditionId}</p>}
               </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Images */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Images</CardTitle>
-            <CardDescription>
-              Add images of your item (optional)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Input
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                placeholder="Enter image URL..."
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addImageUrl())}
-              />
-              <Button type="button" onClick={addImageUrl} variant="outline">
-                <Upload className="h-4 w-4 mr-2" />
-                Add
-              </Button>
-            </div>
-
-            {imageUrls.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {imageUrls.map((url, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={url}
-                      alt={`Upload ${index + 1}`}
-                      className="w-full h-24 object-cover rounded-md border"
+              {/* Dynamic attributes based on product type */}
+              {productType && productType.attributes.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Product Details</h3>
+                  {productType.attributes.map((attribute) => (
+                    <AttributeInput
+                      key={attribute.id}
+                      attribute={attribute}
+                      value={formData.attributes[attribute.id]}
+                      onChange={(value) => updateAttribute(attribute.id, value)}
+                      error={errors[`attr_${attribute.id}`]}
                     />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => removeImage(url)}
-                      className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        {/* Tags */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Tags</CardTitle>
-            <CardDescription>
-              Add tags to help others find your item (optional)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Input
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                placeholder="Add a tag..."
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-              />
-              <Button type="button" onClick={addTag} variant="outline">
-                Add
-              </Button>
-            </div>
-
-            {formData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {formData.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => removeTag(tag)}
-                      className="hover:text-destructive"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Dynamic Attributes */}
-        {productType && productType.attributes.length > 0 && (
+        <TabsContent value="images" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Item Details</CardTitle>
+              <CardTitle>Photos</CardTitle>
               <CardDescription>
-                {productType.description || 'Provide specific details about this item'}
+                Add clear photos of your uniform item. Good photos help your item sell faster!
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {productType.attributes.map((attribute) => (
-                <AttributeInput
-                  key={attribute.id}
-                  attribute={attribute}
-                  value={formData.attributes[attribute.id]}
-                  onChange={(value) => updateAttribute(attribute.id, value)}
-                  error={errors[`attribute_${attribute.id}`]}
-                />
-              ))}
+              <div className="border-2 border-dashed border-muted-foreground rounded-lg p-8 text-center">
+                <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium">Upload Photos</h3>
+                  <p className="text-muted-foreground">
+                    Drag and drop photos here, or click to browse
+                  </p>
+                  <Input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => e.target.files && onImageUpload?.(e.target.files)}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <Label htmlFor="image-upload" className="cursor-pointer">
+                    <Button type="button" disabled={uploadingImages}>
+                      {uploadingImages ? 'Uploading...' : 'Choose Files'}
+                    </Button>
+                  </Label>
+                </div>
+              </div>
+
+              {imageUrls.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {imageUrls.map((img, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={typeof img === 'string' ? img : img.url}
+                        alt={`Uniform image ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2 h-6 w-6 p-0"
+                        onClick={() => removeImage(img)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                      {index === 0 && (
+                        <Badge className="absolute bottom-2 left-2 text-xs">
+                          Main Photo
+                        </Badge>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {errors.images && <p className="text-sm text-red-500">{errors.images}</p>}
             </CardContent>
           </Card>
-        )}
+        </TabsContent>
 
-        {/* Form Actions */}
+        <TabsContent value="pricing" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pricing & Options</CardTitle>
+              <CardDescription>
+                Set your price and listing preferences
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isFree"
+                  checked={formData.isFree}
+                  onCheckedChange={(checked) => updateField('isFree', checked as boolean)}
+                />
+                <Label htmlFor="isFree">This item is free</Label>
+              </div>
+
+              {!formData.isFree && (
+                <div>
+                  <Label htmlFor="price">Price (EUR) *</Label>
+                  <div className="relative">
+                    <Euro className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.price || ''}
+                      onChange={(e) => updateField('price', parseFloat(e.target.value) || 0)}
+                      placeholder="0.00"
+                      className={`pl-10 ${errors.price ? 'border-red-500' : ''}`}
+                    />
+                  </div>
+                  {errors.price && <p className="text-sm text-red-500 mt-1">{errors.price}</p>}
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Allow Offers</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Let buyers make offers on your item
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.allowOffers}
+                    onCheckedChange={(checked) => updateField('allowOffers', checked)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Auto-renew</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Automatically renew this listing when it expires
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.autoRenew}
+                    onCheckedChange={(checked) => updateField('autoRenew', checked)}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="preview" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Review Your Listing</CardTitle>
+              <CardDescription>
+                Check everything looks good before publishing
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 border rounded-lg bg-muted/50">
+                  <h3 className="font-bold text-lg">{formData.title}</h3>
+                  <p className="text-muted-foreground">{formData.description}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    {!formData.isFree && (
+                      <Badge className="bg-green-500">€{formData.price}</Badge>
+                    )}
+                    {formData.isFree && <Badge variant="outline">FREE</Badge>}
+                    <Badge variant="secondary">{conditions.find(c => c.id === selectedConditionId)?.name}</Badge>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="isPreview"
+                    checked={formData.isPreview}
+                    onCheckedChange={(checked) => updateField('isPreview', checked as boolean)}
+                  />
+                  <Label htmlFor="isPreview">Submit for review before publishing</Label>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start gap-2">
+                    <Info className="h-4 w-4 text-blue-600 mt-0.5" />
+                    <div className="text-sm text-blue-800">
+                      <p className="font-medium">Ready to publish?</p>
+                      <p>
+                        Your listing will be visible to other parents looking for uniforms from this school.
+                        {formData.isPreview && " It will be reviewed by our team before going live."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <div className="flex justify-between pt-6 border-t mt-6">
+        <Button variant="outline" onClick={onCancel} disabled={loading}>
+          Cancel
+        </Button>
+
         <div className="flex gap-3">
-          <Button type="submit" disabled={loading} className="flex-1">
-            {loading ? (
-              'Saving...'
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                {initialData.title ? 'Update Listing' : 'Create Listing'}
-              </>
-            )}
+          <Button variant="outline" onClick={() => setActiveTab('preview')}>
+            Preview
           </Button>
-
-          {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-          )}
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Publishing...' : 'Publish Listing'}
+          </Button>
         </div>
-
-        {/* Validation Summary */}
-        {Object.keys(errors).length > 0 && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Please fix the following errors before submitting:
-              <ul className="list-disc list-inside mt-2 space-y-1">
-                {Object.entries(errors).map(([field, error]) => (
-                  <li key={field} className="text-sm">{error}</li>
-                ))}
-              </ul>
-            </AlertDescription>
-          </Alert>
-        )}
       </div>
-    </form>
+    </div>
   );
 }

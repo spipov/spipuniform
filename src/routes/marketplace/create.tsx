@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { ArrowLeft, Plus, Upload, X, Euro, Tag, Package, MapPin, School, Info, AlertCircle, CheckCircle } from 'lucide-react';
 import { EnhancedSchoolSelector } from '@/components/ui/enhanced-school-selector';
+import { DynamicProductForm, type ProductFormData } from '@/components/ui/dynamic-product-form';
 
 interface ProductType {
   id: string;
@@ -199,23 +200,23 @@ function CreateListingPage() {
 
   const handleImageUpload = async (files: FileList) => {
     if (files.length === 0) return;
-    
+
     setUploadingImages(true);
     const newImages: UploadedImage[] = [];
-    
+
     try {
       for (let i = 0; i < files.length && i < 5; i++) {
         const file = files[i];
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('category', 'listing');
-        
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        uploadFormData.append('category', 'listing');
+
         const response = await fetch('/api/upload', {
           method: 'POST',
           credentials: 'include',
-          body: formData
+          body: uploadFormData
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           newImages.push({
@@ -226,12 +227,12 @@ function CreateListingPage() {
           });
         }
       }
-      
+
       setFormData(prev => ({
         ...prev,
         images: [...prev.images, ...newImages]
       }));
-      
+
       toast.success(`${newImages.length} image(s) uploaded successfully`);
     } catch (error) {
       console.error('Error uploading images:', error);
@@ -455,8 +456,8 @@ function CreateListingPage() {
 
                 <div>
                   <Label htmlFor="productType">Product Type *</Label>
-                  <Select 
-                    value={formData.productTypeId} 
+                  <Select
+                    value={formData.productTypeId}
                     onValueChange={handleProductTypeChange}
                     disabled={!formData.categoryId}
                   >

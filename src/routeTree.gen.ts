@@ -11,9 +11,6 @@
 import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TestSearchComponentsRouteImport } from './routes/test-search-components'
-import { Route as TestLocationComponentsRouteImport } from './routes/test-location-components'
-import { Route as TestDynamicFormComponentsRouteImport } from './routes/test-dynamic-form-components'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -145,22 +142,6 @@ import { ServerRoute as ApiSpipuniformAdminAttributeValuesValueIdServerRouteImpo
 
 const rootServerRouteImport = createServerRootRoute()
 
-const TestSearchComponentsRoute = TestSearchComponentsRouteImport.update({
-  id: '/test-search-components',
-  path: '/test-search-components',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TestLocationComponentsRoute = TestLocationComponentsRouteImport.update({
-  id: '/test-location-components',
-  path: '/test-location-components',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TestDynamicFormComponentsRoute =
-  TestDynamicFormComponentsRouteImport.update({
-    id: '/test-dynamic-form-components',
-    path: '/test-dynamic-form-components',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -866,9 +847,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/test-dynamic-form-components': typeof TestDynamicFormComponentsRoute
-  '/test-location-components': typeof TestLocationComponentsRoute
-  '/test-search-components': typeof TestSearchComponentsRoute
   '/auth/pending': typeof AuthPendingRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
@@ -911,9 +889,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/test-dynamic-form-components': typeof TestDynamicFormComponentsRoute
-  '/test-location-components': typeof TestLocationComponentsRoute
-  '/test-search-components': typeof TestSearchComponentsRoute
   '/auth/pending': typeof AuthPendingRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
@@ -958,9 +933,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/test-dynamic-form-components': typeof TestDynamicFormComponentsRoute
-  '/test-location-components': typeof TestLocationComponentsRoute
-  '/test-search-components': typeof TestSearchComponentsRoute
   '/auth/pending': typeof AuthPendingRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
@@ -1006,9 +978,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
-    | '/test-dynamic-form-components'
-    | '/test-location-components'
-    | '/test-search-components'
     | '/auth/pending'
     | '/auth/reset-password'
     | '/auth/signin'
@@ -1051,9 +1020,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
-    | '/test-dynamic-form-components'
-    | '/test-location-components'
-    | '/test-search-components'
     | '/auth/pending'
     | '/auth/reset-password'
     | '/auth/signin'
@@ -1097,9 +1063,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
-    | '/test-dynamic-form-components'
-    | '/test-location-components'
-    | '/test-search-components'
     | '/auth/pending'
     | '/auth/reset-password'
     | '/auth/signin'
@@ -1144,9 +1107,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   DashboardRoute: typeof DashboardRouteWithChildren
-  TestDynamicFormComponentsRoute: typeof TestDynamicFormComponentsRoute
-  TestLocationComponentsRoute: typeof TestLocationComponentsRoute
-  TestSearchComponentsRoute: typeof TestSearchComponentsRoute
   AuthPendingRoute: typeof AuthPendingRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSigninRoute: typeof AuthSigninRoute
@@ -1775,27 +1735,6 @@ export interface RootServerRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/test-search-components': {
-      id: '/test-search-components'
-      path: '/test-search-components'
-      fullPath: '/test-search-components'
-      preLoaderRoute: typeof TestSearchComponentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/test-location-components': {
-      id: '/test-location-components'
-      path: '/test-location-components'
-      fullPath: '/test-location-components'
-      preLoaderRoute: typeof TestLocationComponentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/test-dynamic-form-components': {
-      id: '/test-dynamic-form-components'
-      path: '/test-dynamic-form-components'
-      fullPath: '/test-dynamic-form-components'
-      preLoaderRoute: typeof TestDynamicFormComponentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -2935,9 +2874,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   DashboardRoute: DashboardRouteWithChildren,
-  TestDynamicFormComponentsRoute: TestDynamicFormComponentsRoute,
-  TestLocationComponentsRoute: TestLocationComponentsRoute,
-  TestSearchComponentsRoute: TestSearchComponentsRoute,
   AuthPendingRoute: AuthPendingRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSigninRoute: AuthSigninRoute,
