@@ -65,7 +65,7 @@ export const createRoleSchema = v.object({
     deleteUsers: v.optional(v.boolean(), false),
     assignRoles: v.optional(v.boolean(), false),
     // Dashboard & Routes
-    viewDashboard: v.optional(v.boolean(), true),
+    viewDashboard: v.optional(v.boolean(), false),
     viewDashboardSettings: v.optional(v.boolean(), false),
     viewBranding: v.optional(v.boolean(), false),
     viewEmail: v.optional(v.boolean(), false),
@@ -77,6 +77,21 @@ export const createRoleSchema = v.object({
     viewUserManagementPermissions: v.optional(v.boolean(), false),
     viewDashboardAnalytics: v.optional(v.boolean(), false),
     viewDashboardReports: v.optional(v.boolean(), false),
+    // Product management permissions
+    viewProductCategories: v.optional(v.boolean(), false),
+    viewProductTypes: v.optional(v.boolean(), false),
+    viewProductAttributes: v.optional(v.boolean(), false),
+    viewProductConditions: v.optional(v.boolean(), false),
+    // Geographic data management permissions
+    viewSchools: v.optional(v.boolean(), false),
+    viewRequests: v.optional(v.boolean(), false),
+    viewLocalities: v.optional(v.boolean(), false),
+    // User-specific permissions
+    viewUserFamilyManagement: v.optional(v.boolean(), true),
+    viewUserShopManagement: v.optional(v.boolean(), true),
+    viewUserSchoolStockManagement: v.optional(v.boolean(), true),
+    viewUserListings: v.optional(v.boolean(), false),
+    viewUserRequests: v.optional(v.boolean(), false),
   }),
   color: v.pipe(v.string(), v.regex(/^#[0-9A-F]{6}$/i, "Invalid color format")),
 });
@@ -111,6 +126,21 @@ export const updateRoleSchema = v.object({
       viewUserManagementPermissions: v.optional(v.boolean()),
       viewDashboardAnalytics: v.optional(v.boolean()),
       viewDashboardReports: v.optional(v.boolean()),
+      // Product management permissions
+      viewProductCategories: v.optional(v.boolean()),
+      viewProductTypes: v.optional(v.boolean()),
+      viewProductAttributes: v.optional(v.boolean()),
+      viewProductConditions: v.optional(v.boolean()),
+      // Geographic data management permissions
+      viewSchools: v.optional(v.boolean()),
+      viewRequests: v.optional(v.boolean()),
+      viewLocalities: v.optional(v.boolean()),
+      // User-specific permissions
+      viewUserFamilyManagement: v.optional(v.boolean()),
+      viewUserShopManagement: v.optional(v.boolean()),
+      viewUserSchoolStockManagement: v.optional(v.boolean()),
+      viewUserListings: v.optional(v.boolean()),
+      viewUserRequests: v.optional(v.boolean()),
     })
   ),
   color: v.optional(v.pipe(v.string(), v.regex(/^#[0-9A-F]{6}$/i, "Invalid color format"))),
@@ -175,4 +205,19 @@ export type Permission = {
   viewUserManagementPermissions: boolean;
   viewDashboardAnalytics: boolean;
   viewDashboardReports: boolean;
+  // Product management permissions
+  viewProductCategories: boolean;
+  viewProductTypes: boolean;
+  viewProductAttributes: boolean;
+  viewProductConditions: boolean;
+  // Geographic data management permissions
+  viewSchools: boolean;
+  viewRequests: boolean;
+  viewLocalities: boolean;
+  // User-specific permissions
+  viewUserFamilyManagement: boolean;
+  viewUserShopManagement: boolean;
+  viewUserSchoolStockManagement: boolean;
+  viewUserListings: boolean;
+  viewUserRequests: boolean;
 };

@@ -137,7 +137,7 @@ export class RoleService {
       deleteUsers: "Delete Users",
       assignRoles: "Assign Roles",
       // Dashboard & Routes
-      viewDashboard: "View Dashboard",
+      viewDashboard: "View Admin Dashboard",
       viewDashboardSettings: "View Dashboard Settings",
       viewBranding: "View Branding",
       viewEmail: "View Email Settings",
@@ -149,6 +149,21 @@ export class RoleService {
       viewUserManagementPermissions: "View Permissions Tab",
       viewDashboardAnalytics: "View Analytics",
       viewDashboardReports: "View Reports",
+      // Product management permissions
+      viewProductCategories: "View Product Categories",
+      viewProductTypes: "View Product Types",
+      viewProductAttributes: "View Product Attributes",
+      viewProductConditions: "View Product Conditions",
+      // Geographic data management permissions
+      viewSchools: "View Schools",
+      viewRequests: "View Requests",
+      viewLocalities: "View Localities",
+      // User-specific permissions
+      viewUserFamilyManagement: "View Family Management",
+      viewUserShopManagement: "View Shop Management",
+      viewUserSchoolStockManagement: "View School Stock Management",
+      viewUserListings: "View User Listings",
+      viewUserRequests: "View User Requests",
     };
 
     return displayNames[permission] || permission;
@@ -177,6 +192,21 @@ export class RoleService {
       "viewUserManagementPermissions",
       "viewDashboardAnalytics",
       "viewDashboardReports",
+      // Product management permissions
+      "viewProductCategories",
+      "viewProductTypes",
+      "viewProductAttributes",
+      "viewProductConditions",
+      // Geographic data management permissions
+      "viewSchools",
+      "viewRequests",
+      "viewLocalities",
+      // User-specific permissions
+      "viewUserFamilyManagement",
+      "viewUserShopManagement",
+      "viewUserSchoolStockManagement",
+      "viewUserListings",
+      "viewUserRequests",
     ];
 
     return permissions.map((permission) => ({

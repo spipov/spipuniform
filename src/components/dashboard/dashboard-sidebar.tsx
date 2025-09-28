@@ -86,25 +86,25 @@ const productsNavigation = [
     title: "Categories",
     url: "/dashboard/spipuniform/products/categories",
     icon: Tags,
-    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
+    requiredPermission: "viewProductCategories",
   },
   {
     title: "Product Types",
     url: "/dashboard/spipuniform/products/types",
     icon: Package,
-    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
+    requiredPermission: "viewProductTypes",
   },
   {
     title: "Attributes",
     url: "/dashboard/spipuniform/products/attributes",
     icon: Sliders,
-    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
+    requiredPermission: "viewProductAttributes",
   },
   {
     title: "Conditions",
     url: "/dashboard/spipuniform/products/conditions",
     icon: Star,
-    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
+    requiredPermission: "viewProductConditions",
   },
 ] as const;
 
@@ -113,19 +113,19 @@ const spipUniformNavigation = [
     title: "Schools",
     url: "/dashboard/spipuniform/schools",
     icon: School,
-    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
+    requiredPermission: "viewSchools",
   },
   {
     title: "Requests",
     url: "/dashboard/requests",
     icon: Clock,
-    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
+    requiredPermission: "viewRequests",
   },
   {
     title: "Localities",
     url: "/dashboard/spipuniform/data-verification",
     icon: MapPin,
-    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
+    requiredPermission: "viewLocalities",
   },
 ] as const;
 
@@ -134,19 +134,19 @@ const profileNavigation = [
     title: "Family Management",
     url: "/dashboard/profile/family",
     icon: Users,
-    requiredPermission: "viewDashboard", // All authenticated users can manage family
+    requiredPermission: "viewUserFamilyManagement",
   },
   {
     title: "Shop Management",
     url: "/dashboard/profile/shop",
     icon: Building2,
-    requiredPermission: "viewDashboard", // All authenticated users can access (shop owners will see content)
+    requiredPermission: "viewUserShopManagement",
   },
   {
     title: "School Stock Management",
     url: "/dashboard/spipuniform/school-stock",
     icon: Package,
-    requiredPermission: "viewDashboard", // All authenticated users can access (school owners will see content)
+    requiredPermission: "viewUserSchoolStockManagement",
   },
 ] as const;
 
@@ -197,7 +197,7 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
             </div>
           ) : (
             <>
-              {isSignedIn && (
+              {isSignedIn && can('viewDashboard') && (
                 <SidebarGroup className="dashboard-sidebar__nav-group">
                   <SidebarMenu className="dashboard-sidebar__nav-menu">
                     {dashboardNavigation
@@ -282,7 +282,7 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
                 </SidebarGroup>
               )}
 
-              {isSignedIn && (can('viewDashboard')) && (
+              {isSignedIn && (can('viewProductCategories') || can('viewProductTypes') || can('viewProductAttributes') || can('viewProductConditions')) && (
                 <SidebarGroup className="dashboard-sidebar__products-group">
                   <SidebarGroupLabel className="dashboard-sidebar__group-label">
                     Product Management
@@ -313,7 +313,7 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
                 </SidebarGroup>
               )}
 
-              {isSignedIn && (can('viewDashboard')) && (
+              {isSignedIn && (can('viewSchools') || can('viewRequests') || can('viewLocalities')) && (
                 <SidebarGroup className="dashboard-sidebar__spipuniform-group">
                   <SidebarGroupLabel className="dashboard-sidebar__group-label">
                     Geographic Data
@@ -344,7 +344,7 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
                 </SidebarGroup>
               )}
 
-              {isSignedIn && (can('viewDashboard')) && (
+              {isSignedIn && (can('viewUserFamilyManagement') || can('viewUserShopManagement') || can('viewUserSchoolStockManagement')) && (
                 <SidebarGroup className="dashboard-sidebar__profile-group">
                   <SidebarGroupLabel className="dashboard-sidebar__group-label">
                     Family & Business

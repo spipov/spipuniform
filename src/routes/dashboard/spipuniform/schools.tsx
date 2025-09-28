@@ -1,8 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { SchoolManagementTable } from '@/components/school-management-table';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 export const Route = createFileRoute('/dashboard/spipuniform/schools')({
-  component: SchoolsManagement,
+  component: () => (
+    <ProtectedRoute>
+      <SchoolsManagement />
+    </ProtectedRoute>
+  ),
 });
 
 function SchoolsManagement() {

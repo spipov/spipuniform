@@ -108,18 +108,18 @@ export function RoleDialog({
         setAllPermissions(allPerms);
   
         if (role) {
-          // Merge role permissions with defaults (default false, except viewDashboard true)
+          // Load existing role permissions, defaulting to false for any missing permissions
           const defaults: Record<string, boolean> = {};
           allPerms.forEach((perm) => {
-            defaults[perm.key] = perm.key === 'viewDashboard';
+            defaults[perm.key] = false;
           });
           const merged: Record<string, boolean> = { ...defaults, ...(role.permissions || {}) } as any;
           setPermissions(merged);
         } else {
-          // Initialize with defaults for create mode
+          // Initialize with all permissions disabled for create mode
           const defaults: Record<string, boolean> = {};
           allPerms.forEach((perm) => {
-            defaults[perm.key] = perm.key === 'viewDashboard';
+            defaults[perm.key] = false;
           });
           setPermissions(defaults);
         }
@@ -236,20 +236,6 @@ export function RoleDialog({
             </div>
           </div>
 
-          <form.Field name="description">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={`description-${formUid}`}>Description</Label>
-                <Input
-                  id={`description-${formUid}`}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder="Enter role description (optional)"
-                />
-              </div>
-            )}
-          </form.Field>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">

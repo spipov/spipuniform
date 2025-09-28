@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Users, School, Calendar, Ruler, MoreHorizontal, Baby } from 'lucide-react';
 import { SizeSelector } from '@/components/family/SizeSelector';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 interface FamilyMember {
   id: string;
@@ -32,7 +33,11 @@ interface FamilyMember {
 }
 
 export const Route = createFileRoute('/dashboard/profile/family')({
-  component: FamilyPage,
+  component: () => (
+    <ProtectedRoute>
+      <FamilyPage />
+    </ProtectedRoute>
+  ),
 });
 
 function FamilyPage() {

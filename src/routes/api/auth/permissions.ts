@@ -50,8 +50,8 @@ export const ServerRoute = createServerFileRoute("/api/auth/permissions").method
         );
       }
 
-      // Default permissions include base dashboard access
-      let permissions: Record<string, boolean> = { viewDashboard: true } as Record<string, boolean>;
+      // Default permissions - no permissions for users without roles
+      let permissions: Record<string, boolean> = {} as Record<string, boolean>;
 
       if (roleName) {
         // console.log("[api/auth/permissions] role=", roleName);
@@ -62,7 +62,7 @@ export const ServerRoute = createServerFileRoute("/api/auth/permissions").method
           .limit(1);
 
         if (roleRow?.permissions && typeof roleRow.permissions === "object") {
-          permissions = { viewDashboard: true, ...(roleRow.permissions as Record<string, boolean>) };
+          permissions = { ...(roleRow.permissions as Record<string, boolean>) };
         }
       } else {
         // console.log("[api/auth/permissions] No role set for user. Using minimal permissions.");
