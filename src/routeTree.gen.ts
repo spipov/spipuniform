@@ -25,6 +25,7 @@ import { Route as MarketplaceBrowseRouteImport } from './routes/marketplace/brow
 import { Route as DashboardStorageSettingsRouteImport } from './routes/dashboard/storage-settings'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardRequestsRouteImport } from './routes/dashboard/requests'
+import { Route as DashboardParentRouteImport } from './routes/dashboard/parent'
 import { Route as DashboardFileManagerRouteImport } from './routes/dashboard/file-manager'
 import { Route as DashboardEmailRouteImport } from './routes/dashboard/email'
 import { Route as DashboardBrandingRouteImport } from './routes/dashboard/branding'
@@ -216,6 +217,11 @@ const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
 const DashboardRequestsRoute = DashboardRequestsRouteImport.update({
   id: '/requests',
   path: '/requests',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardParentRoute = DashboardParentRouteImport.update({
+  id: '/parent',
+  path: '/parent',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardFileManagerRoute = DashboardFileManagerRouteImport.update({
@@ -888,6 +894,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
+  '/dashboard/parent': typeof DashboardParentRoute
   '/dashboard/requests': typeof DashboardRequestsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
@@ -931,6 +938,7 @@ export interface FileRoutesByTo {
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
+  '/dashboard/parent': typeof DashboardParentRoute
   '/dashboard/requests': typeof DashboardRequestsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
@@ -976,6 +984,7 @@ export interface FileRoutesById {
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
+  '/dashboard/parent': typeof DashboardParentRoute
   '/dashboard/requests': typeof DashboardRequestsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
@@ -1022,6 +1031,7 @@ export interface FileRouteTypes {
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
+    | '/dashboard/parent'
     | '/dashboard/requests'
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
@@ -1065,6 +1075,7 @@ export interface FileRouteTypes {
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
+    | '/dashboard/parent'
     | '/dashboard/requests'
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
@@ -1109,6 +1120,7 @@ export interface FileRouteTypes {
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
+    | '/dashboard/parent'
     | '/dashboard/requests'
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
@@ -1897,6 +1909,13 @@ declare module '@tanstack/react-router' {
       path: '/requests'
       fullPath: '/dashboard/requests'
       preLoaderRoute: typeof DashboardRequestsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/parent': {
+      id: '/dashboard/parent'
+      path: '/parent'
+      fullPath: '/dashboard/parent'
+      preLoaderRoute: typeof DashboardParentRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/file-manager': {
@@ -2744,6 +2763,7 @@ interface DashboardRouteChildren {
   DashboardBrandingRoute: typeof DashboardBrandingRoute
   DashboardEmailRoute: typeof DashboardEmailRoute
   DashboardFileManagerRoute: typeof DashboardFileManagerRoute
+  DashboardParentRoute: typeof DashboardParentRoute
   DashboardRequestsRoute: typeof DashboardRequestsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardStorageSettingsRoute: typeof DashboardStorageSettingsRoute
@@ -2773,6 +2793,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardBrandingRoute: DashboardBrandingRoute,
   DashboardEmailRoute: DashboardEmailRoute,
   DashboardFileManagerRoute: DashboardFileManagerRoute,
+  DashboardParentRoute: DashboardParentRoute,
   DashboardRequestsRoute: DashboardRequestsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardStorageSettingsRoute: DashboardStorageSettingsRoute,

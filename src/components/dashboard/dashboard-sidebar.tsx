@@ -1,6 +1,6 @@
 import type * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive, MapPin, School, ShoppingBag, Tags, Package, Sliders, Star, User, UserCircle, Building2, History, CreditCard, Clock } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive, MapPin, School, ShoppingBag, Tags, Package, Sliders, Star, User, UserCircle, Building2, History, CreditCard, Clock, MessageCircle, Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { UserLogoutCard } from "./user-logout-card";
 import { BrandingProvider, SmartBrandingLogo } from "@/components/branding/branding-logo";
@@ -150,6 +150,14 @@ const profileNavigation = [
   },
 ] as const;
 
+const myActivityNavigation = [
+  { title: "My Listings", url: "/marketplace/my-listings", icon: ShoppingBag },
+  { title: "My Requests", url: "/marketplace/requests", icon: Clock },
+  { title: "Create Listing", url: "/marketplace/create", icon: Plus },
+  { title: "Messages", url: "/marketplace/messages", icon: MessageCircle },
+] as const;
+
+
 export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session, isPending } = useSession();
   const isSignedIn = !!session?.user;
@@ -175,8 +183,8 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
             <SidebarMenuItem className="dashboard-sidebar__header-menu-item">
               <SidebarMenuButton size="lg" asChild className="dashboard-sidebar__header-button">
                 <Link to="/dashboard" className="dashboard-sidebar__header-link">
-                  <SmartBrandingLogo 
-                    size="sm" 
+                  <SmartBrandingLogo
+                    size="sm"
                     className="text-sidebar-foreground"
                   />
                 </Link>
@@ -342,7 +350,29 @@ export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sideb
                       })}
                   </SidebarMenu>
                 </SidebarGroup>
-              )}
+                )}
+
+
+                {isSignedIn && !can('viewUserManagement') && (
+                  <SidebarGroup className="dashboard-sidebar__my-activity-group">
+                    <SidebarGroupLabel className="dashboard-sidebar__group-label">My Activity</SidebarGroupLabel>
+                    <SidebarMenu className="dashboard-sidebar__my-activity-menu">
+                      {myActivityNavigation.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <SidebarMenuItem key={item.title} className="dashboard-sidebar__my-activity-item">
+                            <SidebarMenuButton asChild className="dashboard-sidebar__my-activity-button">
+                              <Link to={item.url} className="dashboard-sidebar__my-activity-link font-medium">
+                                <Icon className="dashboard-sidebar__my-activity-icon size-4" />
+                                <span className="dashboard-sidebar__my-activity-text">{item.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        );
+                      })}
+                    </SidebarMenu>
+                  </SidebarGroup>
+                )}
 
               {isSignedIn && (can('viewUserFamilyManagement') || can('viewUserShopManagement') || can('viewUserSchoolStockManagement')) && (
                 <SidebarGroup className="dashboard-sidebar__profile-group">

@@ -1,21 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  ShoppingBag, 
-  Tags, 
-  Package, 
-  Settings, 
-  Users, 
-  AlertTriangle, 
-  TrendingUp, 
+import {
+  ShoppingBag,
+  Tags,
+  Package,
+  Settings,
+  Users,
+  AlertTriangle,
+  TrendingUp,
   Eye,
   Plus,
   Database,
   MapPin
 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/dashboard/")({
   component: SpipUniformDashboard,
@@ -32,6 +33,43 @@ function SpipUniformDashboard() {
     },
     refetchInterval: 60000, // Refresh every minute
   });
+  const { data: myPerms, isLoading: permsLoading } = useQuery({
+    queryKey: ["my-permissions"],
+    queryFn: async () => {
+      const res = await fetch("/api/auth/permissions", { credentials: "include" });
+      if (!res.ok) return null;
+      return res.json() as Promise<{ role: string | null; permissions: Record<string, boolean> }>;
+    },
+    staleTime: 60_000,
+  });
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!myPerms) return;
+    const can = (k: string) => Boolean(myPerms?.permissions?.[k]);
+
+    if (myPerms.role === "admin" || can("viewUserManagement")) {
+      navigate({ to: "/admin", replace: true });
+      return;
+    }
+    if (can("viewUserShopManagement")) {
+      navigate({ to: "/dashboard/spipuniform/shop", replace: true });
+      return;
+    }
+    if (can("viewUserSchoolStockManagement")) {
+      navigate({ to: "/dashboard/spipuniform/school-stock", replace: true });
+      return;
+    }
+    navigate({ to: "/dashboard/parent", replace: true });
+  }, [myPerms, navigate]);
+
+  if (permsLoading || !myPerms) {
+    return (
+      <div className="p-4 text-muted-foreground">Loading dashboard...</div>
+    );
+  }
+
 
   const stats = systemStats?.summary || {
     categoriesCount: 0,
