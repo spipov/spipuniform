@@ -49,8 +49,9 @@ export function ShopVerificationDashboard() {
   const [denialReason, setDenialReason] = useState("");
   const [nextSteps, setNextSteps] = useState("");
   const [approvedSchools, setApprovedSchools] = useState<string[]>([]);
+  const [setupRequests, setSetupRequests] = useState<any[]>([]);
 
-  // Fetch all pending requests
+  // Fetch all pending approval requests
   const fetchRequests = async () => {
     try {
       const response = await fetch('/api/school-approval-requests?admin=true');
@@ -62,6 +63,18 @@ export function ShopVerificationDashboard() {
       toast.error('Failed to load approval requests');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch school setup requests (from marketplace flow)
+  const fetchSetupRequests = async () => {
+    try {
+      const res = await fetch('/api/school-setup-requests');
+      if (!res.ok) throw new Error('Failed to fetch setup requests');
+      const data = await res.json();
+      setSetupRequests(data.requests || []);
+    } catch (e) {
+      console.error('Error fetching setup requests:', e);
     }
   };
 
@@ -81,6 +94,7 @@ export function ShopVerificationDashboard() {
   useEffect(() => {
     fetchRequests();
     fetchSchools();
+    fetchSetupRequests();
   }, []);
 
   const getSchoolName = (schoolId: string) => {
@@ -126,6 +140,32 @@ export function ShopVerificationDashboard() {
       toast.error('Failed to process request');
     }
   };
+  const handleSetupRequestAction = async (requestId: string, action: 'approve' | 'deny') => {
+    try {
+      const payload: any = { action, adminNotes: actionNotes };
+      if (action === 'deny') {
+        payload.denialReason = denialReason;
+        payload.nextSteps = nextSteps;
+      }
+
+      const res = await fetch(`/api/school-setup-requests?id=${requestId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Failed to update setup request');
+
+      toast.success(`Setup request ${action}d successfully`);
+      setActionNotes("");
+      setDenialReason("");
+      setNextSteps("");
+      fetchSetupRequests();
+    } catch (e) {
+      console.error('Error updating setup request:', e);
+      toast.error('Failed to update setup request');
+    }
+  };
+
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -147,6 +187,7 @@ export function ShopVerificationDashboard() {
 
   const pendingRequests = requests.filter(r => r.status === 'pending');
   const processedRequests = requests.filter(r => r.status !== 'pending');
+  const pendingSetupRequests = setupRequests.filter((r) => r.status === 'pending');
 
   if (loading) {
     return (
@@ -155,6 +196,7 @@ export function ShopVerificationDashboard() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
           <p className="mt-2 text-gray-600">Loading approval requests...</p>
         </div>
+
       </div>
     );
   }
@@ -166,7 +208,7 @@ export function ShopVerificationDashboard() {
           <h2 className="text-2xl font-bold">Shop Verification Dashboard</h2>
           <p className="text-gray-600">Manage school approval requests from users</p>
         </div>
-        <Button onClick={fetchRequests} variant="outline">
+        <Button onClick={() => { fetchRequests(); fetchSetupRequests(); }} variant="outline" className="admin-dashboard__refresh-button">
           Refresh
         </Button>
       </div>
@@ -194,7 +236,39 @@ export function ShopVerificationDashboard() {
                 </div>
               </CardContent>
             </Card>
+          ) : (<>
+
+      {/* School Setup Requests (from marketplace) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>School Setup Requests</CardTitle>
+          <CardDescription>Requests submitted when a parent could not find their school in the marketplace selector</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {pendingSetupRequests.length === 0 ? (
+            <div className="text-gray-500">No pending setup requests</div>
           ) : (
+            <div className="grid gap-3 admin-dashboard__setup-requests-list">
+              {pendingSetupRequests.map((req: any) => (
+                <div key={req.id} className="flex items-center justify-between p-3 border rounded-md admin-dashboard__setup-request-item">
+                  <div className="flex flex-col">
+                    <span className="font-medium admin-dashboard__setup-request-name">{req.customSchoolName || req.selectedSchoolId}</span>
+                    <span className="text-sm text-gray-500 admin-dashboard__setup-request-meta">{req.schoolType} • {new Date(req.createdAt).toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2 admin-dashboard__setup-request-actions">
+                    <Badge variant="secondary" className="admin-dashboard__setup-request-status">Pending</Badge>
+                    <Button size="sm" variant="outline" className="admin-dashboard__setup-request-approve-button" onClick={() => handleSetupRequestAction(req.id, 'approve')}>Approve</Button>
+                    <Button size="sm" variant="destructive" className="admin-dashboard__setup-request-deny-button" onClick={() => handleSetupRequestAction(req.id, 'deny')}>Deny</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
+
             <div className="grid gap-4">
               {pendingRequests.map((request) => (
                 <Card key={request.id}>
@@ -326,6 +400,7 @@ export function ShopVerificationDashboard() {
                 </Card>
               ))}
             </div>
+          </>
           )}
         </TabsContent>
 

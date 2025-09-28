@@ -61,13 +61,29 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/localities/se
       });
     } catch (error) {
       console.error('Error searching localities:', error);
+
+      // Provide user-friendly error messages
+      let userMessage = 'Failed to search localities';
+      let statusCode = 500;
+
+      if (error instanceof Error) {
+        if (error.message.includes('429') || error.message.includes('Rate limited')) {
+          userMessage = 'Service is temporarily busy. Please wait a moment and try again.';
+          statusCode = 429;
+        } else if (error.message.includes('timeout')) {
+          userMessage = 'Search is taking longer than expected. Please try again.';
+        } else if (error.message.includes('Network')) {
+          userMessage = 'Network error. Please check your connection and try again.';
+        }
+      }
+
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Failed to search localities',
+        JSON.stringify({
+          success: false,
+          error: userMessage,
           details: error instanceof Error ? error.message : 'Unknown error'
         }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
+        { status: statusCode, headers: { 'Content-Type': 'application/json' } }
       );
     }
   },

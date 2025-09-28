@@ -1,5 +1,3 @@
-import { pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
-
 // Better Auth tables
 export * from './auth';
 export { session as sessions } from './auth';
@@ -28,6 +26,8 @@ export * from './spipuniform';
 // School management tables
 export * from './school-submissions';
 export * from './school-approval-requests';
+
+export * from './school-setup-requests';
 
 
 // Export types for user management

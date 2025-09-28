@@ -293,12 +293,18 @@ export function UsersPage({ className }: UsersPageProps) {
                             {!user.emailVerified && (
                               <DropdownMenuItem onClick={async () => {
                                 try {
-                                  await fetch('/api/users/actions', {
+                                  const res = await fetch('/api/users/actions', {
                                     method: 'POST',
                                     credentials: 'include',
                                     headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ action: 'resend-verification', userId: selectedUserId }),
+                                    body: JSON.stringify({ action: 'resend-verification', userId: user.id }),
                                   });
+                                  if (res.ok) {
+                                    console.log('Verification email re-sent to', user.email);
+                                  } else {
+                                    const err = await res.json().catch(() => ({}));
+                                    console.error('Failed to resend verification:', err.error || res.statusText);
+                                  }
                                 } catch (e) { console.error(e); }
                               }}>
                                 <UserCheck className="mr-2 h-4 w-4" />
@@ -310,8 +316,8 @@ export function UsersPage({ className }: UsersPageProps) {
                               <>
                                 <DropdownMenuItem onClick={async () => {
                                   try {
-                                    await fetch('/api/users-approval', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user.id, action: 'approve' }) });
-                                    fetchUsers();
+                                    const res = await fetch('/api/users-approval', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user.id, action: 'approve' }) });
+                                    if (!res.ok) { const err = await res.json().catch(() => ({})); console.error('Approve failed:', err.error || res.statusText); } else { fetchUsers(); }
                                   } catch (e) { console.error(e); }
                                 }}>
                                   <UserCheck className="mr-2 h-4 w-4" />
@@ -319,8 +325,8 @@ export function UsersPage({ className }: UsersPageProps) {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={async () => {
                                   try {
-                                    await fetch('/api/users-approval', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user.id, action: 'reject' }) });
-                                    fetchUsers();
+                                    const res = await fetch('/api/users-approval', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user.id, action: 'reject' }) });
+                                    if (!res.ok) { const err = await res.json().catch(() => ({})); console.error('Reject failed:', err.error || res.statusText); } else { fetchUsers(); }
                                   } catch (e) { console.error(e); }
                                 }}>
                                   <Ban className="mr-2 h-4 w-4" />

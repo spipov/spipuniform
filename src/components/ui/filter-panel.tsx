@@ -25,6 +25,7 @@ interface FilterSection {
   max?: number;
   step?: number;
   unit?: string;
+  footer?: React.ReactNode;
 }
 
 interface FilterPanelProps {
@@ -205,6 +206,12 @@ export function FilterPanel({
                 </Label>
               </div>
             ))}
+          </div>
+        )}
+
+        {section.footer && (
+          <div className="mt-3 pt-3 border-t">
+            {section.footer}
           </div>
         )}
       </div>

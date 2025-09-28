@@ -24,6 +24,7 @@ import { Route as MarketplaceCreateRouteImport } from './routes/marketplace/crea
 import { Route as MarketplaceBrowseRouteImport } from './routes/marketplace/browse'
 import { Route as DashboardStorageSettingsRouteImport } from './routes/dashboard/storage-settings'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
+import { Route as DashboardRequestsRouteImport } from './routes/dashboard/requests'
 import { Route as DashboardFileManagerRouteImport } from './routes/dashboard/file-manager'
 import { Route as DashboardEmailRouteImport } from './routes/dashboard/email'
 import { Route as DashboardBrandingRouteImport } from './routes/dashboard/branding'
@@ -61,6 +62,7 @@ import { ServerRoute as ApiShopsServerRouteImport } from './routes/api/shops'
 import { ServerRoute as ApiShopOptionsServerRouteImport } from './routes/api/shop-options'
 import { ServerRoute as ApiSchoolsServerRouteImport } from './routes/api/schools'
 import { ServerRoute as ApiSchoolSubmissionsServerRouteImport } from './routes/api/school-submissions'
+import { ServerRoute as ApiSchoolSetupRequestsServerRouteImport } from './routes/api/school-setup-requests'
 import { ServerRoute as ApiSchoolApprovalRequestsServerRouteImport } from './routes/api/school-approval-requests'
 import { ServerRoute as ApiRequestsServerRouteImport } from './routes/api/requests'
 import { ServerRoute as ApiReportsServerRouteImport } from './routes/api/reports'
@@ -88,6 +90,7 @@ import { ServerRoute as ApiUsersUserIdServerRouteImport } from './routes/api/use
 import { ServerRoute as ApiTransactionsIdServerRouteImport } from './routes/api/transactions/$id'
 import { ServerRoute as ApiStorageSettingsServerRouteImport } from './routes/api/storage/settings'
 import { ServerRoute as ApiSchoolsIdServerRouteImport } from './routes/api/schools/$id'
+import { ServerRoute as ApiRolesSeedServerRouteImport } from './routes/api/roles/seed'
 import { ServerRoute as ApiRolesRoleIdServerRouteImport } from './routes/api/roles/$roleId'
 import { ServerRoute as ApiRequestsIdServerRouteImport } from './routes/api/requests/$id'
 import { ServerRoute as ApiProfilesShopServerRouteImport } from './routes/api.profiles.shop'
@@ -104,6 +107,7 @@ import { ServerRoute as ApiEmailFragmentsServerRouteImport } from './routes/api/
 import { ServerRoute as ApiBrandingActiveServerRouteImport } from './routes/api/branding/active'
 import { ServerRoute as ApiAuthUpgradeFirstAdminServerRouteImport } from './routes/api/auth/upgrade-first-admin'
 import { ServerRoute as ApiAuthSignupPostHookServerRouteImport } from './routes/api/auth/signup-post-hook'
+import { ServerRoute as ApiAuthRolesPublicServerRouteImport } from './routes/api/auth/roles-public'
 import { ServerRoute as ApiAuthPermissionsServerRouteImport } from './routes/api/auth/permissions'
 import { ServerRoute as ApiAuthAdminExistsServerRouteImport } from './routes/api/auth/admin-exists'
 import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth/$'
@@ -123,6 +127,7 @@ import { ServerRoute as ApiProfilesFamilyMemberIdServerRouteImport } from './rou
 import { ServerRoute as ApiProductTypesIdAttributesServerRouteImport } from './routes/api/product-types/$id/attributes'
 import { ServerRoute as ApiProductCategoriesCategoryIdTypesServerRouteImport } from './routes/api/product-categories/$categoryId/types'
 import { ServerRoute as ApiLocalitiesFetchSplatServerRouteImport } from './routes/api/localities/fetch/$'
+import { ServerRoute as ApiEmailTemplatesSeedSchoolSetupServerRouteImport } from './routes/api/email/templates.seed-school-setup'
 import { ServerRoute as ApiEmailTemplatesSeedSchoolApprovalServerRouteImport } from './routes/api/email/templates/seed-school-approval'
 import { ServerRoute as ApiEmailTemplatesSeedApprovalServerRouteImport } from './routes/api/email/templates.seed-approval'
 import { ServerRoute as ApiEmailTemplatesPreviewServerRouteImport } from './routes/api/email/templates.preview'
@@ -206,6 +211,11 @@ const DashboardStorageSettingsRoute =
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardRequestsRoute = DashboardRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardFileManagerRoute = DashboardFileManagerRouteImport.update({
@@ -408,6 +418,12 @@ const ApiSchoolSubmissionsServerRoute =
     path: '/api/school-submissions',
     getParentRoute: () => rootServerRouteImport,
   } as any)
+const ApiSchoolSetupRequestsServerRoute =
+  ApiSchoolSetupRequestsServerRouteImport.update({
+    id: '/api/school-setup-requests',
+    path: '/api/school-setup-requests',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiSchoolApprovalRequestsServerRoute =
   ApiSchoolApprovalRequestsServerRouteImport.update({
     id: '/api/school-approval-requests',
@@ -548,6 +564,11 @@ const ApiSchoolsIdServerRoute = ApiSchoolsIdServerRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiSchoolsServerRoute,
 } as any)
+const ApiRolesSeedServerRoute = ApiRolesSeedServerRouteImport.update({
+  id: '/api/roles/seed',
+  path: '/api/roles/seed',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
 const ApiRolesRoleIdServerRoute = ApiRolesRoleIdServerRouteImport.update({
   id: '/api/roles/$roleId',
   path: '/api/roles/$roleId',
@@ -632,6 +653,12 @@ const ApiAuthSignupPostHookServerRoute =
   ApiAuthSignupPostHookServerRouteImport.update({
     id: '/api/auth/signup-post-hook',
     path: '/api/auth/signup-post-hook',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiAuthRolesPublicServerRoute =
+  ApiAuthRolesPublicServerRouteImport.update({
+    id: '/api/auth/roles-public',
+    path: '/api/auth/roles-public',
     getParentRoute: () => rootServerRouteImport,
   } as any)
 const ApiAuthPermissionsServerRoute =
@@ -746,6 +773,12 @@ const ApiLocalitiesFetchSplatServerRoute =
     path: '/fetch/$',
     getParentRoute: () => ApiLocalitiesServerRoute,
   } as any)
+const ApiEmailTemplatesSeedSchoolSetupServerRoute =
+  ApiEmailTemplatesSeedSchoolSetupServerRouteImport.update({
+    id: '/seed-school-setup',
+    path: '/seed-school-setup',
+    getParentRoute: () => ApiEmailTemplatesServerRoute,
+  } as any)
 const ApiEmailTemplatesSeedSchoolApprovalServerRoute =
   ApiEmailTemplatesSeedSchoolApprovalServerRouteImport.update({
     id: '/seed-school-approval',
@@ -855,6 +888,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
+  '/dashboard/requests': typeof DashboardRequestsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/marketplace/browse': typeof MarketplaceBrowseRoute
@@ -897,6 +931,7 @@ export interface FileRoutesByTo {
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
+  '/dashboard/requests': typeof DashboardRequestsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/marketplace/browse': typeof MarketplaceBrowseRoute
@@ -941,6 +976,7 @@ export interface FileRoutesById {
   '/dashboard/branding': typeof DashboardBrandingRoute
   '/dashboard/email': typeof DashboardEmailRoute
   '/dashboard/file-manager': typeof DashboardFileManagerRoute
+  '/dashboard/requests': typeof DashboardRequestsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/storage-settings': typeof DashboardStorageSettingsRoute
   '/marketplace/browse': typeof MarketplaceBrowseRoute
@@ -986,6 +1022,7 @@ export interface FileRouteTypes {
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
+    | '/dashboard/requests'
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/marketplace/browse'
@@ -1028,6 +1065,7 @@ export interface FileRouteTypes {
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
+    | '/dashboard/requests'
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/marketplace/browse'
@@ -1071,6 +1109,7 @@ export interface FileRouteTypes {
     | '/dashboard/branding'
     | '/dashboard/email'
     | '/dashboard/file-manager'
+    | '/dashboard/requests'
     | '/dashboard/settings'
     | '/dashboard/storage-settings'
     | '/marketplace/browse'
@@ -1137,6 +1176,7 @@ export interface FileServerRoutesByFullPath {
   '/api/reports': typeof ApiReportsServerRoute
   '/api/requests': typeof ApiRequestsServerRouteWithChildren
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
+  '/api/school-setup-requests': typeof ApiSchoolSetupRequestsServerRoute
   '/api/school-submissions': typeof ApiSchoolSubmissionsServerRouteWithChildren
   '/api/schools': typeof ApiSchoolsServerRouteWithChildren
   '/api/shop-options': typeof ApiShopOptionsServerRoute
@@ -1152,6 +1192,7 @@ export interface FileServerRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatServerRoute
   '/api/auth/admin-exists': typeof ApiAuthAdminExistsServerRoute
   '/api/auth/permissions': typeof ApiAuthPermissionsServerRoute
+  '/api/auth/roles-public': typeof ApiAuthRolesPublicServerRoute
   '/api/auth/signup-post-hook': typeof ApiAuthSignupPostHookServerRoute
   '/api/auth/upgrade-first-admin': typeof ApiAuthUpgradeFirstAdminServerRoute
   '/api/branding/active': typeof ApiBrandingActiveServerRoute
@@ -1168,6 +1209,7 @@ export interface FileServerRoutesByFullPath {
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
   '/api/requests/$id': typeof ApiRequestsIdServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
+  '/api/roles/seed': typeof ApiRolesSeedServerRoute
   '/api/schools/$id': typeof ApiSchoolsIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/transactions/$id': typeof ApiTransactionsIdServerRouteWithChildren
@@ -1183,6 +1225,7 @@ export interface FileServerRoutesByFullPath {
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
   '/api/email/templates/seed-school-approval': typeof ApiEmailTemplatesSeedSchoolApprovalServerRoute
+  '/api/email/templates/seed-school-setup': typeof ApiEmailTemplatesSeedSchoolSetupServerRoute
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
   '/api/product-categories/$categoryId/types': typeof ApiProductCategoriesCategoryIdTypesServerRoute
   '/api/product-types/$id/attributes': typeof ApiProductTypesIdAttributesServerRoute
@@ -1226,6 +1269,7 @@ export interface FileServerRoutesByTo {
   '/api/reports': typeof ApiReportsServerRoute
   '/api/requests': typeof ApiRequestsServerRouteWithChildren
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
+  '/api/school-setup-requests': typeof ApiSchoolSetupRequestsServerRoute
   '/api/school-submissions': typeof ApiSchoolSubmissionsServerRouteWithChildren
   '/api/schools': typeof ApiSchoolsServerRouteWithChildren
   '/api/shop-options': typeof ApiShopOptionsServerRoute
@@ -1241,6 +1285,7 @@ export interface FileServerRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatServerRoute
   '/api/auth/admin-exists': typeof ApiAuthAdminExistsServerRoute
   '/api/auth/permissions': typeof ApiAuthPermissionsServerRoute
+  '/api/auth/roles-public': typeof ApiAuthRolesPublicServerRoute
   '/api/auth/signup-post-hook': typeof ApiAuthSignupPostHookServerRoute
   '/api/auth/upgrade-first-admin': typeof ApiAuthUpgradeFirstAdminServerRoute
   '/api/branding/active': typeof ApiBrandingActiveServerRoute
@@ -1257,6 +1302,7 @@ export interface FileServerRoutesByTo {
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
   '/api/requests/$id': typeof ApiRequestsIdServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
+  '/api/roles/seed': typeof ApiRolesSeedServerRoute
   '/api/schools/$id': typeof ApiSchoolsIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/transactions/$id': typeof ApiTransactionsIdServerRouteWithChildren
@@ -1272,6 +1318,7 @@ export interface FileServerRoutesByTo {
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
   '/api/email/templates/seed-school-approval': typeof ApiEmailTemplatesSeedSchoolApprovalServerRoute
+  '/api/email/templates/seed-school-setup': typeof ApiEmailTemplatesSeedSchoolSetupServerRoute
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
   '/api/product-categories/$categoryId/types': typeof ApiProductCategoriesCategoryIdTypesServerRoute
   '/api/product-types/$id/attributes': typeof ApiProductTypesIdAttributesServerRoute
@@ -1316,6 +1363,7 @@ export interface FileServerRoutesById {
   '/api/reports': typeof ApiReportsServerRoute
   '/api/requests': typeof ApiRequestsServerRouteWithChildren
   '/api/school-approval-requests': typeof ApiSchoolApprovalRequestsServerRoute
+  '/api/school-setup-requests': typeof ApiSchoolSetupRequestsServerRoute
   '/api/school-submissions': typeof ApiSchoolSubmissionsServerRouteWithChildren
   '/api/schools': typeof ApiSchoolsServerRouteWithChildren
   '/api/shop-options': typeof ApiShopOptionsServerRoute
@@ -1331,6 +1379,7 @@ export interface FileServerRoutesById {
   '/api/auth/$': typeof ApiAuthSplatServerRoute
   '/api/auth/admin-exists': typeof ApiAuthAdminExistsServerRoute
   '/api/auth/permissions': typeof ApiAuthPermissionsServerRoute
+  '/api/auth/roles-public': typeof ApiAuthRolesPublicServerRoute
   '/api/auth/signup-post-hook': typeof ApiAuthSignupPostHookServerRoute
   '/api/auth/upgrade-first-admin': typeof ApiAuthUpgradeFirstAdminServerRoute
   '/api/branding/active': typeof ApiBrandingActiveServerRoute
@@ -1347,6 +1396,7 @@ export interface FileServerRoutesById {
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
   '/api/requests/$id': typeof ApiRequestsIdServerRoute
   '/api/roles/$roleId': typeof ApiRolesRoleIdServerRoute
+  '/api/roles/seed': typeof ApiRolesSeedServerRoute
   '/api/schools/$id': typeof ApiSchoolsIdServerRoute
   '/api/storage/settings': typeof ApiStorageSettingsServerRoute
   '/api/transactions/$id': typeof ApiTransactionsIdServerRouteWithChildren
@@ -1362,6 +1412,7 @@ export interface FileServerRoutesById {
   '/api/email/templates/preview': typeof ApiEmailTemplatesPreviewServerRoute
   '/api/email/templates/seed-approval': typeof ApiEmailTemplatesSeedApprovalServerRoute
   '/api/email/templates/seed-school-approval': typeof ApiEmailTemplatesSeedSchoolApprovalServerRoute
+  '/api/email/templates/seed-school-setup': typeof ApiEmailTemplatesSeedSchoolSetupServerRoute
   '/api/localities/fetch/$': typeof ApiLocalitiesFetchSplatServerRoute
   '/api/product-categories/$categoryId/types': typeof ApiProductCategoriesCategoryIdTypesServerRoute
   '/api/product-types/$id/attributes': typeof ApiProductTypesIdAttributesServerRoute
@@ -1407,6 +1458,7 @@ export interface FileServerRouteTypes {
     | '/api/reports'
     | '/api/requests'
     | '/api/school-approval-requests'
+    | '/api/school-setup-requests'
     | '/api/school-submissions'
     | '/api/schools'
     | '/api/shop-options'
@@ -1422,6 +1474,7 @@ export interface FileServerRouteTypes {
     | '/api/auth/$'
     | '/api/auth/admin-exists'
     | '/api/auth/permissions'
+    | '/api/auth/roles-public'
     | '/api/auth/signup-post-hook'
     | '/api/auth/upgrade-first-admin'
     | '/api/branding/active'
@@ -1438,6 +1491,7 @@ export interface FileServerRouteTypes {
     | '/api/profiles/shop'
     | '/api/requests/$id'
     | '/api/roles/$roleId'
+    | '/api/roles/seed'
     | '/api/schools/$id'
     | '/api/storage/settings'
     | '/api/transactions/$id'
@@ -1453,6 +1507,7 @@ export interface FileServerRouteTypes {
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
     | '/api/email/templates/seed-school-approval'
+    | '/api/email/templates/seed-school-setup'
     | '/api/localities/fetch/$'
     | '/api/product-categories/$categoryId/types'
     | '/api/product-types/$id/attributes'
@@ -1496,6 +1551,7 @@ export interface FileServerRouteTypes {
     | '/api/reports'
     | '/api/requests'
     | '/api/school-approval-requests'
+    | '/api/school-setup-requests'
     | '/api/school-submissions'
     | '/api/schools'
     | '/api/shop-options'
@@ -1511,6 +1567,7 @@ export interface FileServerRouteTypes {
     | '/api/auth/$'
     | '/api/auth/admin-exists'
     | '/api/auth/permissions'
+    | '/api/auth/roles-public'
     | '/api/auth/signup-post-hook'
     | '/api/auth/upgrade-first-admin'
     | '/api/branding/active'
@@ -1527,6 +1584,7 @@ export interface FileServerRouteTypes {
     | '/api/profiles/shop'
     | '/api/requests/$id'
     | '/api/roles/$roleId'
+    | '/api/roles/seed'
     | '/api/schools/$id'
     | '/api/storage/settings'
     | '/api/transactions/$id'
@@ -1542,6 +1600,7 @@ export interface FileServerRouteTypes {
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
     | '/api/email/templates/seed-school-approval'
+    | '/api/email/templates/seed-school-setup'
     | '/api/localities/fetch/$'
     | '/api/product-categories/$categoryId/types'
     | '/api/product-types/$id/attributes'
@@ -1585,6 +1644,7 @@ export interface FileServerRouteTypes {
     | '/api/reports'
     | '/api/requests'
     | '/api/school-approval-requests'
+    | '/api/school-setup-requests'
     | '/api/school-submissions'
     | '/api/schools'
     | '/api/shop-options'
@@ -1600,6 +1660,7 @@ export interface FileServerRouteTypes {
     | '/api/auth/$'
     | '/api/auth/admin-exists'
     | '/api/auth/permissions'
+    | '/api/auth/roles-public'
     | '/api/auth/signup-post-hook'
     | '/api/auth/upgrade-first-admin'
     | '/api/branding/active'
@@ -1616,6 +1677,7 @@ export interface FileServerRouteTypes {
     | '/api/profiles/shop'
     | '/api/requests/$id'
     | '/api/roles/$roleId'
+    | '/api/roles/seed'
     | '/api/schools/$id'
     | '/api/storage/settings'
     | '/api/transactions/$id'
@@ -1631,6 +1693,7 @@ export interface FileServerRouteTypes {
     | '/api/email/templates/preview'
     | '/api/email/templates/seed-approval'
     | '/api/email/templates/seed-school-approval'
+    | '/api/email/templates/seed-school-setup'
     | '/api/localities/fetch/$'
     | '/api/product-categories/$categoryId/types'
     | '/api/product-types/$id/attributes'
@@ -1675,6 +1738,7 @@ export interface RootServerRouteChildren {
   ApiReportsServerRoute: typeof ApiReportsServerRoute
   ApiRequestsServerRoute: typeof ApiRequestsServerRouteWithChildren
   ApiSchoolApprovalRequestsServerRoute: typeof ApiSchoolApprovalRequestsServerRoute
+  ApiSchoolSetupRequestsServerRoute: typeof ApiSchoolSetupRequestsServerRoute
   ApiSchoolSubmissionsServerRoute: typeof ApiSchoolSubmissionsServerRouteWithChildren
   ApiSchoolsServerRoute: typeof ApiSchoolsServerRouteWithChildren
   ApiShopOptionsServerRoute: typeof ApiShopOptionsServerRoute
@@ -1689,6 +1753,7 @@ export interface RootServerRouteChildren {
   ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
   ApiAuthAdminExistsServerRoute: typeof ApiAuthAdminExistsServerRoute
   ApiAuthPermissionsServerRoute: typeof ApiAuthPermissionsServerRoute
+  ApiAuthRolesPublicServerRoute: typeof ApiAuthRolesPublicServerRoute
   ApiAuthSignupPostHookServerRoute: typeof ApiAuthSignupPostHookServerRoute
   ApiAuthUpgradeFirstAdminServerRoute: typeof ApiAuthUpgradeFirstAdminServerRoute
   ApiBrandingActiveServerRoute: typeof ApiBrandingActiveServerRoute
@@ -1701,6 +1766,7 @@ export interface RootServerRouteChildren {
   ApiProfilesFamilyMembersServerRoute: typeof ApiProfilesFamilyMembersServerRoute
   ApiProfilesShopServerRoute: typeof ApiProfilesShopServerRoute
   ApiRolesRoleIdServerRoute: typeof ApiRolesRoleIdServerRoute
+  ApiRolesSeedServerRoute: typeof ApiRolesSeedServerRoute
   ApiStorageSettingsServerRoute: typeof ApiStorageSettingsServerRoute
   ApiTransactionsIdServerRoute: typeof ApiTransactionsIdServerRouteWithChildren
   ApiUsersUserIdServerRoute: typeof ApiUsersUserIdServerRoute
@@ -1824,6 +1890,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/dashboard/settings'
       preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/requests': {
+      id: '/dashboard/requests'
+      path: '/requests'
+      fullPath: '/dashboard/requests'
+      preLoaderRoute: typeof DashboardRequestsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/file-manager': {
@@ -2089,6 +2162,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiSchoolSubmissionsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/school-setup-requests': {
+      id: '/api/school-setup-requests'
+      path: '/api/school-setup-requests'
+      fullPath: '/api/school-setup-requests'
+      preLoaderRoute: typeof ApiSchoolSetupRequestsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/school-approval-requests': {
       id: '/api/school-approval-requests'
       path: '/api/school-approval-requests'
@@ -2278,6 +2358,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiSchoolsIdServerRouteImport
       parentRoute: typeof ApiSchoolsServerRoute
     }
+    '/api/roles/seed': {
+      id: '/api/roles/seed'
+      path: '/api/roles/seed'
+      fullPath: '/api/roles/seed'
+      preLoaderRoute: typeof ApiRolesSeedServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/roles/$roleId': {
       id: '/api/roles/$roleId'
       path: '/api/roles/$roleId'
@@ -2388,6 +2475,13 @@ declare module '@tanstack/react-start/server' {
       path: '/api/auth/signup-post-hook'
       fullPath: '/api/auth/signup-post-hook'
       preLoaderRoute: typeof ApiAuthSignupPostHookServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/roles-public': {
+      id: '/api/auth/roles-public'
+      path: '/api/auth/roles-public'
+      fullPath: '/api/auth/roles-public'
+      preLoaderRoute: typeof ApiAuthRolesPublicServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/auth/permissions': {
@@ -2523,6 +2617,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiLocalitiesFetchSplatServerRouteImport
       parentRoute: typeof ApiLocalitiesServerRoute
     }
+    '/api/email/templates/seed-school-setup': {
+      id: '/api/email/templates/seed-school-setup'
+      path: '/seed-school-setup'
+      fullPath: '/api/email/templates/seed-school-setup'
+      preLoaderRoute: typeof ApiEmailTemplatesSeedSchoolSetupServerRouteImport
+      parentRoute: typeof ApiEmailTemplatesServerRoute
+    }
     '/api/email/templates/seed-school-approval': {
       id: '/api/email/templates/seed-school-approval'
       path: '/seed-school-approval'
@@ -2643,6 +2744,7 @@ interface DashboardRouteChildren {
   DashboardBrandingRoute: typeof DashboardBrandingRoute
   DashboardEmailRoute: typeof DashboardEmailRoute
   DashboardFileManagerRoute: typeof DashboardFileManagerRoute
+  DashboardRequestsRoute: typeof DashboardRequestsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardStorageSettingsRoute: typeof DashboardStorageSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -2671,6 +2773,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardBrandingRoute: DashboardBrandingRoute,
   DashboardEmailRoute: DashboardEmailRoute,
   DashboardFileManagerRoute: DashboardFileManagerRoute,
+  DashboardRequestsRoute: DashboardRequestsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardStorageSettingsRoute: DashboardStorageSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
@@ -2840,6 +2943,7 @@ interface ApiEmailTemplatesServerRouteChildren {
   ApiEmailTemplatesPreviewServerRoute: typeof ApiEmailTemplatesPreviewServerRoute
   ApiEmailTemplatesSeedApprovalServerRoute: typeof ApiEmailTemplatesSeedApprovalServerRoute
   ApiEmailTemplatesSeedSchoolApprovalServerRoute: typeof ApiEmailTemplatesSeedSchoolApprovalServerRoute
+  ApiEmailTemplatesSeedSchoolSetupServerRoute: typeof ApiEmailTemplatesSeedSchoolSetupServerRoute
 }
 
 const ApiEmailTemplatesServerRouteChildren: ApiEmailTemplatesServerRouteChildren =
@@ -2849,6 +2953,8 @@ const ApiEmailTemplatesServerRouteChildren: ApiEmailTemplatesServerRouteChildren
       ApiEmailTemplatesSeedApprovalServerRoute,
     ApiEmailTemplatesSeedSchoolApprovalServerRoute:
       ApiEmailTemplatesSeedSchoolApprovalServerRoute,
+    ApiEmailTemplatesSeedSchoolSetupServerRoute:
+      ApiEmailTemplatesSeedSchoolSetupServerRoute,
   }
 
 const ApiEmailTemplatesServerRouteWithChildren =
@@ -2907,6 +3013,7 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiReportsServerRoute: ApiReportsServerRoute,
   ApiRequestsServerRoute: ApiRequestsServerRouteWithChildren,
   ApiSchoolApprovalRequestsServerRoute: ApiSchoolApprovalRequestsServerRoute,
+  ApiSchoolSetupRequestsServerRoute: ApiSchoolSetupRequestsServerRoute,
   ApiSchoolSubmissionsServerRoute: ApiSchoolSubmissionsServerRouteWithChildren,
   ApiSchoolsServerRoute: ApiSchoolsServerRouteWithChildren,
   ApiShopOptionsServerRoute: ApiShopOptionsServerRoute,
@@ -2921,6 +3028,7 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
   ApiAuthAdminExistsServerRoute: ApiAuthAdminExistsServerRoute,
   ApiAuthPermissionsServerRoute: ApiAuthPermissionsServerRoute,
+  ApiAuthRolesPublicServerRoute: ApiAuthRolesPublicServerRoute,
   ApiAuthSignupPostHookServerRoute: ApiAuthSignupPostHookServerRoute,
   ApiAuthUpgradeFirstAdminServerRoute: ApiAuthUpgradeFirstAdminServerRoute,
   ApiBrandingActiveServerRoute: ApiBrandingActiveServerRoute,
@@ -2933,6 +3041,7 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiProfilesFamilyMembersServerRoute: ApiProfilesFamilyMembersServerRoute,
   ApiProfilesShopServerRoute: ApiProfilesShopServerRoute,
   ApiRolesRoleIdServerRoute: ApiRolesRoleIdServerRoute,
+  ApiRolesSeedServerRoute: ApiRolesSeedServerRoute,
   ApiStorageSettingsServerRoute: ApiStorageSettingsServerRoute,
   ApiTransactionsIdServerRoute: ApiTransactionsIdServerRouteWithChildren,
   ApiUsersUserIdServerRoute: ApiUsersUserIdServerRoute,

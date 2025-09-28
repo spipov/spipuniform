@@ -201,10 +201,10 @@ export function RequestCreationDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Target className="h-5 w-5 text-blue-500" />
-            Create a Request
+            Request Uniform Item
           </DialogTitle>
           <DialogDescription>
-            Let other parents know what uniform items you're looking for from {schoolName}
+            Let other parents know what specific uniform items you're looking for from {schoolName}
           </DialogDescription>
         </DialogHeader>
 
@@ -316,9 +316,9 @@ export function RequestCreationDialog({
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-3">
             <div>
-              <Label htmlFor="condition">Preferred Condition</Label>
+              <Label htmlFor="condition">Condition Requirements</Label>
               <Select
                 value={formData.conditionPreference}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, conditionPreference: value }))}
@@ -330,11 +330,14 @@ export function RequestCreationDialog({
                   <SelectItem value="any">Any condition</SelectItem>
                   {conditions?.map((condition: any) => (
                     <SelectItem key={condition.id} value={condition.name}>
-                      {condition.name}
+                      {condition.name} or better
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                We'll notify you about items in your preferred condition or better
+              </p>
             </div>
 
             <div>
@@ -429,11 +432,12 @@ export function RequestCreationDialog({
               <Search className="h-4 w-4 mt-0.5" />
               <div className="text-sm">
                 <p className="font-medium">What happens next?</p>
-                <p className="text-green-700">
-                  Your request will be visible to other parents. When someone has a matching item,
-                  they'll be able to contact you directly. You'll also get notified if new listings
-                  match your request.
-                </p>
+                <div className="text-green-700 mt-1 space-y-1">
+                  <p>• Your request will be visible to other parents from {schoolName}</p>
+                  <p>• When someone has a matching item, they'll be able to contact you directly</p>
+                  <p>• We'll notify you when new listings match your requirements</p>
+                  <p>• You'll only be notified about items in your preferred condition or better</p>
+                </div>
               </div>
             </div>
           </div>
@@ -447,7 +451,7 @@ export function RequestCreationDialog({
             onClick={handleCreateRequest}
             disabled={createRequestMutation.isPending || !formData.productTypeId}
           >
-            {createRequestMutation.isPending ? 'Creating...' : 'Create Request'}
+            {createRequestMutation.isPending ? 'Creating...' : 'Request Item'}
           </Button>
         </DialogFooter>
       </DialogContent>

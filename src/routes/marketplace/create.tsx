@@ -82,27 +82,41 @@ function CreateListingPage() {
     categoryId: '',
     productTypeId: '',
     conditionId: '',
-    
+
     // Pricing
     price: '',
     isFree: false,
-    
+
     // Attributes (dynamic based on product type)
     attributes: {} as Record<string, string>,
-    
+
     // Images
     images: [] as UploadedImage[],
-    
+
     // Location will come from user profile
     localityId: '',
-    
+
     // Advanced options
     allowOffers: true,
     autoRenew: false,
-    
+
     // Preview before publish
     isPreview: false
   });
+
+
+  // Prefill school from URL (?schoolId=...)
+  useEffect(() => {
+    try {
+      const usp = new URLSearchParams(window.location.search);
+      const sid = usp.get('schoolId');
+      if (sid) {
+        setFormData(prev => ({ ...prev, schoolId: sid }));
+      }
+    } catch (e) {
+      // no-op
+    }
+  }, []);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [currentStep, setCurrentStep] = useState(1);
@@ -254,30 +268,30 @@ function CreateListingPage() {
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.title.trim()) newErrors.title = 'Title is required';
     if (!formData.schoolId) newErrors.schoolId = 'School is required';
     if (!formData.categoryId) newErrors.categoryId = 'Category is required';
     if (!formData.productTypeId) newErrors.productTypeId = 'Product type is required';
     if (!formData.conditionId) newErrors.conditionId = 'Condition is required';
-    
+
     if (!formData.isFree) {
       if (!formData.price || parseFloat(formData.price) <= 0) {
         newErrors.price = 'Valid price is required';
       }
     }
-    
+
     // Validate required attributes
     attributes.forEach(attr => {
       if (attr.required && !formData.attributes[attr.slug]) {
         newErrors[`attr_${attr.slug}`] = `${attr.name} is required`;
       }
     });
-    
+
     if (formData.images.length === 0) {
       newErrors.images = 'At least one image is required';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -287,7 +301,7 @@ function CreateListingPage() {
       toast.error('Please fix the errors before submitting');
       return;
     }
-    
+
     setSaving(true);
     try {
       const listingData = {
@@ -300,7 +314,7 @@ function CreateListingPage() {
           order: img.order
         }))
       };
-      
+
       const response = await fetch('/api/listings', {
         method: 'POST',
         headers: {
@@ -309,9 +323,9 @@ function CreateListingPage() {
         credentials: 'include',
         body: JSON.stringify(listingData)
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         toast.success(isDraft ? 'Draft saved successfully' : 'Listing created successfully!');
         // Redirect to listings management or the new listing
@@ -733,7 +747,7 @@ function CreateListingPage() {
         <Button variant="outline" onClick={() => handleSubmit(true)} disabled={saving}>
           Save as Draft
         </Button>
-        
+
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => window.history.back()}>
             Cancel

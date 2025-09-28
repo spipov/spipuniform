@@ -28,11 +28,11 @@ import { toast } from 'sonner';
 import { Link } from '@tanstack/react-router';
 import { FavoriteButton } from '@/components/marketplace/favorite-button';
 import { RequestCreationDialog } from '@/components/marketplace/request-creation-dialog';
-import { SchoolRequestDialog } from '@/components/marketplace/school-request-dialog';
+import { SchoolSetupRequestDialog } from '@/components/marketplace/school-setup-request-dialog';
 
 // Simple debounce function (like data verification page)
 function debounce<T extends (...args: any[]) => void>(func: T, delay: number): T {
-  let timeoutId: NodeJS.Timeout;
+  let timeoutId: ReturnType<typeof setTimeout>;
   return ((...args: any[]) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
@@ -101,9 +101,34 @@ export function HierarchicalMarketplaceFlow({
   const [selectedSchool, setSelectedSchool] = useState<string>('');
   const [schoolType, setSchoolType] = useState<'primary' | 'secondary'>('primary');
   const [showRequestDialog, setShowRequestDialog] = useState(false);
-  const [showSchoolRequestDialog, setShowSchoolRequestDialog] = useState(false);
+  const [showSchoolSetupRequestDialog, setShowSchoolSetupRequestDialog] = useState(false);
   const [localitySearchTerm, setLocalitySearchTerm] = useState<string>('');
   const [isLocalitySearchOpen, setIsLocalitySearchOpen] = useState(false);
+
+  // Expose function to trigger school setup dialog
+  useEffect(() => {
+    const handleTriggerSchoolSetup = () => {
+      setShowSchoolSetupRequestDialog(true);
+    };
+
+    window.addEventListener('triggerSchoolSetup', handleTriggerSchoolSetup);
+
+    // Also expose the function globally for direct access
+    (window as any).triggerHierarchicalSchoolSetup = () => {
+      setShowSchoolSetupRequestDialog(true);
+    };
+
+    return () => {
+      window.removeEventListener('triggerSchoolSetup', handleTriggerSchoolSetup);
+      delete (window as any).triggerHierarchicalSchoolSetup;
+    };
+  }, []);
+
+  // Debounced setter for locality search to avoid hammering Overpass
+  const setLocalitySearchTermDebounced = useMemo(
+    () => debounce((v: string) => setLocalitySearchTerm(v), 500),
+    []
+  );
 
   // Fetch geographic data
   const { data: counties } = useQuery({
@@ -202,6 +227,11 @@ export function HierarchicalMarketplaceFlow({
         params.set('osmLocalityName', staticLocalityData.name);
         // Prevent fallback to all county schools for marketplace queries
         params.set('marketplace', 'true');
+      }
+
+      // For school setup requests, include all schools (CSV and manual, active and inactive)
+      if (showSchoolSetupRequestDialog) {
+        params.set('schoolSetup', 'true');
       }
 
       // Also try OSM localities if available
@@ -355,9 +385,9 @@ export function HierarchicalMarketplaceFlow({
       <div className="space-y-4">
         {/* County Selection */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">County</label>
+          <label className="text-sm font-medium" htmlFor="marketplace-county-select">County</label>
           <Select value={selectedCounty} onValueChange={handleCountySelect}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger id="marketplace-county-select" className="w-full">
               <SelectValue placeholder="Select your county" />
             </SelectTrigger>
             <SelectContent>
@@ -373,13 +403,14 @@ export function HierarchicalMarketplaceFlow({
         {/* Locality Selection */}
         {selectedCounty && (
           <div className="space-y-2">
-            <label className="text-sm font-medium">Town/Locality</label>
+            <label className="text-sm font-medium" htmlFor="marketplace-locality-input">Town/Locality</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
+                id="marketplace-locality-input"
                 placeholder="Type to search localities..."
                 value={localitySearchTerm}
-                onChange={(e) => setLocalitySearchTerm(e.target.value)}
+                onChange={(e) => setLocalitySearchTermDebounced(e.target.value)}
                 onFocus={() => setIsLocalitySearchOpen(true)}
                 onBlur={() => setTimeout(() => setIsLocalitySearchOpen(false), 200)}
                 className="pl-10"
@@ -495,13 +526,19 @@ export function HierarchicalMarketplaceFlow({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowRequestDialog(true)}
+                  onClick={() => setShowSchoolSetupRequestDialog(true)}
                   className="text-xs"
+                  data-testid="school-setup-button"
                 >
-                  + Request School
+                  + Request School Setup
                 </Button>
               )}
             </div>
+            {schools && schools.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                If you cannot see your school, please request its addition to moderators/admins.
+              </p>
+            )}
             <Select value={selectedSchool} onValueChange={handleSchoolSelect}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={`Select ${schoolType} school`} />
@@ -526,11 +563,11 @@ export function HierarchicalMarketplaceFlow({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setShowRequestDialog(true)}
+                      onClick={() => setShowSchoolSetupRequestDialog(true)}
                       className="w-full"
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Request to Add School
+                      Request School Setup
                     </Button>
                   </div>
                 )}
@@ -609,7 +646,7 @@ export function HierarchicalMarketplaceFlow({
                   </Button>
                   <Button variant="outline" onClick={handleRequestCreate} className="flex items-center gap-2">
                     <Search className="h-4 w-4" />
-                    Create Request
+                    Request Item
                   </Button>
                 </div>
               </CardContent>
@@ -629,17 +666,12 @@ export function HierarchicalMarketplaceFlow({
         }}
       />
 
-      {/* School Request Dialog */}
-      <SchoolRequestDialog
-        countyId={selectedCounty}
-        countyName={counties?.find(c => c.id === selectedCounty)?.name || ''}
-        localityId={selectedLocality}
-        localityName={searchedLocalities?.find(l => l.id === selectedLocality)?.name || ''}
-        schoolType={schoolType}
-        isOpen={showSchoolRequestDialog}
-        onClose={() => setShowSchoolRequestDialog(false)}
+      {/* School Setup Request Dialog */}
+      <SchoolSetupRequestDialog
+        isOpen={showSchoolSetupRequestDialog}
+        onClose={() => setShowSchoolSetupRequestDialog(false)}
         onSuccess={() => {
-          toast.success('School request submitted! We\'ll review and add it soon.');
+          toast.success('School setup request submitted! We\'ll review and set up your school soon.');
         }}
       />
     </div>

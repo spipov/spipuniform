@@ -1,6 +1,5 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { AuthSettingsService } from '@/lib/services/auth-settings-service';
-import { auth } from '@/lib/auth';
 import { ApprovalService } from '@/lib/services/approval-service';
 import { db } from '@/db';
 import { user as userTable } from '@/db/schema';
@@ -12,8 +11,17 @@ import { EmailService } from '@/lib/services/email/email-service';
 export const ServerRoute = createServerFileRoute('/api/auth/signup-post-hook').methods({
   POST: async ({ request }) => {
     try {
-      const { userId } = await request.json();
+      const { userId, role } = await request.json();
       if (!userId) return new Response(JSON.stringify({ error: 'Missing userId' }), { status: 400 });
+
+      // If a desired role is provided, set it first (except for first admin which is handled elsewhere)
+      if (role && typeof role === 'string') {
+        try {
+          await db.update(userTable).set({ role }).where(eq(userTable.id, userId));
+        } catch (e) {
+          console.warn('Failed to set role on signup-post-hook, continuing:', e);
+        }
+      }
 
       const settings = await AuthSettingsService.get();
       const requireApproval = Boolean(settings?.requireAdminApproval);

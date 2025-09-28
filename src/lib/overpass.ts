@@ -22,6 +22,17 @@ const OVERPASS_ENDPOINT = 'https://overpass-api.de/api/interpreter';
 const TIMEOUT = 25; // seconds
 const USER_AGENT = 'SpipUniform/1.0';
 
+// Rate limiting and retry configuration
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY = 1000; // 1 second
+const MAX_RETRY_DELAY = 10000; // 10 seconds
+const MIN_REQUEST_INTERVAL = 500; // Minimum 500ms between requests
+
+// Rate limiting state
+let lastRequestTime = 0;
+let requestQueue: Array<() => void> = [];
+let isProcessingQueue = false;
+
 // Cache implementation
 const cache = new Map<string, { data: any; expires: number }>();
 
@@ -35,10 +46,40 @@ function getCached<T>(key: string): T | null {
 }
 
 function setCache<T>(key: string, data: T, ttlMinutes: number): void {
-  cache.set(key, {
-    data,
-    expires: Date.now() + ttlMinutes * 60 * 1000
-  });
+   cache.set(key, {
+     data,
+     expires: Date.now() + ttlMinutes * 60 * 1000
+   });
+ }
+
+/**
+ * Rate limiting function to ensure minimum interval between requests
+ */
+async function enforceRateLimit(): Promise<void> {
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastRequestTime;
+
+  if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+    const delay = MIN_REQUEST_INTERVAL - timeSinceLastRequest;
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
+
+  lastRequestTime = Date.now();
+}
+
+/**
+ * Sleep for specified milliseconds
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Calculate exponential backoff delay
+ */
+function getRetryDelay(attempt: number): number {
+  const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt - 1);
+  return Math.min(delay, MAX_RETRY_DELAY);
 }
 
 /**
@@ -233,36 +274,81 @@ async function buildTownsQuery(countyName: string, useBbox: boolean): Promise<st
 }
 
 async function executeTownsQuery(query: string): Promise<TownItem[]> {
-  const response = await fetch(OVERPASS_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'User-Agent': USER_AGENT,
-    },
-    body: `data=${encodeURIComponent(query)}`
-  });
+   let lastError: Error | null = null;
 
-  if (!response.ok) {
-    throw new Error(`Overpass API error: ${response.status}`);
-  }
+   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+     try {
+       // Enforce rate limiting
+       await enforceRateLimit();
 
-  const data = await response.json();
-  
-  if (!data.elements) {
-    return [];
-  }
+       const response = await fetch(OVERPASS_ENDPOINT, {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/x-www-form-urlencoded',
+           'User-Agent': USER_AGENT,
+         },
+         body: `data=${encodeURIComponent(query)}`
+       });
 
-  return data.elements
-    .filter((element: any) => element.tags?.name && (element.lat || element.center))
-    .map((element: any) => ({
-      id: element.id,
-      name: element.tags.name,
-      placeType: element.tags.place || element.tags.natural || element.tags.tourism || 'locality',
-      lat: element.lat || element.center?.lat,
-      lon: element.lon || element.center?.lon
-    }))
-    .filter((town: TownItem) => town.lat && town.lon && town.name);
-}
+       if (!response.ok) {
+         const errorMessage = `Overpass API error: ${response.status}`;
+
+         // Handle rate limiting (429) with exponential backoff
+         if (response.status === 429) {
+           if (attempt === MAX_RETRIES) {
+             throw new Error(`${errorMessage} - Rate limited after ${MAX_RETRIES} attempts. Please try again later.`);
+           }
+
+           const delay = getRetryDelay(attempt);
+           console.warn(`Rate limited (429), retrying in ${delay}ms (attempt ${attempt}/${MAX_RETRIES})`);
+           await sleep(delay);
+           continue;
+         }
+
+         // For other errors, don't retry
+         throw new Error(errorMessage);
+       }
+
+       const data = await response.json();
+
+       if (!data.elements) {
+         return [];
+       }
+
+       return data.elements
+         .filter((element: any) => element.tags?.name && (element.lat || element.center))
+         .map((element: any) => ({
+           id: element.id,
+           name: element.tags.name,
+           placeType: element.tags.place || element.tags.natural || element.tags.tourism || 'locality',
+           lat: element.lat || element.center?.lat,
+           lon: element.lon || element.center?.lon
+         }))
+         .filter((town: TownItem) => town.lat && town.lon && town.name);
+
+     } catch (error) {
+       lastError = error instanceof Error ? error : new Error('Unknown error');
+       console.error(`Attempt ${attempt} failed:`, lastError.message);
+
+       // If this is the last attempt, throw the error
+       if (attempt === MAX_RETRIES) {
+         throw lastError;
+       }
+
+       // For non-429 errors, don't retry
+       if (error instanceof Error && error.message.includes('429')) {
+         const delay = getRetryDelay(attempt);
+         console.warn(`Retrying in ${delay}ms (attempt ${attempt}/${MAX_RETRIES})`);
+         await sleep(delay);
+       } else {
+         throw lastError;
+       }
+     }
+   }
+
+   // This should never be reached, but TypeScript requires it
+   throw lastError || new Error('Unknown error in executeTownsQuery');
+ }
 
 function deduplicateTowns(towns: TownItem[]): TownItem[] {
   const seen = new Set<string>();

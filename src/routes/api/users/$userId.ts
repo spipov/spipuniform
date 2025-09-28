@@ -118,7 +118,7 @@ export const ServerRoute = createServerFileRoute('/api/users/$userId').methods({
       const currentUser = await db
         .select({ role: user.role })
         .from(user)
-        .where(eq(user.id, authSession.user.id))
+        .where(eq(user.id, session.user.id))
         .limit(1);
 
       if (!currentUser[0] || (currentUser[0].role || '').toLowerCase() !== 'admin') {

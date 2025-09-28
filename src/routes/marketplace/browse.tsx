@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import { useSession } from '@/lib/auth-client';
 import { FavoriteButton } from '@/components/marketplace/favorite-button';
 import { HierarchicalMarketplaceFlow } from '@/components/marketplace/hierarchical-marketplace-flow';
+import { SchoolSetupRequestDialog } from '@/components/marketplace/school-setup-request-dialog';
 import { UniversalSearchBox } from '@/components/ui/universal-search-box';
 import { FilterPanel } from '@/components/ui/filter-panel';
 import { ResultsList, type ResultItem } from '@/components/ui/results-list';
@@ -93,6 +94,7 @@ function BrowsePage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [loading, setLoading] = useState(false);
   const [localFilters, setLocalFilters] = useState<Record<string, any>>({});
+  const [showSchoolSetupDialog, setShowSchoolSetupDialog] = useState(false);
 
   // Fetch filter options for the FilterPanel component
   const { data: categories } = useQuery({
@@ -149,8 +151,37 @@ function BrowsePage() {
         params.set('q', searchParams.q);
       }
 
-      // Add filters
-      Object.entries(localFilters).forEach(([key, value]) => {
+      // Add filters with API param mapping
+      const mappedFilters: Record<string, any> = { ...localFilters };
+
+      // Map UI filter keys to API parameter names expected by the backend
+      if (mappedFilters.category) {
+        mappedFilters.categoryId = mappedFilters.category;
+        delete mappedFilters.category;
+      }
+      if (mappedFilters.productType) {
+        mappedFilters.productTypeId = mappedFilters.productType;
+        delete mappedFilters.productType;
+      }
+      if (mappedFilters.school) {
+        mappedFilters.schoolId = mappedFilters.school;
+        delete mappedFilters.school;
+      }
+      if (Array.isArray(mappedFilters.price)) {
+        const [min, max] = mappedFilters.price;
+        if (min !== undefined && min !== null) mappedFilters.minPrice = min;
+        if (max !== undefined && max !== null) mappedFilters.maxPrice = max;
+        delete mappedFilters.price;
+      }
+      if (mappedFilters.condition) {
+        mappedFilters.conditionIds = Array.isArray(mappedFilters.condition)
+          ? mappedFilters.condition
+          : [mappedFilters.condition];
+        delete mappedFilters.condition;
+      }
+
+      // Serialize mapped filters
+      Object.entries(mappedFilters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '' && value !== 'all') {
           if (Array.isArray(value)) {
             params.set(key, value.join(','));
@@ -266,7 +297,21 @@ function BrowsePage() {
           label: school.name,
           count: 0
         })) || [])
-      ]
+      ],
+      footer: (
+        <div className="px-3 py-3 text-sm text-muted-foreground border-t bg-blue-50/50 rounded-b-md">
+          <p className="mb-2">If you cannot see your school, please request its addition to moderators/admins.</p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => setShowSchoolSetupDialog(true)}
+          >
+            <School className="h-4 w-4 mr-2" />
+            Request School Setup
+          </Button>
+        </div>
+      )
     },
     {
       id: 'price',
@@ -400,6 +445,7 @@ function BrowsePage() {
             </p>
           </div>
         </div>
+
       </div>
 
       {/* Mobile-first hierarchical marketplace flow */}
@@ -425,7 +471,7 @@ function BrowsePage() {
               sections={filterSections}
               activeFilters={localFilters}
               onFiltersChange={handleFiltersChange}
-              collapsible={true}
+              collapsible={false}
             />
           </div>
 
@@ -551,6 +597,15 @@ function BrowsePage() {
         </div>
 
       </div>
+
+      {/* School Setup Request Dialog */}
+      <SchoolSetupRequestDialog
+        isOpen={showSchoolSetupDialog}
+        onClose={() => setShowSchoolSetupDialog(false)}
+        onSuccess={() => {
+          toast.success('School setup request submitted! We\'ll review and set up your school soon.');
+        }}
+      />
     </div>
   );
 }

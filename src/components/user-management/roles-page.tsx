@@ -105,7 +105,10 @@ export function RolesPage() {
             <Plus className="mr-2 h-4 w-4" />
             Create Role
           </Button>
-          <Button 
+          <Button onClick={async () => { try { const res = await fetch('/api/roles/seed', { method: 'POST', credentials: 'include' }); if (res.ok) { await loadRoles(); } else { const e = await res.json().catch(() => ({})); setError(e.error || 'Failed to seed roles'); } } catch (e) { setError(e instanceof Error ? e.message : 'Failed to seed roles'); } }} variant="secondary">
+            Seed Defaults
+          </Button>
+          <Button
             onClick={() => setShowRoleInfo(true)}
             variant="outline"
           >

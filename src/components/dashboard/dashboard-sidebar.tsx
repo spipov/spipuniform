@@ -1,6 +1,6 @@
 import type * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive, MapPin, School, ShoppingBag, Tags, Package, Sliders, Star, User, UserCircle, Building2, History, CreditCard } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileText, Settings, Users, Shield, Key, Palette, Mail, FolderOpen, HardDrive, MapPin, School, ShoppingBag, Tags, Package, Sliders, Star, User, UserCircle, Building2, History, CreditCard, Clock } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { UserLogoutCard } from "./user-logout-card";
 import { BrandingProvider, SmartBrandingLogo } from "@/components/branding/branding-logo";
@@ -113,6 +113,12 @@ const spipUniformNavigation = [
     title: "Schools",
     url: "/dashboard/spipuniform/schools",
     icon: School,
+    requiredPermission: "viewDashboard", // Using basic dashboard permission for now
+  },
+  {
+    title: "Requests",
+    url: "/dashboard/requests",
+    icon: Clock,
     requiredPermission: "viewDashboard", // Using basic dashboard permission for now
   },
   {

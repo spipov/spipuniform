@@ -13,6 +13,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
       const noLocality = url.searchParams.get('noLocality') === 'true';
       const search = url.searchParams.get('q'); // Search query
       const osmLocalityName = url.searchParams.get('osmLocalityName'); // OSM locality name for filtering
+      const schoolSetup = url.searchParams.get('schoolSetup') === 'true'; // School setup context
 
       let query = db
         .select({
@@ -31,10 +32,14 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
         .leftJoin(counties, eq(schools.countyId, counties.id));
 
       // Build WHERE conditions
-      const conditions: any[] = [eq(schools.isActive, true)];
+      const conditions: any[] = [];
 
-      // Only show schools that were created through proper channels (not CSV imports)
-      conditions.push(isNull(schools.csvSourceRow));
+      // For school setup requests, include all schools (active and inactive, CSV and manual)
+      if (!schoolSetup) {
+        conditions.push(eq(schools.isActive, true));
+        // For school setup, we want to show CSV schools so users can activate them
+        // Don't filter out CSV schools for setup requests
+      }
 
       if (countyId) {
         conditions.push(eq(schools.countyId, countyId));
@@ -79,10 +84,14 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
         console.log(`Only ${result.length} schools found for locality '${osmLocalityName}', including broader county results`);
         
         // Get broader county results as fallback
-        const fallbackConditions = [eq(schools.isActive, true)];
+        const fallbackConditions: any[] = [];
 
-        // Only show schools that were created through proper channels (not CSV imports)
-        fallbackConditions.push(isNull(schools.csvSourceRow));
+        // For school setup requests, include all schools (active and inactive, CSV and manual)
+        if (!schoolSetup) {
+          fallbackConditions.push(eq(schools.isActive, true));
+          // For school setup, we want to show CSV schools so users can activate them
+          // Don't filter out CSV schools for setup requests
+        }
         
         if (countyId) {
           fallbackConditions.push(eq(schools.countyId, countyId));

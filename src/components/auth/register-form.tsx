@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { signUp } from "@/lib/auth-client";
 import { registerSchema, type RegisterSchema } from "@/schemas/auth";
 import { toast } from "sonner";
@@ -18,6 +19,9 @@ import { getBaseUrl } from "@/lib/utils/url";
 export function RegisterForm({ className, ...props }: React.ComponentProps<"div">) {
   const [isLoading, setIsLoading] = useState(false);
   const [isFirstAdmin, setIsFirstAdmin] = useState(false);
+  const [availableRoles, setAvailableRoles] = useState<Array<{ name: string; label: string }>>([]);
+  const [selectedRole, setSelectedRole] = useState<string>("family"); // default to Parent
+
   const router = useRouter();
 
   useEffect(() => {
@@ -27,6 +31,36 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
       .then(data => setIsFirstAdmin(!data.exists))
       .catch(() => setIsFirstAdmin(false));
   }, []);
+  useEffect(() => {
+    // Load roles allowed for signup
+    const load = async () => {
+      try {
+        const res = await fetch('/api/auth/roles-public');
+        if (res.ok) {
+          const data = await res.json();
+          const roles = (data?.roles || []) as Array<{ name: string; label: string }>;
+          setAvailableRoles(roles);
+          if (roles.length && !roles.find(r => r.name === selectedRole)) {
+            setSelectedRole(roles[0].name);
+          }
+        } else {
+          setAvailableRoles([
+            { name: 'family', label: 'Parent' },
+            { name: 'shop', label: 'Shop Owner' },
+            { name: 'school_rep', label: 'School Rep' },
+          ]);
+        }
+      } catch {
+        setAvailableRoles([
+          { name: 'family', label: 'Parent' },
+          { name: 'shop', label: 'Shop Owner' },
+          { name: 'school_rep', label: 'School Rep' },
+        ]);
+      }
+    };
+    load();
+  }, []);
+
 
   const onSubmit = async (data: RegisterSchema) => {
     setIsLoading(true);
@@ -56,6 +90,18 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
           toast.success("Account created! Check your email for verification.");
         }
 
+        // Set the selected role on the new user and run any post-signup hooks
+        const newUserId = result?.data?.user?.id;
+        if (newUserId && !isFirstAdmin) {
+          try {
+            await fetch('/api/auth/signup-post-hook', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: newUserId, role: selectedRole }),
+            });
+          } catch {}
+        }
+
         // Check approval flag, then optionally call post-hook and choose redirect
         let requireApproval = false;
         try {
@@ -67,16 +113,6 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
         } catch {}
 
         if (requireApproval) {
-          try {
-            const userId = result?.data?.user?.id;
-            if (userId) {
-              await fetch('/api/auth/signup-post-hook', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId }),
-              });
-            }
-          } catch {}
           router.navigate({ to: "/auth/pending" });
         } else {
           router.navigate({ to: "/auth/signin" });
@@ -113,9 +149,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
           <CardDescription>Enter your information to create your account</CardDescription>
           {isFirstAdmin && (
             <div className="bg-green-50 border border-green-200 rounded p-3 mt-4">
-              <p className="text-green-800 text-sm">
-                🎉 You'll be the first admin of this application!
-              </p>
+              <p className="text-green-800 text-sm">You'll be the first admin of this application.</p>
             </div>
           )}
         </CardHeader>
@@ -178,6 +212,20 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                   </div>
                 )}
               </form.Field>
+              <div className="grid gap-3 auth__role-select">
+                <Label htmlFor="role">Role</Label>
+                <Select value={selectedRole} onValueChange={setSelectedRole}>
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableRoles.map((r) => (
+                      <SelectItem key={r.name} value={r.name}>{r.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <form.Field name="password">
                 {(field) => (
                   <div className="grid gap-3">
