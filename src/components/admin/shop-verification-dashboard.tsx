@@ -69,7 +69,7 @@ export function ShopVerificationDashboard() {
   // Fetch school setup requests (from marketplace flow)
   const fetchSetupRequests = async () => {
     try {
-      const res = await fetch('/api/school-setup-requests');
+      const res = await fetch('/api/school-setup-requests', { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch setup requests');
       const data = await res.json();
       setSetupRequests(data.requests || []);
@@ -151,6 +151,7 @@ export function ShopVerificationDashboard() {
       const res = await fetch(`/api/school-setup-requests?id=${requestId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error('Failed to update setup request');

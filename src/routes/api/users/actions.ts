@@ -1,7 +1,7 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/db';
-import { user as userTable, verification as verificationTable } from '@/db/schema';
+import { user as userTable } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const ServerRoute = createServerFileRoute('/api/users/actions').methods({
@@ -38,13 +38,25 @@ export const ServerRoute = createServerFileRoute('/api/users/actions').methods({
 
       // Trigger Better Auth to send verification email by calling its endpoint
       // Better Auth will generate a new token and call our sendVerificationEmail handler configured in auth.ts
-      const res = await auth.api.sendVerificationEmail({
+      const resp: any = await auth.api.sendVerificationEmail({
         body: { email: target.email },
       } as any);
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        return new Response(JSON.stringify({ error: err?.message || 'Failed to resend verification' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+      let ok = false;
+      if (resp && typeof resp === 'object' && 'ok' in resp) {
+        ok = !!resp.ok;
+        if (!ok) {
+          const err = await (resp as Response).json().catch(() => ({}));
+          console.error('Resend verification failed:', err);
+          return new Response(JSON.stringify({ success: false, error: err?.message || 'Failed to resend verification' }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+      } else {
+        // Non-Response shape: treat truthy as success unless it has explicit error
+        if (resp && (resp.error || resp.success === false)) {
+          console.error('Resend verification failed:', resp);
+          return new Response(JSON.stringify({ success: false, error: resp.error || 'Failed to resend verification' }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+        ok = true;
       }
 
       return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });

@@ -304,7 +304,7 @@ export function SchoolManagementTable() {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="spip-schools__management-table">
         <CardHeader>
           <CardTitle>Schools Management</CardTitle>
           <CardDescription>Manage activated schools in the system</CardDescription>
@@ -321,7 +321,7 @@ export function SchoolManagementTable() {
   }
 
   return (
-    <Card>
+    <Card className="spip-schools__management-table">
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>

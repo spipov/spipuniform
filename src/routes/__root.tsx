@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import appCss from "../app/styles/app.css?url";
 
-import Header from "../components/Header";
+import Header from "@/components/layout/Header";
 
 // Create a client
 const queryClient = new QueryClient({

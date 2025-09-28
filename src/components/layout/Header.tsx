@@ -2,13 +2,47 @@ import { Link } from "@tanstack/react-router";
 import { useSession, signOut } from "@/lib/auth-client";
 import { useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import * as React from "react";
+import { AuthDialog } from "@/components/auth/auth-dialog";
 
 export default function Header() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
+  const [authOpen, setAuthOpen] = React.useState(false);
+  const [authTab, setAuthTab] = React.useState<'signin' | 'signup'>('signin');
+
+  const AuthButtons = () => (
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          setAuthTab('signin');
+          setAuthOpen(true);
+        }}
+      >
+        Sign In
+      </Button>
+      <Button
+        size="sm"
+        onClick={() => {
+          setAuthTab('signup');
+          setAuthOpen(true);
+        }}
+      >
+        Sign Up
+      </Button>
+      <AuthDialog
+        open={authOpen}
+        onOpenChange={setAuthOpen}
+        onSuccess={() => setAuthOpen(false)}
+        defaultTab={authTab}
+      />
+    </>
+  );
 
   return (
-    <header className="p-2 flex gap-2 bg-white text-black justify-between">
+    <header className="app-header p-2 flex gap-2 bg-white text-black justify-between">
       <nav className="flex flex-row">
         <div className="px-2 font-bold">
           <Link to="/">Home</Link>
@@ -36,7 +70,6 @@ export default function Header() {
 
       <div className="flex items-center gap-2 min-h-9">
         {isPending ? (
-          // Stable placeholders while session status is loading to avoid wording flicker
           <div className="flex items-center gap-2 animate-pulse">
             <span className="h-6 w-40 bg-gray-200 rounded" />
             <span className="h-9 w-24 bg-gray-200 rounded" />
@@ -53,7 +86,6 @@ export default function Header() {
                 try {
                   await signOut();
                 } finally {
-                  // Always navigate to home after sign out
                   router.navigate({ to: "/" });
                 }
               }}
@@ -62,18 +94,10 @@ export default function Header() {
             </Button>
           </>
         ) : (
-          <>
-            <Link to="/auth/signin">
-              <Button variant="outline" size="sm">
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/auth/signup">
-              <Button size="sm">Sign Up</Button>
-            </Link>
-          </>
+          <AuthButtons />
         )}
       </div>
     </header>
   );
 }
+

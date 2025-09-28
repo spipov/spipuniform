@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 import { UserDialog } from "./user-dialog";
 import { DeleteUserDialog } from "./delete-user-dialog";
 import { BanUserDialog } from "./ban-user-dialog";
@@ -150,7 +151,7 @@ export function UsersPage({ className }: UsersPageProps) {
   };
 
   return (
-    <div className={className}>
+    <div className={`user-management__users-page ${className ?? ''}`}>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -299,13 +300,13 @@ export function UsersPage({ className }: UsersPageProps) {
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ action: 'resend-verification', userId: user.id }),
                                   });
-                                  if (res.ok) {
-                                    console.log('Verification email re-sent to', user.email);
+                                  const data = await res.json().catch(() => ({} as any));
+                                  if (res.ok && (data?.success ?? true)) {
+                                    toast.success(`Verification email re-sent to ${user.email}`);
                                   } else {
-                                    const err = await res.json().catch(() => ({}));
-                                    console.error('Failed to resend verification:', err.error || res.statusText);
+                                    toast.error(`Failed to resend verification: ${data?.error || res.statusText}`);
                                   }
-                                } catch (e) { console.error(e); }
+                                } catch (e) { console.error(e); toast.error('Failed to resend verification'); }
                               }}>
                                 <UserCheck className="mr-2 h-4 w-4" />
                                 Resend Verification

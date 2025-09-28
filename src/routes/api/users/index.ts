@@ -161,39 +161,55 @@ export const ServerRoute = createServerFileRoute("/api/users/").methods({
         });
       }
 
-      // Create user using Better Auth admin API
-      const newUser = await auth.api.adminCreateUser({
+      // Create user using Better Auth admin API (handle both Response and plain object shapes)
+      const createRes: any = await auth.api.adminCreateUser({
         body: {
           email: validatedData.email,
           password: validatedData.password,
           name: validatedData.name,
           role: validatedData.role || "user",
         },
-      });
+      } as any);
 
-      if (!newUser) {
-        return new Response(JSON.stringify({ error: "Failed to create user" }), {
+      let created: any = null;
+      if (createRes && typeof createRes === 'object' && 'ok' in createRes) {
+        // Fetch Response-like
+        if (!createRes.ok) {
+          const err = await createRes.json().catch(() => ({}));
+          return new Response(JSON.stringify({ error: err?.message || 'Failed to create user' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        created = await createRes.json().catch(() => null);
+      } else {
+        created = createRes;
+      }
+
+      const u = created?.user || created;
+      if (!u?.id) {
+        return new Response(JSON.stringify({ error: 'Failed to create user' }), {
           status: 500,
-          headers: { "Content-Type": "application/json" },
+          headers: { 'Content-Type': 'application/json' },
         });
       }
 
       return new Response(
         JSON.stringify({
           user: {
-            id: newUser.id,
-            name: newUser.name,
-            email: newUser.email,
-            role: newUser.role,
-            banned: newUser.banned || false,
-            banReason: newUser.banReason || null,
-            banExpires: newUser.banExpires || null,
-            createdAt: newUser.createdAt,
-            updatedAt: newUser.updatedAt,
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            role: u.role,
+            banned: u.banned || false,
+            banReason: u.banReason || null,
+            banExpires: u.banExpires || null,
+            createdAt: u.createdAt,
+            updatedAt: u.updatedAt,
           },
         }),
         {
-          headers: { "Content-Type": "application/json" },
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     } catch (error) {
