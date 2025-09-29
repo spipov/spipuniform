@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { db } from '@/db';
 import { counties, localities } from '@/db/schema';
 import { fallbackCounties, fallbackLocalities } from '@/data/irish-geographic-data';
@@ -52,16 +53,14 @@ async function seedGeographicData() {
 }
 
 // Run the seeder if this script is executed directly
-if (require.main === module) {
-  seedGeographicData()
-    .then(() => {
-      console.log('✅ Seeding completed successfully');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('❌ Seeding failed:', error);
-      process.exit(1);
-    });
-}
+seedGeographicData()
+  .then(() => {
+    console.log('✅ Seeding completed successfully');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('❌ Seeding failed:', error);
+    process.exit(1);
+  });
 
 export { seedGeographicData };

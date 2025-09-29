@@ -1,8 +1,12 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
-import { db } from '@/db';
-import { schools, listings, userProfiles, counties, localities } from '@/db/schema';
-import { asc, ilike, or, and, eq, sql } from 'drizzle-orm';
+import postgres from 'postgres';
 import { z } from 'zod';
+
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is not set");
+}
+
+const sql = postgres(process.env.DATABASE_URL);
 
 // Validation schema for school search
 const schoolSearchSchema = z.object({
@@ -25,69 +29,70 @@ export const ServerRoute = createServerFileRoute('/api/schools').methods({
 
       const validatedParams = schoolSearchSchema.parse(queryParams);
 
-      // Build query conditions
-      const conditions = [];
-      conditions.push(eq(schools.isActive, true));
+      // Build the base query
+      let whereConditions = ['s.is_active = true'];
+      let queryValues: any[] = [];
+      let paramIndex = 1;
 
       // Search by name or address if query provided
       if (validatedParams.query) {
-        conditions.push(
-          or(
-            ilike(schools.name, `%${validatedParams.query}%`),
-            ilike(schools.address, `%${validatedParams.query}%`)
-          )
-        );
+        whereConditions.push(`(s.name ILIKE $${paramIndex} OR s.address ILIKE $${paramIndex})`);
+        queryValues.push(`%${validatedParams.query}%`);
+        paramIndex++;
       }
 
       // Filter by county if provided
       if (validatedParams.county) {
-        conditions.push(eq(schools.countyId, validatedParams.county));
+        whereConditions.push(`c.name ILIKE $${paramIndex}`);
+        queryValues.push(`%${validatedParams.county}%`);
+        paramIndex++;
       }
 
+      const whereClause = whereConditions.join(' AND ');
+
       // Get schools with statistics
-      const schoolResults = await db
-        .select({
-          id: schools.id,
-          name: schools.name,
-          address: schools.address,
-          countyId: schools.countyId,
-          localityId: schools.localityId,
-          level: schools.level,
-          website: schools.website,
-          phone: schools.phone,
-          email: schools.email,
-          isActive: schools.isActive,
-          createdAt: schools.createdAt,
-          updatedAt: schools.updatedAt,
-          // Get listing count
-          listingCount: sql<number>`(
-            SELECT COUNT(*)
-            FROM ${listings}
-            WHERE ${listings.schoolId} = ${schools.id}
-          )`,
-          // Get associated accounts count (users with this school as primary)
-          associatedAccountsCount: sql<number>`(
-            SELECT COUNT(DISTINCT ${userProfiles.userId})
-            FROM ${userProfiles}
-            WHERE ${userProfiles.primarySchoolId} = ${schools.id}
-          )`
-        })
-        .from(schools)
-        .leftJoin(counties, eq(schools.countyId, counties.id))
-        .leftJoin(localities, eq(schools.localityId, localities.id))
-        .where(and(...conditions))
-        .orderBy(asc(schools.name))
-        .limit(validatedParams.limit)
-        .offset(validatedParams.offset);
+      const schoolQuery = `
+        SELECT
+          s.id,
+          s.name,
+          s.address,
+          s.county_id as "countyId",
+          s.locality_id as "localityId",
+          s.level,
+          s.website,
+          s.phone,
+          s.email,
+          s.is_active as "isActive",
+          s.created_at as "createdAt",
+          s.updated_at as "updatedAt",
+          c.name as "countyName",
+          l.name as "localityName",
+          0 as "listingCount",
+          0 as "associatedAccountsCount"
+        FROM schools s
+        LEFT JOIN counties c ON s.county_id = c.id
+        LEFT JOIN localities l ON s.locality_id = l.id
+        WHERE ${whereClause}
+        ORDER BY s.name
+        LIMIT $${paramIndex}
+        OFFSET $${paramIndex + 1}
+      `;
+
+      queryValues.push(validatedParams.limit, validatedParams.offset);
+      const schoolResults = await sql.unsafe(schoolQuery, queryValues);
 
       // Get total count for pagination
-      const countResult = await db
-        .select({ count: sql`count(*)` })
-        .from(schools)
-        .where(and(...conditions));
+      const countQuery = `
+        SELECT COUNT(*) as count
+        FROM schools s
+        LEFT JOIN counties c ON s.county_id = c.id
+        WHERE ${whereClause}
+      `;
 
-      const totalCount = countResult[0] || { count: '0' };
-      const countValue = typeof totalCount.count === 'string' ? totalCount.count : String(totalCount.count || '0');
+      const countValues = queryValues.slice(0, -2); // Remove limit and offset
+      const countResult = await sql.unsafe(countQuery, countValues);
+
+      const totalCount = countResult[0]?.count || 0;
 
       return new Response(JSON.stringify({
         success: true,
@@ -97,10 +102,10 @@ export const ServerRoute = createServerFileRoute('/api/schools').methods({
           associatedAccountsCount: Number(school.associatedAccountsCount) || 0
         })),
         pagination: {
-          total: parseInt(countValue),
+          total: parseInt(String(totalCount)),
           limit: validatedParams.limit,
           offset: validatedParams.offset,
-          hasMore: (validatedParams.offset + validatedParams.limit) < parseInt(countValue)
+          hasMore: (validatedParams.offset + validatedParams.limit) < parseInt(String(totalCount))
         }
       }), {
         status: 200,

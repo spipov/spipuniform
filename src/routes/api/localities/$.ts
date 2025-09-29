@@ -6,7 +6,17 @@ import { sql, eq } from 'drizzle-orm';
 export const ServerRoute = createServerFileRoute('/api/localities/$').methods({
   GET: async ({ request, params }) => {
     try {
-      const countyId = params._;
+      const countyId = params._splat;
+
+      if (!countyId) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'County ID is required'
+        }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
 
       const result = await db
         .select({

@@ -1,7 +1,7 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { db } from '@/db';
 import { localities, counties } from '@/db/schema';
-import { asc, eq } from 'drizzle-orm';
+import { asc, eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 
 const localitiesQuerySchema = z.object({
@@ -42,7 +42,7 @@ export const ServerRoute = createServerFileRoute('/api/localities').methods({
           })
           .from(localities)
           .leftJoin(counties, eq(localities.countyId, counties.id))
-          .where(conditions.length > 0 ? conditions[0] : undefined)
+          .where(conditions.length > 0 ? and(...conditions) : undefined)
           .orderBy(asc(localities.name));
 
         allLocalities = dbLocalities.map(l => ({

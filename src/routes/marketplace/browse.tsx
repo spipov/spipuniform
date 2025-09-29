@@ -294,7 +294,7 @@ function BrowsePage() {
         { id: 'all', label: 'All schools', count: 0 },
         ...(schools?.slice(0, 50).map((school: any) => ({
           id: school.id,
-          label: school.name,
+          label: `${school.name}${school.localityName ? ` (${school.localityName}, ${school.countyName})` : school.countyName ? ` (${school.countyName})` : ''}`,
           count: 0
         })) || [])
       ],
