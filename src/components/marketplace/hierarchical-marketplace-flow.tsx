@@ -1,53 +1,29 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import {
-  MapPin,
   School,
-  ShoppingBag,
   Plus,
-  Search,
-  AlertCircle,
-  CheckCircle2,
   Package,
-  Heart,
-  MessageCircle,
   Eye,
   Building2,
   GraduationCap,
-  ChevronDown,
   X,
-  Loader2
+  Search
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from '@tanstack/react-router';
 import { FavoriteButton } from '@/components/marketplace/favorite-button';
 import { RequestCreationDialog } from '@/components/marketplace/request-creation-dialog';
 import { SchoolSetupRequestDialog } from '@/components/marketplace/school-setup-request-dialog';
-
-// Simple debounce function (like data verification page)
-function debounce<T extends (...args: any[]) => void>(func: T, delay: number): T {
-  let timeoutId: ReturnType<typeof setTimeout>;
-  return ((...args: any[]) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
-  }) as T;
-}
+import { LocalitySearch } from '@/components/shared/locality-search';
 
 interface County {
   id: string;
   name: string;
-}
-
-interface Locality {
-  id: string;
-  name: string;
-  countyId: string;
 }
 
 interface School {
@@ -62,15 +38,6 @@ interface School {
   website?: string;
   phone?: string;
   email?: string;
-}
-
-interface OSMLocality {
-  id: string;
-  name: string;
-  placeType: string;
-  lat: number;
-  lon: number;
-  isOSM: boolean;
 }
 
 interface Listing {
@@ -97,13 +64,12 @@ export function HierarchicalMarketplaceFlow({
   onListingCreate
 }: HierarchicalMarketplaceFlowProps) {
   const [selectedCounty, setSelectedCounty] = useState<string>('');
-  const [selectedLocality, setSelectedLocality] = useState<string>('');
+  const [selectedLocalityId, setSelectedLocalityId] = useState<string>('');
+  const [selectedLocalityName, setSelectedLocalityName] = useState<string>('');
   const [selectedSchool, setSelectedSchool] = useState<string>('');
   const [schoolType, setSchoolType] = useState<'primary' | 'secondary'>('primary');
   const [showRequestDialog, setShowRequestDialog] = useState(false);
   const [showSchoolSetupRequestDialog, setShowSchoolSetupRequestDialog] = useState(false);
-  const [localitySearchTerm, setLocalitySearchTerm] = useState<string>('');
-  const [isLocalitySearchOpen, setIsLocalitySearchOpen] = useState(false);
 
   // Expose function to trigger school setup dialog
   useEffect(() => {
@@ -124,12 +90,6 @@ export function HierarchicalMarketplaceFlow({
     };
   }, []);
 
-  // Debounced setter for locality search to avoid hammering Overpass
-  const setLocalitySearchTermDebounced = useMemo(
-    () => debounce((v: string) => setLocalitySearchTerm(v), 500),
-    []
-  );
-
   // Fetch geographic data
   const { data: counties } = useQuery({
     queryKey: ['counties'],
@@ -141,104 +101,21 @@ export function HierarchicalMarketplaceFlow({
     }
   });
 
-  // Get static localities for immediate display
-  const { data: staticLocalities } = useQuery<Locality[]>({
-    queryKey: ['static-localities', selectedCounty],
-    queryFn: async () => {
-      if (!selectedCounty) return [];
-      const { getLocalitiesByCounty } = await import('@/data/irish-geographic-data');
-      return getLocalitiesByCounty(selectedCounty);
-    },
-    enabled: !!selectedCounty
-  });
-
-  // Search localities - show static data immediately, enhance with OSM when available
-  const { data: searchedLocalities } = useQuery<OSMLocality[]>({
-    queryKey: ['localities-search', selectedCounty, localitySearchTerm],
-    queryFn: async () => {
-      if (!selectedCounty) return [];
-
-      // Always start with static localities
-      let localities = (staticLocalities || [])
-        .filter(locality =>
-          !localitySearchTerm ||
-          locality.name.toLowerCase().includes((localitySearchTerm || '').toLowerCase())
-        )
-        .slice(0, 10)
-        .map(locality => ({
-          id: locality.id,
-          name: locality.name,
-          placeType: 'town',
-          lat: 0,
-          lon: 0,
-          isOSM: false
-        }));
-
-      // Try to enhance with OSM results if search term is present
-      if (localitySearchTerm && localitySearchTerm.trim().length >= 2) {
-        try {
-          const params = new URLSearchParams({
-            countyId: selectedCounty,
-            q: localitySearchTerm.trim()
-          });
-
-          const response = await fetch(`/api/spipuniform/localities/search?${params}`);
-          if (response.ok) {
-            const data = await response.json();
-            const osmLocalities = (data.localities || []).map((loc: any) => ({
-              id: loc.id,
-              name: loc.name,
-              placeType: loc.placeType,
-              lat: loc.lat,
-              lon: loc.lon,
-              isOSM: true
-            }));
-
-            // Combine OSM and static results, preferring OSM
-            localities = [...osmLocalities, ...localities].slice(0, 10);
-          }
-        } catch (error) {
-          console.warn('OSM search failed, using static data only:', error);
-        }
-      }
-
-      return localities;
-    },
-    enabled: !!selectedCounty
-  });
-
   const { data: schools } = useQuery<School[]>({
-    queryKey: ['schools-by-location-and-type', selectedCounty, selectedLocality, schoolType],
+    queryKey: ['schools-by-location-and-type', selectedCounty, selectedLocalityName, schoolType],
     queryFn: async () => {
-      if (!selectedCounty || !selectedLocality) return [];
+      if (!selectedCounty || !selectedLocalityName) return [];
 
       const params = new URLSearchParams({
         countyId: selectedCounty,
-        level: schoolType
+        level: schoolType,
+        osmLocalityName: selectedLocalityName, // Use locality name for address matching
+        marketplace: 'true'
       });
-
-      // For locality filtering, use the locality name directly from static data
-      // This avoids dependency on the searchedLocalities query timing
-      const { getLocalityById } = await import('@/data/irish-geographic-data');
-      const staticLocalityData = getLocalityById(selectedLocality);
-
-      if (staticLocalityData) {
-        // Use osmLocalityName to filter schools by address containing locality name
-        params.set('osmLocalityName', staticLocalityData.name);
-        // Prevent fallback to all county schools for marketplace queries
-        params.set('marketplace', 'true');
-      }
 
       // For school setup requests, include all schools (CSV and manual, active and inactive)
       if (showSchoolSetupRequestDialog) {
         params.set('schoolSetup', 'true');
-      }
-
-      // Also try OSM localities if available
-      const selectedLocalityData = searchedLocalities?.find(l => l.id === selectedLocality);
-      if (selectedLocalityData?.isOSM) {
-        // Override with OSM name if available (more accurate)
-        params.set('osmLocalityName', selectedLocalityData.name);
       }
 
       const response = await fetch(`/api/spipuniform/schools?${params}`);
@@ -246,7 +123,7 @@ export function HierarchicalMarketplaceFlow({
       const data = await response.json();
       return data.schools || [];
     },
-    enabled: !!selectedCounty && !!selectedLocality
+    enabled: !!selectedCounty && !!selectedLocalityName
   });
 
   const { data: schoolListings } = useQuery({
@@ -264,12 +141,8 @@ export function HierarchicalMarketplaceFlow({
 
   const handleCountySelect = (countyId: string) => {
     setSelectedCounty(countyId);
-    setSelectedLocality('');
-    setSelectedSchool('');
-  };
-
-  const handleLocalitySelect = (localityId: string) => {
-    setSelectedLocality(localityId);
+    setSelectedLocalityId('');
+    setSelectedLocalityName('');
     setSelectedSchool('');
   };
 
@@ -279,7 +152,8 @@ export function HierarchicalMarketplaceFlow({
 
   const resetFlow = () => {
     setSelectedCounty('');
-    setSelectedLocality('');
+    setSelectedLocalityId('');
+    setSelectedLocalityName('');
     setSelectedSchool('');
   };
 
@@ -402,104 +276,21 @@ export function HierarchicalMarketplaceFlow({
 
         {/* Locality Selection */}
         {selectedCounty && (
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="marketplace-locality-input">Town/Locality</label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="marketplace-locality-input"
-                placeholder="Type to search localities..."
-                value={localitySearchTerm}
-                onChange={(e) => setLocalitySearchTermDebounced(e.target.value)}
-                onFocus={() => setIsLocalitySearchOpen(true)}
-                onBlur={() => setTimeout(() => setIsLocalitySearchOpen(false), 200)}
-                className="pl-10"
-              />
-              {isLocalitySearchOpen && (
-                <div className="absolute top-full left-0 right-0 z-50 bg-background border border-border rounded-md shadow-lg max-h-60 overflow-auto">
-                  {!localitySearchTerm ? (
-                    // Show all localities when no search term
-                    searchedLocalities && searchedLocalities.length > 0 ? (
-                      <>
-                        <div className="px-3 py-2 text-xs text-muted-foreground border-b bg-blue-50">
-                          Popular localities in {counties?.find(c => c.id === selectedCounty)?.name}:
-                        </div>
-                        {searchedLocalities.slice(0, 10).map((locality) => (
-                          <button
-                            key={locality.id}
-                            onClick={() => {
-                              handleLocalitySelect(locality.id);
-                              setLocalitySearchTerm(locality.name);
-                              setIsLocalitySearchOpen(false);
-                            }}
-                            className="w-full px-3 py-2 text-left hover:bg-muted flex items-center gap-2 border-b border-border/50 last:border-b-0"
-                          >
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <div className="font-medium">{locality.name}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {locality.placeType}
-                                {locality.isOSM && (
-                                  <span className="ml-1 text-blue-500">• OSM data</span>
-                                )}
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </>
-                    ) : (
-                      <div className="px-3 py-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-                        <p className="text-yellow-700">
-                          Loading localities...
-                        </p>
-                      </div>
-                    )
-                  ) : (
-                    // Show filtered results when searching
-                    searchedLocalities && searchedLocalities.length > 0 ? (
-                      <>
-                        <div className="px-3 py-2 text-xs text-muted-foreground border-b">
-                          Found {searchedLocalities.length} localities matching "{localitySearchTerm}":
-                        </div>
-                        {searchedLocalities.map((locality) => (
-                          <button
-                            key={locality.id}
-                            onClick={() => {
-                              handleLocalitySelect(locality.id);
-                              setLocalitySearchTerm(locality.name);
-                              setIsLocalitySearchOpen(false);
-                            }}
-                            className="w-full px-3 py-2 text-left hover:bg-muted flex items-center gap-2 border-b border-border/50 last:border-b-0"
-                          >
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <div className="font-medium">{locality.name}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {locality.placeType}
-                                {locality.isOSM && (
-                                  <span className="ml-1 text-blue-500">• OSM data</span>
-                                )}
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </>
-                    ) : (
-                      <div className="px-3 py-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-                        <p className="text-yellow-700">
-                          No localities found matching "{localitySearchTerm}". Try a different search term.
-                        </p>
-                      </div>
-                    )
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+          <LocalitySearch
+            countyId={selectedCounty}
+            value={selectedLocalityId}
+            onChange={(id, name) => {
+              setSelectedLocalityId(id);
+              setSelectedLocalityName(name);
+              setSelectedSchool(''); // Reset school when locality changes
+            }}
+            label="Town/Locality"
+            placeholder="Type to search localities..."
+          />
         )}
 
         {/* School Type Selection */}
-        {selectedLocality && (
+        {selectedLocalityName && (
           <div className="space-y-2">
             <label className="text-sm font-medium">School Type</label>
             <Tabs value={schoolType} onValueChange={(value) => setSchoolType(value as 'primary' | 'secondary')}>
@@ -518,7 +309,7 @@ export function HierarchicalMarketplaceFlow({
         )}
 
         {/* School Selection */}
-        {selectedLocality && (
+        {selectedLocalityName && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">School</label>
@@ -558,7 +349,7 @@ export function HierarchicalMarketplaceFlow({
                 ) : (
                   <div className="p-4 text-center">
                     <div className="text-sm text-muted-foreground mb-3">
-                      No {schoolType} schools found in {searchedLocalities?.find(l => l.id === selectedLocality)?.name}
+                      No {schoolType} schools found in {selectedLocalityName}
                     </div>
                     <Button
                       variant="outline"
@@ -577,7 +368,7 @@ export function HierarchicalMarketplaceFlow({
         )}
 
         {/* Reset button */}
-        {(selectedCounty || selectedLocality || selectedSchool) && (
+        {(selectedCounty || selectedLocalityName || selectedSchool) && (
           <Button variant="outline" onClick={resetFlow} className="w-full">
             <X className="h-4 w-4 mr-2" />
             Reset Selection
@@ -604,7 +395,7 @@ export function HierarchicalMarketplaceFlow({
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {counties?.find(c => c.id === selectedCounty)?.name}, {' '}
-                    {searchedLocalities?.find(l => l.id === selectedLocality)?.name || 'Selected locality'}
+                    {selectedLocalityName || 'Selected locality'}
                   </p>
                 </div>
               </div>

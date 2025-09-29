@@ -1,7 +1,7 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { db } from '@/db';
-import { schools, localities, counties, schoolOwners, listings, requests } from '@/db/schema';
-import { eq, and, isNull, like, or, sql, exists } from 'drizzle-orm';
+import { schools, localities, counties } from '@/db/schema';
+import { eq, and, isNull, like, or } from 'drizzle-orm';
 
 export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').methods({
   GET: async ({ request }) => {
@@ -188,7 +188,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
   POST: async ({ request }) => {
     try {
       const body = await request.json();
-      const { name, address, countyId, localityId, level, website, phone, email, isActive } = body;
+      const { name, address, countyId, localityId, localityName, level, website, phone, email, isActive } = body;
 
       // Validate required fields
       if (!name || !countyId || !level) {
@@ -198,13 +198,42 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
         );
       }
 
+      // If localityName is provided but not localityId, find or create the locality
+      let finalLocalityId = localityId;
+      if (localityName && !localityId) {
+        // Check if locality exists
+        const existingLocality = await db
+          .select({ id: localities.id })
+          .from(localities)
+          .where(and(
+            eq(localities.countyId, countyId),
+            eq(localities.name, localityName)
+          ))
+          .limit(1);
+
+        if (existingLocality.length > 0) {
+          finalLocalityId = existingLocality[0].id;
+        } else {
+          // Create new locality
+          const [newLocality] = await db
+            .insert(localities)
+            .values({
+              name: localityName,
+              countyId: countyId,
+              osmId: null // OSM localities don't have a DB record, this is manual
+            })
+            .returning();
+          finalLocalityId = newLocality.id;
+        }
+      }
+
       const [newSchool] = await db
         .insert(schools)
         .values({
           name,
           address,
           countyId,
-          localityId: localityId || null,
+          localityId: finalLocalityId || null,
           level,
           website,
           phone,

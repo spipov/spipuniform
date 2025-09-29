@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
@@ -42,6 +43,7 @@ import {
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SchoolCreationDialog } from '@/components/school-creation-dialog';
+import { SchoolActivationDialog } from '@/components/school-activation-dialog';
 
 interface EnhancedSchool {
   id: string;
@@ -54,6 +56,7 @@ interface EnhancedSchool {
   phone?: string;
   email?: string;
   isActive: boolean;
+  csvSourceRow?: any;
   createdAt: string;
   updatedAt: string;
   listingCount: number;
@@ -81,6 +84,7 @@ export function SchoolManagementTable() {
   const [editingSchool, setEditingSchool] = useState<EnhancedSchool | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showActivationDialog, setShowActivationDialog] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
@@ -95,11 +99,11 @@ export function SchoolManagementTable() {
     return () => window.removeEventListener('resize', checkMobile);
   });
 
-  // Fetch enhanced schools data
+  // Fetch enhanced schools data - ONLY ACTIVE SCHOOLS
   const { data: schools = [], isLoading } = useQuery({
-    queryKey: ['schools-enhanced'],
+    queryKey: ['schools-enhanced', 'active'],
     queryFn: async () => {
-      const response = await fetch('/api/schools');
+      const response = await fetch(`/api/schools?active=true`);
       if (!response.ok) throw new Error('Failed to fetch schools');
       const data = await response.json();
       return data.schools || [];
@@ -217,51 +221,68 @@ export function SchoolManagementTable() {
       header: 'Actions',
       cell: ({ row }: { row: Row<EnhancedSchool> }) => (
         <div className="flex items-center gap-2">
-          {!row.original.isActive && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => activateSchool.mutate(row.original.id)}
-              disabled={activateSchool.isPending}
-              className="text-green-600 hover:text-green-700"
-            >
-              <CheckCircle className="h-4 w-4" />
-            </Button>
-          )}
           {row.original.isActive && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => hideSchool.mutate(row.original.id)}
-              disabled={hideSchool.isPending}
-              className="text-red-600 hover:text-red-700"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => hideSchool.mutate(row.original.id)}
+                  disabled={hideSchool.isPending}
+                  className="text-red-600 hover:text-red-700"
+                  name={`hide-school-${row.original.id}`}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Hide school from marketplace</TooltipContent>
+            </Tooltip>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSelectedSchool(row.original)}
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setEditingSchool(row.original);
-              setShowEditDialog(true);
-            }}
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedSchool(row.original)}
+                name={`view-school-${row.original.id}`}
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>View school details</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setEditingSchool(row.original);
+                  setShowEditDialog(true);
+                }}
+                name={`edit-school-${row.original.id}`}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Edit school information</TooltipContent>
+          </Tooltip>
           {row.original.website && (
-            <Button variant="ghost" size="sm" asChild>
-              <a href={row.original.website} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" asChild>
+                  <a
+                    href={row.original.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    name={`website-school-${row.original.id}`}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Visit school website</TooltipContent>
+            </Tooltip>
           )}
         </div>
       ),
@@ -327,7 +348,7 @@ export function SchoolManagementTable() {
           <div>
             <CardTitle>Schools Management</CardTitle>
             <CardDescription>
-              Manage activated schools in the system ({schools.length} schools) - Only shows schools created through proper channels
+              Manage active schools in the system ({schools.length} schools)
             </CardDescription>
           </div>
           <div className="flex gap-2">
@@ -340,9 +361,13 @@ export function SchoolManagementTable() {
                 className="pl-8 w-64"
               />
             </div>
-            <Button onClick={() => setShowCreateDialog(true)}>
+            <Button onClick={() => setShowActivationDialog(true)} variant="default">
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Activate School
+            </Button>
+            <Button onClick={() => setShowCreateDialog(true)} variant="outline">
               <Plus className="h-4 w-4 mr-2" />
-              Create School
+              Create New
             </Button>
           </div>
         </div>
@@ -712,6 +737,16 @@ export function SchoolManagementTable() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* School Activation Dialog */}
+      <SchoolActivationDialog
+        open={showActivationDialog}
+        onOpenChange={setShowActivationDialog}
+        onSuccess={() => {
+          // Refresh the schools data
+          queryClient.invalidateQueries({ queryKey: ['schools-enhanced'] });
+        }}
+      />
 
       {/* School Creation Dialog */}
       <SchoolCreationDialog

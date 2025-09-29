@@ -1,6 +1,6 @@
-import { pgTable, pgEnum, uuid, text, timestamp, jsonb, boolean, index, foreignKey } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, uuid, text, timestamp, jsonb, index, foreignKey } from "drizzle-orm/pg-core";
 import { user } from './auth';
-import { counties, localities } from './spipuniform';
+import { counties } from './spipuniform';
 
 // Enums for school setup requests
 export const schoolSetupRequestStatus = pgEnum("school_setup_request_status", [
@@ -17,7 +17,7 @@ export const schoolSetupRequests = pgTable("school_setup_requests", {
 
   // Location information
   countyId: uuid("county_id").notNull(),
-  localityId: uuid("locality_id").notNull(),
+  localityName: text("locality_name").notNull(), // Store locality name from OSM search
 
   // School information
   schoolType: text("school_type").notNull(), // 'primary' or 'secondary'
@@ -48,7 +48,6 @@ export const schoolSetupRequests = pgTable("school_setup_requests", {
   index("school_setup_requests_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
   index("school_setup_requests_created_idx").using("btree", table.createdAt.desc().nullsLast().op("timestamp_ops")),
   index("school_setup_requests_county_idx").using("btree", table.countyId.asc().nullsLast().op("uuid_ops")),
-  index("school_setup_requests_locality_idx").using("btree", table.localityId.asc().nullsLast().op("uuid_ops")),
 
   // Foreign keys
   foreignKey({
@@ -62,12 +61,6 @@ export const schoolSetupRequests = pgTable("school_setup_requests", {
     foreignColumns: [counties.id],
     name: "school_setup_requests_county_id_counties_id_fk"
   }),
-
-  foreignKey({
-    columns: [table.localityId],
-    foreignColumns: [localities.id],
-    name: "school_setup_requests_locality_id_localities_id_fk"
-  }).onDelete("cascade"),
 
   foreignKey({
     columns: [table.reviewedBy],

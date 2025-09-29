@@ -97,6 +97,7 @@ import { ServerRoute as ApiRequestsIdServerRouteImport } from './routes/api/requ
 import { ServerRoute as ApiProfilesShopServerRouteImport } from './routes/api.profiles.shop'
 import { ServerRoute as ApiProfilesFamilyMembersServerRouteImport } from './routes/api.profiles.familyMembers'
 import { ServerRoute as ApiMarketplaceSearchServerRouteImport } from './routes/api/marketplace/search'
+import { ServerRoute as ApiLocalitiesSearchServerRouteImport } from './routes/api/localities/search'
 import { ServerRoute as ApiLocalitiesSplatServerRouteImport } from './routes/api/localities/$'
 import { ServerRoute as ApiListingsIdServerRouteImport } from './routes/api/listings/$id'
 import { ServerRoute as ApiFamilyMembersIdServerRouteImport } from './routes/api/family-members/$id'
@@ -121,7 +122,6 @@ import { ServerRoute as ApiSpipuniformSchoolStockIndexServerRouteImport } from '
 import { ServerRoute as ApiSpipuniformLocalitiesIndexServerRouteImport } from './routes/api/spipuniform/localities/index'
 import { ServerRoute as ApiSpipuniformCountiesIndexServerRouteImport } from './routes/api/spipuniform/counties/index'
 import { ServerRoute as ApiTransactionsIdMessagesServerRouteImport } from './routes/api/transactions/$id/messages'
-import { ServerRoute as ApiSpipuniformLocalitiesSearchServerRouteImport } from './routes/api/spipuniform/localities/search'
 import { ServerRoute as ApiSchoolSubmissionsIdRejectServerRouteImport } from './routes/api/school-submissions/$id.reject'
 import { ServerRoute as ApiSchoolSubmissionsIdApproveServerRouteImport } from './routes/api/school-submissions/$id.approve'
 import { ServerRoute as ApiProfilesFamilyMemberIdServerRouteImport } from './routes/api.profiles.familyMember.$id'
@@ -602,6 +602,12 @@ const ApiMarketplaceSearchServerRoute =
     path: '/api/marketplace/search',
     getParentRoute: () => rootServerRouteImport,
   } as any)
+const ApiLocalitiesSearchServerRoute =
+  ApiLocalitiesSearchServerRouteImport.update({
+    id: '/search',
+    path: '/search',
+    getParentRoute: () => ApiLocalitiesServerRoute,
+  } as any)
 const ApiLocalitiesSplatServerRoute =
   ApiLocalitiesSplatServerRouteImport.update({
     id: '/$',
@@ -736,12 +742,6 @@ const ApiTransactionsIdMessagesServerRoute =
     id: '/messages',
     path: '/messages',
     getParentRoute: () => ApiTransactionsIdServerRoute,
-  } as any)
-const ApiSpipuniformLocalitiesSearchServerRoute =
-  ApiSpipuniformLocalitiesSearchServerRouteImport.update({
-    id: '/api/spipuniform/localities/search',
-    path: '/api/spipuniform/localities/search',
-    getParentRoute: () => rootServerRouteImport,
   } as any)
 const ApiSchoolSubmissionsIdRejectServerRoute =
   ApiSchoolSubmissionsIdRejectServerRouteImport.update({
@@ -1216,6 +1216,7 @@ export interface FileServerRoutesByFullPath {
   '/api/family-members/$id': typeof ApiFamilyMembersIdServerRoute
   '/api/listings/$id': typeof ApiListingsIdServerRoute
   '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
+  '/api/localities/search': typeof ApiLocalitiesSearchServerRoute
   '/api/marketplace/search': typeof ApiMarketplaceSearchServerRoute
   '/api/profiles/familyMembers': typeof ApiProfilesFamilyMembersServerRoute
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
@@ -1244,7 +1245,6 @@ export interface FileServerRoutesByFullPath {
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/school-submissions/$id/approve': typeof ApiSchoolSubmissionsIdApproveServerRoute
   '/api/school-submissions/$id/reject': typeof ApiSchoolSubmissionsIdRejectServerRoute
-  '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
   '/api/spipuniform/counties': typeof ApiSpipuniformCountiesIndexServerRoute
   '/api/spipuniform/localities': typeof ApiSpipuniformLocalitiesIndexServerRoute
@@ -1309,6 +1309,7 @@ export interface FileServerRoutesByTo {
   '/api/family-members/$id': typeof ApiFamilyMembersIdServerRoute
   '/api/listings/$id': typeof ApiListingsIdServerRoute
   '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
+  '/api/localities/search': typeof ApiLocalitiesSearchServerRoute
   '/api/marketplace/search': typeof ApiMarketplaceSearchServerRoute
   '/api/profiles/familyMembers': typeof ApiProfilesFamilyMembersServerRoute
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
@@ -1337,7 +1338,6 @@ export interface FileServerRoutesByTo {
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/school-submissions/$id/approve': typeof ApiSchoolSubmissionsIdApproveServerRoute
   '/api/school-submissions/$id/reject': typeof ApiSchoolSubmissionsIdRejectServerRoute
-  '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
   '/api/spipuniform/counties': typeof ApiSpipuniformCountiesIndexServerRoute
   '/api/spipuniform/localities': typeof ApiSpipuniformLocalitiesIndexServerRoute
@@ -1403,6 +1403,7 @@ export interface FileServerRoutesById {
   '/api/family-members/$id': typeof ApiFamilyMembersIdServerRoute
   '/api/listings/$id': typeof ApiListingsIdServerRoute
   '/api/localities/$': typeof ApiLocalitiesSplatServerRoute
+  '/api/localities/search': typeof ApiLocalitiesSearchServerRoute
   '/api/marketplace/search': typeof ApiMarketplaceSearchServerRoute
   '/api/profiles/familyMembers': typeof ApiProfilesFamilyMembersServerRoute
   '/api/profiles/shop': typeof ApiProfilesShopServerRoute
@@ -1431,7 +1432,6 @@ export interface FileServerRoutesById {
   '/api/profiles/familyMember/$id': typeof ApiProfilesFamilyMemberIdServerRoute
   '/api/school-submissions/$id/approve': typeof ApiSchoolSubmissionsIdApproveServerRoute
   '/api/school-submissions/$id/reject': typeof ApiSchoolSubmissionsIdRejectServerRoute
-  '/api/spipuniform/localities/search': typeof ApiSpipuniformLocalitiesSearchServerRoute
   '/api/transactions/$id/messages': typeof ApiTransactionsIdMessagesServerRoute
   '/api/spipuniform/counties/': typeof ApiSpipuniformCountiesIndexServerRoute
   '/api/spipuniform/localities/': typeof ApiSpipuniformLocalitiesIndexServerRoute
@@ -1498,6 +1498,7 @@ export interface FileServerRouteTypes {
     | '/api/family-members/$id'
     | '/api/listings/$id'
     | '/api/localities/$'
+    | '/api/localities/search'
     | '/api/marketplace/search'
     | '/api/profiles/familyMembers'
     | '/api/profiles/shop'
@@ -1526,7 +1527,6 @@ export interface FileServerRouteTypes {
     | '/api/profiles/familyMember/$id'
     | '/api/school-submissions/$id/approve'
     | '/api/school-submissions/$id/reject'
-    | '/api/spipuniform/localities/search'
     | '/api/transactions/$id/messages'
     | '/api/spipuniform/counties'
     | '/api/spipuniform/localities'
@@ -1591,6 +1591,7 @@ export interface FileServerRouteTypes {
     | '/api/family-members/$id'
     | '/api/listings/$id'
     | '/api/localities/$'
+    | '/api/localities/search'
     | '/api/marketplace/search'
     | '/api/profiles/familyMembers'
     | '/api/profiles/shop'
@@ -1619,7 +1620,6 @@ export interface FileServerRouteTypes {
     | '/api/profiles/familyMember/$id'
     | '/api/school-submissions/$id/approve'
     | '/api/school-submissions/$id/reject'
-    | '/api/spipuniform/localities/search'
     | '/api/transactions/$id/messages'
     | '/api/spipuniform/counties'
     | '/api/spipuniform/localities'
@@ -1684,6 +1684,7 @@ export interface FileServerRouteTypes {
     | '/api/family-members/$id'
     | '/api/listings/$id'
     | '/api/localities/$'
+    | '/api/localities/search'
     | '/api/marketplace/search'
     | '/api/profiles/familyMembers'
     | '/api/profiles/shop'
@@ -1712,7 +1713,6 @@ export interface FileServerRouteTypes {
     | '/api/profiles/familyMember/$id'
     | '/api/school-submissions/$id/approve'
     | '/api/school-submissions/$id/reject'
-    | '/api/spipuniform/localities/search'
     | '/api/transactions/$id/messages'
     | '/api/spipuniform/counties/'
     | '/api/spipuniform/localities/'
@@ -1791,7 +1791,6 @@ export interface RootServerRouteChildren {
   ApiUsersIndexServerRoute: typeof ApiUsersIndexServerRoute
   ApiProductTypesIdAttributesServerRoute: typeof ApiProductTypesIdAttributesServerRoute
   ApiProfilesFamilyMemberIdServerRoute: typeof ApiProfilesFamilyMemberIdServerRoute
-  ApiSpipuniformLocalitiesSearchServerRoute: typeof ApiSpipuniformLocalitiesSearchServerRoute
   ApiSpipuniformCountiesIndexServerRoute: typeof ApiSpipuniformCountiesIndexServerRoute
   ApiSpipuniformLocalitiesIndexServerRoute: typeof ApiSpipuniformLocalitiesIndexServerRoute
   ApiSpipuniformSchoolStockIndexServerRoute: typeof ApiSpipuniformSchoolStockIndexServerRoute
@@ -2419,6 +2418,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiMarketplaceSearchServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/localities/search': {
+      id: '/api/localities/search'
+      path: '/search'
+      fullPath: '/api/localities/search'
+      preLoaderRoute: typeof ApiLocalitiesSearchServerRouteImport
+      parentRoute: typeof ApiLocalitiesServerRoute
+    }
     '/api/localities/$': {
       id: '/api/localities/$'
       path: '/$'
@@ -2586,13 +2592,6 @@ declare module '@tanstack/react-start/server' {
       fullPath: '/api/transactions/$id/messages'
       preLoaderRoute: typeof ApiTransactionsIdMessagesServerRouteImport
       parentRoute: typeof ApiTransactionsIdServerRoute
-    }
-    '/api/spipuniform/localities/search': {
-      id: '/api/spipuniform/localities/search'
-      path: '/api/spipuniform/localities/search'
-      fullPath: '/api/spipuniform/localities/search'
-      preLoaderRoute: typeof ApiSpipuniformLocalitiesSearchServerRouteImport
-      parentRoute: typeof rootServerRouteImport
     }
     '/api/school-submissions/$id/reject': {
       id: '/api/school-submissions/$id/reject'
@@ -2880,11 +2879,13 @@ const ApiListingsServerRouteWithChildren =
 
 interface ApiLocalitiesServerRouteChildren {
   ApiLocalitiesSplatServerRoute: typeof ApiLocalitiesSplatServerRoute
+  ApiLocalitiesSearchServerRoute: typeof ApiLocalitiesSearchServerRoute
   ApiLocalitiesFetchSplatServerRoute: typeof ApiLocalitiesFetchSplatServerRoute
 }
 
 const ApiLocalitiesServerRouteChildren: ApiLocalitiesServerRouteChildren = {
   ApiLocalitiesSplatServerRoute: ApiLocalitiesSplatServerRoute,
+  ApiLocalitiesSearchServerRoute: ApiLocalitiesSearchServerRoute,
   ApiLocalitiesFetchSplatServerRoute: ApiLocalitiesFetchSplatServerRoute,
 }
 
@@ -3076,8 +3077,6 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiProductTypesIdAttributesServerRoute:
     ApiProductTypesIdAttributesServerRoute,
   ApiProfilesFamilyMemberIdServerRoute: ApiProfilesFamilyMemberIdServerRoute,
-  ApiSpipuniformLocalitiesSearchServerRoute:
-    ApiSpipuniformLocalitiesSearchServerRoute,
   ApiSpipuniformCountiesIndexServerRoute:
     ApiSpipuniformCountiesIndexServerRoute,
   ApiSpipuniformLocalitiesIndexServerRoute:

@@ -1,19 +1,16 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { db } from '@/db';
 import { schoolSetupRequests } from '@/db/schema/school-setup-requests';
-import { schools, user } from '@/db/schema';
-import { desc, eq } from 'drizzle-orm';
+import { schools, user, localities } from '@/db/schema';
+import { desc, eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 import { EmailService } from '@/lib/services/email/email-service';
 import { auth } from '@/lib/auth';
 
-// In-memory storage for when database table doesn't exist
-const inMemoryRequests: any[] = [];
-
 // Validation schema for school setup request
 const schoolSetupRequestSchema = z.object({
   countyId: z.string().uuid(),
-  localityId: z.string().min(1), // Can be UUID or OSM ID like "osm_123"
+  localityName: z.string().min(1), // Store locality name from OSM search
   schoolType: z.enum(['primary', 'secondary']),
   selectedSchoolId: z.union([z.string().min(1), z.null()]).optional(), // Allow null or any non-empty string
   customSchoolName: z.union([z.string(), z.null()]).optional(), // Allow null or string
@@ -32,21 +29,10 @@ const schoolSetupRequestSchema = z.object({
 export const ServerRoute = createServerFileRoute('/api/school-setup-requests').methods({
   GET: async ({ request }) => {
     try {
-      // Try to get school setup requests from database first
-      let requests: any[] = [];
-
-      try {
-        requests = await db
-          .select()
-          .from(schoolSetupRequests)
-          .orderBy(desc(schoolSetupRequests.createdAt));
-      } catch (dbError) {
-        console.warn('Database query failed for school setup requests, using in-memory storage:', dbError);
-        // Fall back to in-memory storage
-        requests = [...inMemoryRequests].sort((a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-      }
+      const requests = await db
+        .select()
+        .from(schoolSetupRequests)
+        .orderBy(desc(schoolSetupRequests.createdAt));
 
       return new Response(JSON.stringify({
         success: true,
@@ -60,7 +46,8 @@ export const ServerRoute = createServerFileRoute('/api/school-setup-requests').m
       console.error('Error fetching school setup requests:', error);
       return new Response(JSON.stringify({
         success: false,
-        error: 'Failed to fetch school setup requests'
+        error: 'Failed to fetch school setup requests',
+        details: error instanceof Error ? error.message : 'Unknown error'
       }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
@@ -141,62 +128,13 @@ export const ServerRoute = createServerFileRoute('/api/school-setup-requests').m
 
       if (isManualSchool || isCsvSchool) {
         // Manual School or CSV School (fallback): Create setup request for admin approval
-        // If localityId is not a UUID (e.g., OSM id like "osm_123"), skip DB and store in-memory
-        const localityIsUuid = z.string().uuid().safeParse(validatedData.localityId).success;
-        if (!localityIsUuid) {
-          const mockRequest = {
-            id: 'mock-osm-' + Date.now(),
-            userId,
-            countyId: validatedData.countyId,
-            localityId: validatedData.localityId,
-            schoolType: validatedData.schoolType,
-            selectedSchoolId: validatedData.selectedSchoolId || null,
-            customSchoolName: validatedData.customSchoolName || null,
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-          };
-          inMemoryRequests.unshift(mockRequest);
-
-          // Try to notify admin even for in-memory cases
-          try {
-            const settings = await EmailService.getActiveSettings();
-            const adminEmail = settings?.fromEmail;
-            if (adminEmail) {
-              await EmailService.sendEmail({
-                to: adminEmail,
-                subject: 'New School Setup Request (OSM locality)',
-                htmlContent: `
-                  <p>A new school setup request was submitted using an OSM locality (not yet in DB).</p>
-                  <ul>
-                    <li><strong>Type:</strong> ${validatedData.schoolType}</li>
-                    <li><strong>County ID:</strong> ${validatedData.countyId}</li>
-                    <li><strong>Locality:</strong> ${validatedData.localityId}</li>
-                    <li><strong>Selected School ID:</strong> ${validatedData.selectedSchoolId || 'N/A'}</li>
-                    <li><strong>Custom School Name:</strong> ${validatedData.customSchoolName || 'N/A'}</li>
-                    <li><strong>Status:</strong> pending (in-memory)</li>
-                    <li><strong>Request ID:</strong> ${mockRequest.id}</li>
-                  </ul>
-                `
-              });
-            }
-          } catch {}
-
-          return new Response(JSON.stringify({
-            success: true,
-            request: mockRequest,
-            action: 'submitted_for_approval',
-            message: 'Request submitted and queued for admin (using OSM locality).',
-            note: 'Stored in-memory because locality is not in DB yet'
-          }), { status: 201, headers: { 'Content-Type': 'application/json' } });
-        }
-
         try {
           const [newRequest] = await db
             .insert(schoolSetupRequests)
             .values({
               userId,
               countyId: validatedData.countyId,
-              localityId: validatedData.localityId,
+              localityName: validatedData.localityName, // Store locality name directly
               schoolType: validatedData.schoolType,
               selectedSchoolId: validatedData.selectedSchoolId || null,
               customSchoolName: validatedData.customSchoolName || null,
@@ -243,90 +181,15 @@ export const ServerRoute = createServerFileRoute('/api/school-setup-requests').m
           });
 
         } catch (dbError) {
-          // Handle missing table gracefully
-          const isTableNotFound = dbError && typeof dbError === 'object' && 'code' in dbError &&
-                                 (dbError as any).code === '42P01';
-
-          if (isTableNotFound) {
-            console.warn('School setup requests table does not exist, saving in-memory and returning mock response');
-
-            // Create and store a mock request in memory so Admin can see it
-            const mockRequest = {
-              id: 'mock-' + Date.now(),
-              userId,
-              countyId: validatedData.countyId,
-              localityId: validatedData.localityId,
-              schoolType: validatedData.schoolType,
-              selectedSchoolId: validatedData.selectedSchoolId,
-              customSchoolName: validatedData.customSchoolName,
-              status: 'pending',
-              createdAt: new Date().toISOString(),
-            };
-            inMemoryRequests.unshift(mockRequest);
-
-            // Try to notify admin even when DB table is missing
-            try {
-              const settings = await EmailService.getActiveSettings();
-              const adminEmail = settings?.fromEmail;
-              if (adminEmail) {
-                await EmailService.sendEmail({
-                  to: adminEmail,
-                  subject: 'New School Setup Request (in-memory)',
-                  htmlContent: `
-                    <p>A new school setup request has been saved in-memory (DB table missing).</p>
-                    <ul>
-                      <li><strong>Type:</strong> ${validatedData.schoolType}</li>
-                      <li><strong>County ID:</strong> ${validatedData.countyId}</li>
-                      <li><strong>Locality:</strong> ${validatedData.localityId}</li>
-                      <li><strong>Selected School ID:</strong> ${validatedData.selectedSchoolId || 'N/A'}</li>
-                      <li><strong>Custom School Name:</strong> ${validatedData.customSchoolName || 'N/A'}</li>
-                      <li><strong>Status:</strong> pending (in-memory)</li>
-                      <li><strong>Request ID:</strong> ${mockRequest.id}</li>
-                    </ul>
-                  `
-                });
-              }
-            } catch {}
-
-            return new Response(JSON.stringify({
-              success: true,
-              request: mockRequest,
-              action: 'submitted_for_approval',
-              message: isManualSchool
-                ? 'Your school request has been submitted for admin approval. You\'ll be notified once it\'s approved.'
-                : 'Unable to auto-activate school. Request submitted for admin approval.',
-              note: 'Request saved locally - database table not available'
-            }), {
-              status: 201,
-              headers: { 'Content-Type': 'application/json' }
-            });
-          } else {
-            console.error('Database error creating school setup request:', dbError);
-            // Don't throw the error, return a fallback response and store in memory
-            const mockRequest = {
-              id: 'error-' + Date.now(),
-              userId,
-              countyId: validatedData.countyId,
-              localityId: validatedData.localityId,
-              schoolType: validatedData.schoolType,
-              selectedSchoolId: validatedData.selectedSchoolId,
-              customSchoolName: validatedData.customSchoolName,
-              status: 'pending',
-              createdAt: new Date().toISOString(),
-            };
-            inMemoryRequests.unshift(mockRequest);
-
-            return new Response(JSON.stringify({
-              success: true,
-              request: mockRequest,
-              action: 'submitted_for_approval',
-              message: 'Request submitted (database temporarily unavailable).',
-              note: 'Request saved locally - database error occurred'
-            }), {
-              status: 201,
-              headers: { 'Content-Type': 'application/json' }
-            });
-          }
+          console.error('Database error creating school setup request:', dbError);
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'Failed to create school setup request. Please try again or contact support.',
+            details: dbError instanceof Error ? dbError.message : 'Unknown database error'
+          }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
         }
       }
 
@@ -385,39 +248,22 @@ export const ServerRoute = createServerFileRoute('/api/school-setup-requests').m
         return new Response(JSON.stringify({ success: false, error: 'Invalid action' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
       }
 
-      // Try to load the request from DB
-      let reqRow: any | null = null;
-      let dbAvailable = true;
-      try {
-        const rows = await db
-          .select()
-          .from(schoolSetupRequests)
-          .where(eq(schoolSetupRequests.id, id))
-          .limit(1);
-        reqRow = rows[0] || null;
-      } catch (e) {
-        dbAvailable = false;
-      }
+      // Load the request from DB
+      const rows = await db
+        .select()
+        .from(schoolSetupRequests)
+        .where(eq(schoolSetupRequests.id, id))
+        .limit(1);
 
-      // Fallback to in-memory when DB missing or not found
+      const reqRow = rows[0];
       if (!reqRow) {
-        const memIdx = inMemoryRequests.findIndex((r) => r.id === id);
-        if (memIdx !== -1) {
-          const memReq = inMemoryRequests[memIdx];
-          memReq.status = action === 'approve' ? 'approved' : 'denied';
-          memReq.reviewedBy = session.user.id;
-          memReq.reviewedAt = new Date().toISOString();
-          memReq.adminNotes = adminNotes;
-          if (action === 'deny') {
-            memReq.denialReason = denialReason;
-            memReq.nextSteps = nextSteps;
-          }
-          return new Response(JSON.stringify({ success: true, request: memReq, note: dbAvailable ? 'Request not found in DB, updated in-memory' : 'DB unavailable, updated in-memory' }), { status: 200, headers: { 'Content-Type': 'application/json' } });
-        }
-        if (!dbAvailable) {
-          return new Response(JSON.stringify({ success: false, error: 'Database unavailable and request not found in memory' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
-        }
-        return new Response(JSON.stringify({ success: false, error: 'Request not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Request not found'
+        }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' }
+        });
       }
 
       // If approving, either activate existing school or create a new one
