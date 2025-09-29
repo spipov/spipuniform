@@ -1,7 +1,7 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { db } from '@/db';
-import { schools, localities, counties } from '@/db/schema';
-import { eq, and, isNull, like, or } from 'drizzle-orm';
+import { schools, localities, counties, schoolOwners, listings, requests } from '@/db/schema';
+import { eq, and, isNull, like, or, sql, exists } from 'drizzle-orm';
 
 export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').methods({
   GET: async ({ request }) => {
@@ -41,6 +41,24 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
         // Don't filter out CSV schools for setup requests
       }
 
+      // Debug: Check what schools exist and their isActive status
+      const allSchoolsDebug = await db
+        .select({
+          id: schools.id,
+          name: schools.name,
+          isActive: schools.isActive,
+          csvSourceRow: schools.csvSourceRow
+        })
+        .from(schools)
+        .limit(10);
+
+      console.log('School API Debug:', {
+        schoolSetup,
+        conditionsCount: conditions.length,
+        conditions: conditions.map(c => c.toString()),
+        sampleSchools: allSchoolsDebug
+      });
+
       if (countyId) {
         conditions.push(eq(schools.countyId, countyId));
       }
@@ -75,6 +93,21 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
       const result = await query
         .where(and(...conditions))
         .orderBy(schools.name);
+
+      // Debug: Log the result count
+      console.log('School API Debug - Result count:', result.length);
+
+      // Do not fall back to all schools. If none match and it's not a setup request, return an empty list.
+      if (result.length === 0 && !schoolSetup) {
+        return new Response(JSON.stringify({
+          success: true,
+          schools: [],
+          fallback: false,
+          message: 'No active schools found for the given filters'
+        }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
 
       // If OSM locality filtering returned very few results, also include broader results
       // But for marketplace queries, don't fall back - show what we found or empty

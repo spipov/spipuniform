@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { db } from '@/db';
 import { counties, localities, schools } from '@/db/schema';
-import { eq, ilike, or } from 'drizzle-orm';
+import { eq, ilike } from 'drizzle-orm';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -252,7 +252,8 @@ async function importPrimarySchools(csvPath: string): Promise<ImportResult> {
           phone: row['Phone No.'] || null,
           email: row['Email'] || null,
           csvSourceRow: row,
-          isActive: true
+          // Imported schools should be inactive by default; activation happens via setup flows
+          isActive: false
         };
 
         // Insert school
@@ -367,7 +368,8 @@ async function importSecondarySchools(csvPath: string): Promise<ImportResult> {
           phone: row['Phone'] || null,
           email: row['Email'] || null,
           csvSourceRow: row,
-          isActive: true
+          // Imported schools should be inactive by default; activation happens via setup flows
+          isActive: false
         };
 
         // Insert school

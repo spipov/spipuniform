@@ -49,17 +49,17 @@ function SchoolStockPage() {
           const schoolsData = await schoolsResponse.json();
 
           if (schoolsData.success) {
-            // Convert schools to SchoolOwnerInfo format for admins
-            const adminSchools: SchoolOwnerInfo[] = schoolsData.schools.map((school: any) => ({
-              id: `admin-${school.id}`,
-              schoolId: school.id,
-              schoolName: school.name,
-              schoolLevel: school.level,
-              role: 'admin',
-              isActive: true
-            }));
-            setAllSchools(adminSchools);
-            setSchoolOwners(adminSchools);
+           // Convert schools to SchoolOwnerInfo format for admins
+           const adminSchools: SchoolOwnerInfo[] = schoolsData.schools.map((school: any) => ({
+             id: `admin-${school.id}`,
+             schoolId: school.id,
+             schoolName: school.name,
+             schoolLevel: school.level,
+             role: 'admin',
+             isActive: true
+           }));
+           setAllSchools(adminSchools);
+           setSchoolOwners(adminSchools);
 
             // Auto-select the first school if available
             if (adminSchools.length > 0 && !selectedSchoolId) {

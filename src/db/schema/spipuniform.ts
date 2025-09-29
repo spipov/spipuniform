@@ -72,7 +72,7 @@ export const schools = pgTable("schools", {
 	phone: text(),
 	email: text(),
 	crestFileId: uuid("crest_file_id"),
-	isActive: boolean("is_active").default(true),
+	isActive: boolean("is_active").default(false),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [

@@ -1,7 +1,7 @@
 import { createServerFileRoute } from '@tanstack/react-start/server';
 import { db } from '@/db';
 import { schools, listings, userProfiles, counties, localities } from '@/db/schema';
-import { asc, ilike, or, and, eq, sql, count, isNull } from 'drizzle-orm';
+import { asc, ilike, or, and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 // Validation schema for school search
@@ -28,8 +28,6 @@ export const ServerRoute = createServerFileRoute('/api/schools').methods({
       // Build query conditions
       const conditions = [];
       conditions.push(eq(schools.isActive, true));
-      // Only show schools that were created through proper channels (not CSV imports)
-      conditions.push(isNull(schools.csvSourceRow));
 
       // Search by name or address if query provided
       if (validatedParams.query) {
