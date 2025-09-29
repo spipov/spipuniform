@@ -69,7 +69,7 @@ export function SchoolCreationDialog({ open, onOpenChange, onSuccess }: SchoolCr
     website: '',
     phone: '',
     email: '',
-    isActive: false
+    isActive: true
   });
 
   // Fetch counties on mount
@@ -154,6 +154,11 @@ export function SchoolCreationDialog({ open, onOpenChange, onSuccess }: SchoolCr
       if (selectedLocalityData) {
         params.append('osmLocalityName', selectedLocalityData.name);
       }
+      // Include CSV/inactive schools during setup and filter by selected level
+      params.set('schoolSetup', 'true');
+      if (formData.level) {
+        params.set('level', formData.level);
+      }
 
       const response = await fetch(`/api/spipuniform/schools?${params}`);
       const data = await response.json();
@@ -233,7 +238,7 @@ export function SchoolCreationDialog({ open, onOpenChange, onSuccess }: SchoolCr
       website: '',
       phone: '',
       email: '',
-      isActive: false
+      isActive: true
     });
     setSelectedCounty('');
     setSelectedLocality('');
@@ -364,7 +369,7 @@ export function SchoolCreationDialog({ open, onOpenChange, onSuccess }: SchoolCr
                               website: school.website || '',
                               phone: school.phone || '',
                               email: school.email || '',
-                              isActive: false
+                              isActive: true
                             });
                             toast.success(`Selected ${school.name} - form pre-filled`);
                           }}

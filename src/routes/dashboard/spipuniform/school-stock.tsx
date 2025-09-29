@@ -1,12 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { SchoolStockManager } from '@/components/spipuniform/schools/StockManager';
-import { School, AlertCircle, CheckCircle } from 'lucide-react';
+import { School, AlertCircle, CheckCircle, Search, MapPin } from 'lucide-react';
 import { useSession } from '@/lib/auth-client';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  flexRender,
+  createColumnHelper,
+  ColumnDef,
+  SortingState,
+  ColumnFiltersState,
+} from '@tanstack/react-table';
 
 interface SchoolOwnerInfo {
   id: string;
@@ -15,11 +26,15 @@ interface SchoolOwnerInfo {
   schoolLevel: string;
   role: string;
   isActive: boolean;
+  localityName?: string;
+  countyName?: string;
 }
 
 export const Route = createFileRoute('/dashboard/spipuniform/school-stock')({
   component: SchoolStockPage,
 });
+
+const columnHelper = createColumnHelper<SchoolOwnerInfo>();
 
 function SchoolStockPage() {
   const { data: session } = useSession();
@@ -28,6 +43,71 @@ function SchoolStockPage() {
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  // Calculate available schools
+  const availableSchools = isAdmin ? allSchools : schoolOwners.filter(so => so.isActive);
+
+  // Define table columns - must be defined before useReactTable
+  const columns = useMemo<ColumnDef<SchoolOwnerInfo, any>[]>(() => [
+    columnHelper.accessor('schoolName', {
+      header: 'School Name',
+      cell: ({ getValue }) => (
+        <div className="flex items-center gap-2">
+          <School className="h-4 w-4 text-primary" />
+          <span className="font-medium">{getValue()}</span>
+        </div>
+      ),
+    }),
+    columnHelper.accessor('localityName', {
+      header: 'Locality',
+      cell: ({ getValue }) => (
+        <div className="flex items-center gap-1">
+          <MapPin className="h-3 w-3 text-muted-foreground" />
+          <span>{getValue() || 'Not specified'}</span>
+        </div>
+      ),
+    }),
+    columnHelper.accessor('countyName', {
+      header: 'County',
+      cell: ({ getValue }) => getValue() || 'Not specified',
+    }),
+    columnHelper.accessor('schoolLevel', {
+      header: 'Level',
+      cell: ({ getValue }) => (
+        <Badge variant="outline" className="capitalize">
+          {getValue()}
+        </Badge>
+      ),
+    }),
+    columnHelper.accessor('role', {
+      header: 'Your Role',
+      cell: ({ getValue }) => (
+        <Badge variant="secondary" className="capitalize">
+          {getValue()}
+        </Badge>
+      ),
+    }),
+  ], []);
+
+  // Create table instance - must be called after columns are defined
+  const table = useReactTable({
+    data: availableSchools,
+    columns,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    state: {
+      sorting,
+      columnFilters,
+      globalFilter,
+    },
+  });
 
   const fetchSchoolOwnerInfo = async () => {
     try {
@@ -37,7 +117,7 @@ function SchoolStockPage() {
       });
       const permsData = await permsResponse.json();
 
-      const userIsAdmin = permsData.role?.toLowerCase() === 'admin' || session?.user?.email === 'admin@admin.com';
+      const userIsAdmin = permsData.role?.toLowerCase() === 'admin' || session?.user?.email === 'admin@admin.com' || permsData.role?.toLowerCase() === 'system_admin';
       setIsAdmin(userIsAdmin);
 
       if (userIsAdmin) {
@@ -56,7 +136,9 @@ function SchoolStockPage() {
              schoolName: school.name,
              schoolLevel: school.level,
              role: 'admin',
-             isActive: true
+             isActive: true,
+             localityName: school.localityName,
+             countyName: school.countyName
            }));
            setAllSchools(adminSchools);
            setSchoolOwners(adminSchools);
@@ -100,6 +182,8 @@ function SchoolStockPage() {
     }
   }, [session?.user?.id]);
 
+
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -111,7 +195,7 @@ function SchoolStockPage() {
     );
   }
 
-  const availableSchools = isAdmin ? allSchools : schoolOwners.filter(so => so.isActive);
+
 
   if (!isAdmin && availableSchools.length === 0) {
     return (
@@ -158,29 +242,84 @@ function SchoolStockPage() {
           </p>
         </div>
 
-        {availableSchools.length > 1 && (
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-muted-foreground">Managing:</div>
-            <Select value={selectedSchoolId} onValueChange={setSelectedSchoolId}>
-              <SelectTrigger className="w-64">
-                <SelectValue placeholder="Select school" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableSchools.map((schoolOwner) => (
-                  <SelectItem key={schoolOwner.schoolId} value={schoolOwner.schoolId}>
-                    <div className="flex items-center gap-2">
-                      <span>{schoolOwner.schoolName}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {schoolOwner.role}
-                      </Badge>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+
       </div>
+
+      {/* School Selection Table */}
+      <Card className="stock-mgmt__school-selector">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <School className="h-5 w-5" />
+                Select School
+              </CardTitle>
+              <CardDescription>
+                Choose from your available schools ({availableSchools.length} schools)
+              </CardDescription>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search schools..."
+                value={globalFilter ?? ''}
+                onChange={(event) => setGlobalFilter(String(event.target.value))}
+                className="pl-8 w-64 stock-mgmt__search-input"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border stock-mgmt__table">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id} className="font-medium">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      className={`cursor-pointer transition-colors hover:bg-muted/50 ${
+                        selectedSchoolId === row.original.schoolId ? 'bg-primary/10' : ''
+                      }`}
+                      onClick={() => setSelectedSchoolId(row.original.schoolId)}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <School className="h-8 w-8 opacity-50" />
+                        <p>No schools found</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* School Info Card */}
       {selectedSchool && (

@@ -71,7 +71,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
       }
 
       if (level) {
-        conditions.push(eq(schools.level, level as 'primary' | 'secondary'));
+        conditions.push(eq(schools.level, level as 'primary' | 'secondary' | 'mixed'));
       }
 
       if (search && search.trim().length > 0) {
@@ -83,10 +83,16 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
         );
       }
 
-      // If OSM locality is selected, filter schools by address containing locality name
+      // If OSM locality is selected, filter schools by address containing locality name (case-insensitive)
       if (osmLocalityName && osmLocalityName.trim().length > 0) {
+        const localityName = osmLocalityName.trim();
         conditions.push(
-          like(schools.address, `%${osmLocalityName.trim()}%`)
+          or(
+            like(schools.address, `%${localityName}%`),
+            like(schools.address, `%${localityName.toLowerCase()}%`),
+            like(schools.address, `%${localityName.toUpperCase()}%`),
+            like(schools.address, `%${localityName.charAt(0).toUpperCase() + localityName.slice(1).toLowerCase()}%`)
+          )
         );
       }
 
@@ -113,9 +119,9 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
       // But for marketplace queries, don't fall back - show what we found or empty
       const isMarketplaceQuery = request.headers.get('referer')?.includes('/marketplace') ||
                                  url.searchParams.has('marketplace');
-      if (osmLocalityName && result.length <= 1 && !isMarketplaceQuery) {
+      if (osmLocalityName && result.length <= 2 && !isMarketplaceQuery) {
         console.log(`Only ${result.length} schools found for locality '${osmLocalityName}', including broader county results`);
-        
+
         // Get broader county results as fallback
         const fallbackConditions: any[] = [];
 
@@ -125,15 +131,15 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
           // For school setup, we want to show CSV schools so users can activate them
           // Don't filter out CSV schools for setup requests
         }
-        
+
         if (countyId) {
           fallbackConditions.push(eq(schools.countyId, countyId));
         }
         if (level) {
-          fallbackConditions.push(eq(schools.level, level as 'primary' | 'secondary'));
+          fallbackConditions.push(eq(schools.level, level as 'primary' | 'secondary' | 'mixed'));
         }
         // Note: Skipping search in fallback for simplicity - main filtering handles search
-        
+
         const fallbackResult = await db
           .select({
             id: schools.id,
@@ -151,7 +157,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
           .leftJoin(counties, eq(schools.countyId, counties.id))
           .where(and(...fallbackConditions))
           .orderBy(schools.name);
-          
+
         return new Response(JSON.stringify({
           success: true,
           schools: fallbackResult,
@@ -204,7 +210,7 @@ export const ServerRoute = createServerFileRoute('/api/spipuniform/schools/').me
           phone,
           email,
           csvSourceRow: null, // Mark as manually added (not from CSV)
-          isActive: isActive || false // Use the isActive value from the form
+          isActive: typeof isActive === 'boolean' ? isActive : true // Default to active for admin-created schools
         })
         .returning();
 

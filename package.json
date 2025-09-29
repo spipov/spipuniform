@@ -19,8 +19,7 @@
     "import-schools": "tsx scripts/import-schools.ts",
     "seed-spipuniform": "tsx scripts/seed-spipuniform.ts",
     "db:reset": "drizzle-kit push && tsx scripts/seed-database.ts",
-    "db:migrate": "drizzle-kit push",
-    "ops:deactivate-unused-csv-schools": "tsx scripts/ops/deactivate-unused-csv-schools.ts"
+    "db:migrate": "drizzle-kit push"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
