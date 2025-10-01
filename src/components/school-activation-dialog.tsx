@@ -128,7 +128,7 @@ export function SchoolActivationDialog({ open, onOpenChange, onSuccess }: School
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto" name="school-activation-dialog">
+      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Activate School from Database</DialogTitle>
           <DialogDescription>
@@ -146,7 +146,7 @@ export function SchoolActivationDialog({ open, onOpenChange, onSuccess }: School
                   <SelectValue placeholder="All Counties" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Counties</SelectItem>
+                  <SelectItem value="all">All Counties</SelectItem>
                   {counties?.map((county) => (
                     <SelectItem key={county.id} value={county.id}>
                       {county.name}
@@ -161,7 +161,8 @@ export function SchoolActivationDialog({ open, onOpenChange, onSuccess }: School
               {selectedCounty ? (
                 <LocalitySearch
                   countyId={selectedCounty}
-                  onSelect={(locality) => setSelectedLocalityName(locality.name)}
+                  value={selectedLocalityName}
+                  onChange={(localityId, localityName) => setSelectedLocalityName(localityName)}
                   placeholder="Search locality..."
                 />
               ) : (

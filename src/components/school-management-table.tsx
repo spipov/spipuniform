@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -90,14 +90,14 @@ export function SchoolManagementTable() {
   const queryClient = useQueryClient();
 
   // Check if mobile
-  useState(() => {
+  useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  });
+  }, []);
 
   // Fetch enhanced schools data - ONLY ACTIVE SCHOOLS
   const { data: schools = [], isLoading } = useQuery({
@@ -275,7 +275,6 @@ export function SchoolManagementTable() {
                     href={row.original.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    name={`website-school-${row.original.id}`}
                   >
                     <ExternalLink className="h-4 w-4" />
                   </a>
@@ -362,7 +361,7 @@ export function SchoolManagementTable() {
               />
             </div>
             <Button onClick={() => setShowActivationDialog(true)} variant="default">
-              <CheckCircle2 className="h-4 w-4 mr-2" />
+              <CheckCircle className="h-4 w-4 mr-2" />
               Activate School
             </Button>
             <Button onClick={() => setShowCreateDialog(true)} variant="outline">
